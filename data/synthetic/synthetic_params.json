@@ -1,0 +1,50 @@
+{
+  "freelancer_desain": {
+    "mu": 36162152,
+    "sigma": 87846576,
+    "min": 1271434,
+    "max": 125691171,
+    "median": 14471193,
+    "count": 544
+  },
+  "freelancer_it": {
+    "mu": 32951871,
+    "sigma": 84175013,
+    "min": 1424775,
+    "max": 109056534,
+    "median": 13624086,
+    "count": 823
+  },
+  "content_creator": {
+    "mu": 38993726,
+    "sigma": 97651533,
+    "min": 1334991,
+    "max": 180095353,
+    "median": 14032252,
+    "count": 733
+  },
+  "kurir": {
+    "mu": 1094466,
+    "sigma": 799873,
+    "min": 357159,
+    "max": 2985113,
+    "median": 849364,
+    "count": 476
+  },
+  "ojek_online": {
+    "mu": 1107258,
+    "sigma": 753412,
+    "min": 407165,
+    "max": 3067870,
+    "median": 885654,
+    "count": 439
+  },
+  "jualan_online": {
+    "mu": 33144667,
+    "sigma": 87886380,
+    "min": 200000,
+    "max": 144076282,
+    "median": 11927414,
+    "count": 0
+  }
+}
