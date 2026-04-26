@@ -1,0 +1,1002 @@
+
+City,Hours_per_Day,Days_per_Month,Platform,Orders_Per_Day,PeakTime,Monthly_Salary (₹)
+Bengaluru,6,26,DoorDash,29,No,39150.0
+Indore,7,21,Deliveroo,17,No,14417.31
+Lucknow,12,22,Deliveroo,27,Yes,43350.58
+Chennai,8,29,Blinkit,23,No,35915.38
+Indore,12,30,Dunzo,30,No,62307.69
+Singapore,12,25,Dunzo,30,Yes,226081.73
+Jaipur,7,25,Dunzo,24,No,25240.38
+Jaipur,12,24,Grab,18,No,31153.85
+Pune,12,26,DoorDash,11,Yes,28132.5
+Hyderabad,7,29,Zepto,30,No,43918.27
+New York,9,21,Grab,20,No,218076.92
+Ahmedabad,11,28,Grab,13,No,25987.5
+London,6,23,Zepto,30,No,159230.77
+Kochi,9,22,Blinkit,10,No,10471.15
+Jaipur,6,21,Zomato,19,No,14387.02
+Indore,11,27,Grab,17,No,29128.85
+Delhi NCR,7,28,Dunzo,12,Yes,21145.38
+Kochi,12,29,Zomato,14,No,25765.38
+Hyderabad,6,21,Dunzo,10,Yes,9995.19
+Dubai,11,22,Zomato,23,No,86968.75
+Pune,8,27,Swiggy,17,No,27363.46
+Bengaluru,11,25,Talabat,16,No,38076.92
+Kochi,12,27,Deliveroo,27,Yes,50889.81
+Kolkata,8,29,Deliveroo,12,Yes,19140.0
+Kolkata,9,24,Blinkit,15,No,20250.0
+London,7,28,Zepto,11,Yes,91215.38
+Hyderabad,11,30,Dunzo,11,No,26177.88
+Pune,10,28,DoorDash,23,Yes,52789.42
+London,7,28,Dunzo,14,No,105538.46
+Indore,7,27,DoorDash,29,Yes,34783.27
+Indore,9,27,Dunzo,24,No,33646.15
+Kolkata,8,24,Talabat,16,Yes,21120.0
+New York,6,29,Zepto,21,Yes,231888.46
+Bengaluru,12,28,Swiggy,15,Yes,47976.92
+Singapore,6,28,Deliveroo,25,No,95913.46
+Chennai,11,24,Talabat,17,Yes,33228.46
+New York,7,23,Grab,12,Yes,122607.69
+New York,10,25,Zepto,13,No,187500.0
+Delhi NCR,12,24,Grab,25,Yes,64730.77
+Mumbai,12,25,Swiggy,26,Yes,72187.5
+Hyderabad,11,27,Dunzo,19,Yes,44764.18
+Indore,8,20,Deliveroo,22,No,20307.69
+Kochi,12,29,Dunzo,13,Yes,26317.5
+Lucknow,10,24,Grab,24,Yes,35030.77
+Delhi NCR,11,24,Talabat,27,Yes,64083.46
+Hyderabad,10,25,DoorDash,10,No,18028.85
+Jaipur,9,28,DoorDash,15,No,22716.35
+Delhi NCR,10,21,DoorDash,21,No,36043.27
+London,9,25,Zepto,25,No,216346.15
+Pune,12,30,Dunzo,20,Yes,59019.23
+New York,9,30,Talabat,17,Yes,291288.46
+Ahmedabad,10,29,Deliveroo,21,No,39526.44
+New York,11,23,Swiggy,16,No,233538.46
+Bengaluru,9,29,Zepto,27,No,60983.65
+Jaipur,9,28,DoorDash,24,Yes,39980.77
+Hyderabad,9,20,Blinkit,25,No,32451.92
+London,9,22,Swiggy,30,Yes,251307.69
+Bengaluru,6,29,Dunzo,11,No,16563.46
+Mumbai,9,22,Dunzo,10,No,16658.65
+Ahmedabad,10,24,Dunzo,16,No,24923.08
+Indore,8,25,Dunzo,11,Yes,13961.54
+Lucknow,10,23,Grab,15,No,19074.52
+Bengaluru,8,30,Swiggy,29,No,60230.77
+Mumbai,6,20,Blinkit,28,Yes,31096.15
+Hyderabad,11,20,Zepto,30,Yes,52355.77
+Ahmedabad,6,27,DoorDash,12,No,12617.31
+Hyderabad,6,20,Blinkit,19,No,16442.31
+Delhi NCR,11,24,Zomato,27,Yes,64083.46
+Lucknow,12,27,Grab,27,Yes,53202.98
+Dubai,12,22,Blinkit,23,No,94875.0
+Mumbai,10,22,Zepto,16,Yes,32576.92
+London,8,23,Deliveroo,24,No,169846.15
+Singapore,6,20,Grab,28,No,76730.77
+London,11,26,Grab,13,No,143000.0
+Dubai,11,25,Dunzo,19,Yes,89804.69
+Kolkata,12,21,Dunzo,18,No,28350.0
+Bengaluru,7,28,DoorDash,11,No,18657.69
+Hyderabad,6,27,Blinkit,17,Yes,21846.63
+Kochi,9,23,Grab,16,Yes,19266.92
+Pune,12,23,Talabat,28,Yes,63347.31
+Jaipur,12,26,Talabat,30,No,56250.0
+Chennai,6,23,Grab,26,Yes,26565.0
+Chennai,10,27,Talabat,10,No,18173.08
+Chennai,8,24,Grab,20,No,25846.15
+Singapore,11,20,Talabat,23,Yes,127108.17
+Chennai,10,29,Zomato,30,No,58557.69
+Singapore,9,26,Dunzo,28,No,149625.0
+Indore,7,23,Deliveroo,30,No,27865.38
+Kolkata,7,22,Blinkit,13,Yes,13763.75
+London,9,26,Swiggy,12,Yes,118800.0
+Jaipur,9,27,Swiggy,16,No,23365.38
+Dubai,10,28,Talabat,19,Yes,91437.5
+Dubai,10,20,Talabat,12,Yes,41250.0
+New York,7,29,Dunzo,16,No,187384.62
+Chennai,6,30,Blinkit,23,Yes,30651.92
+Bengaluru,7,30,Grab,16,No,29076.92
+Singapore,8,28,Blinkit,19,No,97192.31
+Ahmedabad,10,26,DoorDash,19,Yes,35268.75
+Indore,10,25,Swiggy,22,No,31730.77
+Jaipur,7,24,Blinkit,28,Yes,31096.15
+Dubai,9,21,Zomato,18,No,53156.25
+Indore,8,23,Blinkit,10,Yes,11676.92
+Jaipur,7,22,Talabat,15,No,13882.21
+Delhi NCR,8,23,Zomato,22,No,33084.62
+Pune,7,25,Zomato,17,Yes,24386.42
+London,10,21,Swiggy,21,Yes,186576.92
+Delhi NCR,8,24,Deliveroo,19,No,29815.38
+Hyderabad,7,24,Zepto,30,No,36346.15
+Kolkata,10,26,Grab,19,Yes,33962.5
+Kochi,10,21,Grab,21,No,23322.12
+London,10,21,Zepto,13,No,105000.0
+Indore,9,22,Deliveroo,14,Yes,17591.54
+Lucknow,11,29,Zepto,27,Yes,52381.95
+Hyderabad,11,27,Zepto,29,Yes,68324.28
+Delhi NCR,10,22,Dunzo,27,Yes,53402.88
+Jaipur,7,27,Grab,17,No,19308.89
+Dubai,6,29,DoorDash,17,Yes,50840.63
+Kochi,10,29,Deliveroo,24,No,36807.69
+Hyderabad,7,29,DoorDash,26,Yes,41868.75
+Kolkata,11,20,Deliveroo,24,Yes,36300.0
+Jaipur,12,23,Dunzo,22,Yes,40139.42
+Hyderabad,8,20,Zomato,17,No,19615.38
+Chennai,7,22,Zepto,19,Yes,21663.65
+London,8,21,Zomato,30,Yes,213230.77
+Singapore,7,29,Swiggy,25,No,115895.43
+Hyderabad,6,25,Zomato,22,Yes,26177.88
+Chennai,6,21,Swiggy,19,No,16113.46
+Ahmedabad,6,23,Blinkit,17,Yes,16749.09
+Bengaluru,11,29,Zepto,13,Yes,39476.25
+Indore,12,25,Swiggy,14,Yes,26653.85
+Mumbai,10,29,Grab,15,No,36598.56
+Pune,7,25,Dunzo,17,No,22169.47
+Indore,6,22,Grab,22,Yes,18429.23
+Chennai,8,24,Zepto,27,No,34892.31
+Singapore,7,28,Dunzo,11,Yes,54159.13
+Pune,8,20,Dunzo,16,Yes,20984.62
+Mumbai,10,24,Dunzo,22,No,44423.08
+Bengaluru,7,25,Dunzo,27,No,40889.42
+Mumbai,12,29,Zomato,20,Yes,64413.46
+Lucknow,9,21,DoorDash,27,Yes,31035.07
+New York,12,29,Deliveroo,26,Yes,574200.0
+Hyderabad,9,30,Grab,29,No,56466.35
+Chennai,7,30,Zepto,12,No,16961.54
+Chennai,8,25,Blinkit,24,No,32307.69
+Hyderabad,11,25,Zomato,21,No,41646.63
+Hyderabad,12,22,Zepto,23,No,43788.46
+Kochi,12,28,Blinkit,26,No,46200.0
+Kochi,8,30,Swiggy,26,Yes,36300.0
+London,12,24,Zepto,12,Yes,146215.38
+Pune,10,20,DoorDash,21,Yes,34427.88
+Ahmedabad,12,28,Zepto,17,Yes,40780.38
+Lucknow,12,24,Swiggy,22,No,35030.77
+Delhi NCR,8,23,Talabat,22,Yes,36393.08
+Jaipur,7,24,Swiggy,19,Yes,21100.96
+Hyderabad,9,28,Deliveroo,26,Yes,51975.0
+Bengaluru,8,21,DoorDash,24,No,34892.31
+London,7,27,Zepto,28,Yes,223892.31
+Mumbai,9,22,Blinkit,13,No,21656.25
+Chennai,6,30,Talabat,30,No,36346.15
+Lucknow,11,25,Blinkit,17,No,25847.36
+Singapore,10,20,Grab,20,Yes,100480.77
+Bengaluru,9,24,Deliveroo,20,Yes,41123.08
+Jaipur,6,21,Grab,24,Yes,19990.38
+Bengaluru,9,28,Zepto,12,Yes,28786.15
+Indore,6,28,Grab,21,No,20353.85
+Singapore,7,30,Deliveroo,11,Yes,58027.64
+New York,10,22,Blinkit,29,No,368076.92
+Jaipur,7,22,DoorDash,20,No,18509.62
+Mumbai,6,29,Grab,27,Yes,43479.09
+Mumbai,7,21,Blinkit,17,No,21025.24
+Jaipur,9,30,Zomato,16,No,25961.54
+New York,6,22,Talabat,29,No,220846.15
+Pune,10,21,Dunzo,16,No,25038.46
+Indore,12,26,Talabat,23,No,41400.0
+Kochi,11,27,Grab,28,Yes,48376.73
+Kochi,9,20,Zomato,19,Yes,19895.19
+Delhi NCR,10,23,Zomato,15,No,28197.12
+Kolkata,11,29,Zepto,28,No,55825.0
+Singapore,10,22,Swiggy,27,Yes,149213.94
+Kolkata,6,23,Grab,28,Yes,26565.0
+Lucknow,11,21,Zepto,29,No,37037.74
+Jaipur,9,21,Talabat,30,No,34074.52
+Dubai,6,29,Grab,26,No,70687.5
+Jaipur,8,23,Grab,18,Yes,21894.23
+Pune,11,29,Zomato,24,Yes,62757.12
+Jaipur,10,21,Grab,12,Yes,16658.65
+Bengaluru,12,22,Swiggy,16,Yes,40209.23
+Kochi,6,27,Zomato,24,Yes,22617.69
+Delhi NCR,9,29,Deliveroo,15,Yes,35197.36
+Jaipur,10,21,Zomato,18,No,22716.35
+Delhi NCR,8,30,Zepto,20,Yes,43153.85
+Kolkata,10,27,Zomato,13,Yes,24131.25
+London,11,25,Talabat,10,No,105769.23
+Kolkata,12,27,DoorDash,27,Yes,60142.5
+New York,8,22,DoorDash,13,No,132000.0
+Kochi,9,26,Blinkit,18,Yes,24502.5
+Jaipur,8,23,Talabat,20,No,22115.38
+Jaipur,6,20,Grab,26,No,18750.0
+Dubai,9,23,Zomato,27,No,87328.12
+Kolkata,8,29,Talabat,25,Yes,39875.0
+Jaipur,11,23,Zepto,23,No,34969.95
+Jaipur,8,24,Swiggy,13,Yes,16500.0
+Singapore,6,23,DoorDash,29,Yes,100531.01
+Indore,12,25,Deliveroo,19,No,32884.62
+Singapore,11,24,Dunzo,19,No,114548.08
+Chennai,6,27,Blinkit,21,No,22898.08
+Hyderabad,6,22,Talabat,18,Yes,18848.08
+Pune,8,20,Talabat,17,Yes,22296.15
+Ahmedabad,7,23,Grab,21,No,21943.99
+Kochi,9,27,Dunzo,25,No,32127.4
+Kolkata,12,27,DoorDash,24,No,48600.0
+Jaipur,9,30,Blinkit,10,No,16225.96
+Pune,9,24,Deliveroo,15,Yes,26558.65
+Dubai,7,23,Grab,26,Yes,71946.88
+Jaipur,9,27,Blinkit,14,Yes,22489.18
+Bengaluru,11,29,Dunzo,15,No,41408.65
+Pune,6,20,DoorDash,11,Yes,10820.19
+Indore,11,24,DoorDash,19,Yes,31832.31
+Lucknow,9,29,Talabat,21,No,30303.61
+Chennai,12,20,Deliveroo,23,No,37153.85
+Dubai,10,28,Deliveroo,10,Yes,48125.0
+Bengaluru,8,30,Talabat,15,Yes,34269.23
+Ahmedabad,6,30,Swiggy,17,No,19860.58
+Delhi NCR,6,20,Dunzo,28,Yes,30207.69
+Ahmedabad,8,27,Swiggy,25,No,35048.08
+Singapore,10,27,Zepto,10,No,61658.65
+Chennai,10,21,Swiggy,23,No,32509.62
+Lucknow,12,30,Zepto,19,No,37817.31
+Ahmedabad,7,28,Talabat,15,Yes,20989.9
+Indore,6,27,Deliveroo,15,No,14019.23
+Singapore,8,28,Dunzo,29,Yes,163180.77
+Hyderabad,7,24,Blinkit,30,Yes,39980.77
+Bengaluru,6,21,Talabat,21,No,22898.08
+Kochi,10,29,Dunzo,20,Yes,33740.38
+Kochi,8,29,Deliveroo,19,Yes,25642.69
+Singapore,9,23,Talabat,22,No,103997.6
+London,10,24,Talabat,30,Yes,304615.38
+Chennai,12,27,Blinkit,12,No,26169.23
+Delhi NCR,9,22,Deliveroo,19,No,30747.12
+Singapore,10,30,Swiggy,13,No,89062.5
+Mumbai,6,22,Dunzo,10,Yes,12216.35
+London,10,21,Zomato,12,No,96923.08
+Singapore,12,25,Talabat,24,Yes,180865.38
+Jaipur,12,20,Dunzo,18,No,25961.54
+Dubai,9,26,Zomato,27,No,98718.75
+Mumbai,7,30,Grab,14,No,24735.58
+Kolkata,9,22,Zomato,24,Yes,32670.0
+Ahmedabad,6,20,Deliveroo,13,Yes,11137.5
+New York,8,21,DoorDash,15,No,145384.62
+London,6,28,Talabat,15,No,96923.08
+Kolkata,10,20,Zepto,23,Yes,31625.0
+London,7,24,Swiggy,14,Yes,99507.69
+Dubai,9,20,Dunzo,14,No,39375.0
+Bengaluru,9,24,DoorDash,17,No,31776.92
+Chennai,7,21,Zepto,28,No,27703.85
+Delhi NCR,12,23,Deliveroo,13,No,29325.0
+Chennai,12,24,Zomato,14,Yes,29852.31
+Bengaluru,12,20,Grab,10,Yes,22846.15
+Jaipur,10,22,Swiggy,25,No,33052.88
+Bengaluru,12,27,Grab,10,Yes,30842.31
+Indore,7,29,Zomato,29,No,33963.46
+Mumbai,6,26,Grab,26,Yes,37537.5
+Hyderabad,12,27,Talabat,25,Yes,64254.81
+Mumbai,6,25,Grab,14,No,17668.27
+Pune,10,27,Zomato,26,No,52312.5
+Ahmedabad,7,27,Zomato,10,No,12266.83
+Hyderabad,11,20,Zepto,24,No,38076.92
+Mumbai,7,30,Swiggy,16,Yes,31096.15
+Jaipur,6,29,Grab,27,Yes,31056.49
+Ahmedabad,8,29,Swiggy,21,No,31621.15
+Hyderabad,11,27,Grab,26,No,55687.5
+Jaipur,12,28,Zomato,12,No,24230.77
+Mumbai,12,24,Deliveroo,21,Yes,55973.08
+Indore,10,29,Dunzo,20,No,33461.54
+Lucknow,11,20,Grab,12,Yes,16055.77
+Hyderabad,12,22,Talabat,20,Yes,41884.62
+Dubai,6,21,Grab,10,No,19687.5
+Hyderabad,8,25,Zepto,19,No,27403.85
+New York,8,24,Grab,10,Yes,121846.15
+London,11,26,Zomato,12,Yes,145200.0
+Lucknow,11,28,DoorDash,25,Yes,46829.33
+Bengaluru,6,27,Zomato,18,No,25234.62
+Jaipur,12,23,Zomato,15,No,24879.81
+Chennai,9,29,Zepto,17,Yes,32850.87
+Delhi NCR,8,23,Blinkit,23,Yes,38047.31
+Ahmedabad,9,22,DoorDash,17,Yes,24031.3
+Hyderabad,9,26,Dunzo,20,Yes,37125.0
+Ahmedabad,9,28,Talabat,25,Yes,44978.37
+Delhi NCR,10,27,Talabat,14,No,30894.23
+Kolkata,7,22,Deliveroo,29,No,27912.5
+Kochi,10,25,Zomato,21,Yes,30540.87
+Singapore,9,30,Swiggy,25,Yes,169561.3
+Delhi NCR,12,23,Deliveroo,28,No,63161.54
+Chennai,12,29,Zepto,29,No,67926.92
+Jaipur,6,24,Deliveroo,20,Yes,19038.46
+Mumbai,7,26,Dunzo,23,Yes,38740.62
+Bengaluru,11,21,Swiggy,13,No,25987.5
+Delhi NCR,7,24,DoorDash,26,Yes,39270.0
+London,12,25,Swiggy,29,Yes,368076.92
+Ahmedabad,10,22,Talabat,30,No,42836.54
+Lucknow,11,22,Swiggy,16,No,21407.69
+Kolkata,12,25,Grab,18,Yes,37125.0
+Indore,8,22,Swiggy,22,Yes,24572.31
+Indore,7,25,Blinkit,26,No,26250.0
+Bengaluru,6,25,Swiggy,11,Yes,15706.73
+Bengaluru,10,21,Zomato,16,No,29076.92
+Pune,11,20,Dunzo,14,No,22951.92
+Bengaluru,7,22,Grab,28,Yes,41046.92
+Mumbai,7,27,Deliveroo,27,Yes,47227.28
+Chennai,7,29,Swiggy,16,Yes,24047.69
+Pune,10,30,Zepto,12,No,26826.92
+Kochi,9,25,Talabat,29,Yes,37957.93
+Mumbai,12,26,Grab,14,Yes,40425.0
+Dubai,12,25,Zepto,14,No,65625.0
+Chennai,6,30,Grab,22,No,26653.85
+Mumbai,12,22,Zomato,13,Yes,31762.5
+Pune,6,28,Dunzo,27,Yes,37182.12
+Kolkata,10,24,Talabat,29,No,43500.0
+Kochi,9,27,Zepto,25,No,32127.4
+Lucknow,10,28,Swiggy,15,Yes,25543.27
+London,12,24,DoorDash,25,Yes,304615.38
+Singapore,8,21,Blinkit,13,No,49875.0
+Ahmedabad,11,20,Blinkit,10,Yes,15706.73
+London,9,26,Swiggy,20,No,180000.0
+Kochi,8,21,Talabat,11,Yes,10750.38
+Singapore,7,26,Blinkit,20,Yes,91437.5
+Chennai,9,23,Zepto,28,Yes,42912.69
+Jaipur,6,28,Grab,26,Yes,28875.0
+Bengaluru,8,27,Swiggy,26,Yes,53460.0
+Bengaluru,11,30,Talabat,27,No,77105.77
+Singapore,7,26,Swiggy,28,Yes,128012.5
+London,9,28,Zepto,27,Yes,287861.54
+Jaipur,8,29,Blinkit,22,No,30673.08
+Indore,12,28,Talabat,20,No,38769.23
+Pune,10,21,Blinkit,10,No,15649.04
+Kochi,11,29,Deliveroo,12,Yes,22268.65
+Chennai,8,23,Blinkit,19,No,23530.77
+London,11,27,Talabat,16,No,182769.23
+London,8,29,Deliveroo,17,No,151692.31
+Mumbai,12,20,Blinkit,19,Yes,42201.92
+New York,10,24,Talabat,26,Yes,396000.0
+Jaipur,7,24,Zepto,29,No,29278.85
+Mumbai,7,20,Zomato,19,No,22379.81
+Hyderabad,6,27,Talabat,10,Yes,12850.96
+Indore,9,28,Grab,22,Yes,35183.08
+Pune,7,23,Dunzo,21,Yes,27714.45
+Pune,8,30,Zomato,29,No,51865.38
+Kochi,6,28,DoorDash,25,No,22211.54
+Ahmedabad,6,27,Deliveroo,13,No,13668.75
+London,6,28,Zomato,23,Yes,163476.92
+Dubai,12,22,Swiggy,20,Yes,90750.0
+New York,9,24,DoorDash,14,No,174461.54
+Lucknow,7,23,Blinkit,23,Yes,22520.65
+London,9,24,Zomato,10,No,83076.92
+Kochi,8,20,Grab,20,No,16923.08
+Lucknow,8,24,DoorDash,27,Yes,31527.69
+Pune,11,20,Deliveroo,24,No,39346.15
+Singapore,10,29,Dunzo,27,No,178810.1
+Kolkata,6,22,Talabat,19,No,15675.0
+Lucknow,10,30,Zepto,13,No,21562.5
+New York,8,24,Zomato,17,Yes,207138.46
+London,12,23,Swiggy,30,Yes,350307.69
+Dubai,8,24,Grab,27,Yes,89100.0
+Pune,9,26,Swiggy,27,Yes,51789.38
+Kolkata,9,24,Swiggy,14,No,18900.0
+Lucknow,9,24,Dunzo,16,No,19107.69
+Kolkata,7,29,Deliveroo,12,Yes,16747.5
+Indore,10,26,Deliveroo,28,Yes,46200.0
+Indore,9,23,Deliveroo,11,Yes,14450.19
+Chennai,6,29,Grab,10,No,11711.54
+Ahmedabad,6,27,Deliveroo,26,No,27337.5
+Kolkata,10,24,Dunzo,25,Yes,41250.0
+Kochi,7,27,Zomato,28,Yes,30785.19
+Pune,12,30,Swiggy,22,Yes,64921.15
+London,9,26,Deliveroo,25,No,225000.0
+Lucknow,8,25,Swiggy,30,Yes,36490.38
+Hyderabad,9,20,Zomato,27,No,35048.08
+Delhi NCR,10,28,Grab,23,Yes,57898.08
+Indore,9,22,Dunzo,12,Yes,15078.46
+Delhi NCR,9,20,Swiggy,24,Yes,38838.46
+Ahmedabad,7,25,Swiggy,12,No,13629.81
+New York,9,24,Swiggy,18,No,224307.69
+Indore,11,22,Zepto,24,Yes,36858.46
+Delhi NCR,10,28,Zomato,27,Yes,67967.31
+Hyderabad,10,23,Zepto,24,No,39807.69
+Jaipur,11,24,Talabat,26,Yes,45375.0
+Lucknow,11,23,Zomato,21,No,29374.76
+Pune,7,30,Blinkit,24,No,37557.69
+New York,7,25,DoorDash,17,Yes,188798.08
+Hyderabad,8,26,Zepto,24,Yes,39600.0
+London,8,27,Dunzo,21,No,174461.54
+Ahmedabad,12,23,Talabat,13,Yes,25616.25
+Chennai,11,29,DoorDash,27,No,57972.12
+Ahmedabad,8,28,Dunzo,20,No,29076.92
+Kolkata,7,24,Zepto,10,No,10500.0
+Jaipur,10,24,Grab,28,No,40384.62
+Delhi NCR,8,26,Swiggy,17,Yes,31790.0
+Hyderabad,8,22,Zepto,15,No,19038.46
+Chennai,11,29,Deliveroo,11,Yes,25980.1
+Indore,7,24,Grab,13,No,12600.0
+New York,12,25,Zomato,15,Yes,285576.92
+Chennai,7,24,Zomato,23,Yes,28608.46
+Dubai,7,28,Deliveroo,24,Yes,80850.0
+Hyderabad,8,24,Zomato,11,Yes,16753.85
+Chennai,10,25,Deliveroo,11,Yes,20360.58
+Hyderabad,9,27,Swiggy,10,No,17524.04
+Lucknow,10,25,Dunzo,29,No,40084.13
+Jaipur,10,29,Dunzo,12,No,20913.46
+Pune,7,30,Deliveroo,22,No,34427.88
+Jaipur,12,25,Deliveroo,29,Yes,57512.02
+Kolkata,10,20,Grab,17,Yes,23375.0
+London,11,30,Swiggy,26,Yes,363000.0
+Jaipur,12,23,Dunzo,14,No,23221.15
+Kolkata,8,22,Talabat,28,Yes,33880.0
+Kolkata,11,23,Swiggy,29,Yes,50441.88
+Kolkata,8,30,Zepto,26,No,39000.0
+Indore,9,26,Zomato,19,Yes,28215.0
+Delhi NCR,11,21,Grab,17,Yes,35305.24
+Indore,11,21,Swiggy,18,No,23988.46
+Bengaluru,7,28,Zepto,17,Yes,31718.08
+Kolkata,12,25,Deliveroo,16,No,30000.0
+Hyderabad,7,22,DoorDash,18,Yes,21989.42
+Singapore,9,30,Zomato,14,No,86322.12
+Delhi NCR,9,24,Zomato,24,Yes,46606.15
+London,8,27,Zomato,16,No,132923.08
+Kolkata,9,23,Deliveroo,19,No,24581.25
+Pune,11,27,Zepto,28,No,61970.19
+Dubai,8,28,Grab,24,No,84000.0
+Dubai,7,26,Dunzo,21,Yes,65690.62
+Chennai,8,23,Blinkit,10,No,12384.62
+Kolkata,8,28,Zomato,18,No,25200.0
+Chennai,10,21,Zepto,14,No,19788.46
+Hyderabad,6,25,Zomato,20,No,21634.62
+Kolkata,7,24,Zepto,15,No,15750.0
+Indore,11,27,Blinkit,25,No,42836.54
+Jaipur,9,27,Deliveroo,19,No,27746.39
+Dubai,8,25,Zomato,21,Yes,72187.5
+Singapore,7,29,Zepto,29,No,134438.7
+Kolkata,11,28,Grab,17,Yes,35997.5
+Dubai,10,29,Zomato,14,No,63437.5
+Ahmedabad,7,21,DoorDash,14,No,13357.21
+Kochi,10,30,Talabat,26,Yes,45375.0
+Hyderabad,6,27,DoorDash,17,Yes,21846.63
+Mumbai,10,21,Dunzo,28,Yes,54418.27
+New York,7,20,Zomato,29,Yes,257653.85
+Jaipur,6,29,DoorDash,28,No,29278.85
+New York,8,20,Grab,14,Yes,142153.85
+Ahmedabad,11,26,Zomato,10,Yes,20418.75
+Lucknow,8,26,DoorDash,29,Yes,36685.0
+Lucknow,10,20,Dunzo,22,No,24326.92
+Bengaluru,10,29,Grab,23,No,57721.15
+Lucknow,10,23,Blinkit,28,No,35605.77
+Delhi NCR,11,24,Grab,26,No,56100.0
+Jaipur,12,30,Deliveroo,25,Yes,59495.19
+Delhi NCR,6,29,Zomato,22,Yes,34415.19
+Jaipur,7,28,Swiggy,12,Yes,15548.08
+Singapore,6,24,Zepto,30,Yes,108519.23
+Hyderabad,11,24,Zomato,13,No,24750.0
+Mumbai,12,22,Swiggy,10,Yes,24432.69
+Bengaluru,9,20,Swiggy,11,Yes,18848.08
+Pune,8,25,Blinkit,19,No,28317.31
+Chennai,7,29,Talabat,21,No,28693.27
+Jaipur,12,25,Deliveroo,15,No,27043.27
+Dubai,6,26,Zomato,12,No,29250.0
+New York,9,27,Dunzo,27,Yes,416371.15
+Kolkata,12,30,Blinkit,15,Yes,37125.0
+Bengaluru,9,28,Dunzo,10,No,21807.69
+Lucknow,12,26,Grab,29,Yes,55027.5
+Mumbai,11,20,Deliveroo,28,No,51826.92
+Lucknow,11,20,Blinkit,28,Yes,37463.46
+Pune,10,26,Grab,30,Yes,63937.5
+Mumbai,6,29,Zomato,11,No,16103.37
+Hyderabad,12,26,Zomato,30,Yes,74250.0
+Chennai,7,26,DoorDash,23,Yes,30992.5
+Delhi NCR,10,20,Swiggy,30,No,49038.46
+Kochi,11,24,Zepto,23,Yes,35322.69
+Bengaluru,7,26,Swiggy,10,No,15750.0
+Bengaluru,12,27,Deliveroo,10,No,28038.46
+Kochi,8,21,Grab,13,No,11550.0
+Bengaluru,10,20,DoorDash,10,No,17307.69
+Pune,7,27,Zepto,17,Yes,26337.33
+Pune,10,24,Deliveroo,21,No,37557.69
+Chennai,11,28,Blinkit,11,Yes,25084.23
+Delhi NCR,7,20,Blinkit,14,Yes,17621.15
+Singapore,9,21,Deliveroo,16,Yes,75963.46
+Bengaluru,11,26,Talabat,20,No,49500.0
+Chennai,12,26,Dunzo,24,Yes,55440.0
+Dubai,12,30,Grab,14,Yes,86625.0
+London,10,25,Zepto,25,No,240384.62
+Hyderabad,11,27,Deliveroo,16,No,34269.23
+Jaipur,10,21,Grab,27,No,34074.52
+Delhi NCR,9,26,Grab,20,Yes,42075.0
+Dubai,7,21,Swiggy,15,No,34453.12
+London,8,20,Talabat,22,No,135384.62
+Hyderabad,7,20,Zomato,16,Yes,17769.23
+Dubai,7,28,Zomato,22,No,67375.0
+Kolkata,8,24,Zomato,18,Yes,23760.0
+New York,8,27,Swiggy,11,Yes,150784.62
+London,8,22,DoorDash,24,Yes,178707.69
+Singapore,12,22,Swiggy,17,No,102490.38
+Jaipur,9,28,Dunzo,22,No,33317.31
+New York,10,23,DoorDash,26,No,345000.0
+Dubai,12,23,Zepto,17,Yes,80643.75
+Singapore,11,25,DoorDash,25,Yes,172701.32
+Singapore,12,23,Dunzo,24,No,151269.23
+Dubai,6,22,Zomato,18,No,37125.0
+Indore,10,27,Zepto,30,Yes,51403.85
+Delhi NCR,12,27,Dunzo,12,No,31776.92
+Kolkata,6,28,Grab,30,No,31500.0
+Indore,10,22,Zomato,13,No,16500.0
+Delhi NCR,6,24,Dunzo,16,No,18830.77
+Singapore,7,20,DoorDash,28,No,89519.23
+Singapore,9,27,Swiggy,29,Yes,177022.0
+Kolkata,7,25,Dunzo,24,No,26250.0
+Kochi,12,21,Swiggy,16,No,21323.08
+Ahmedabad,9,26,Zepto,30,No,45562.5
+Mumbai,10,28,Deliveroo,14,Yes,36278.85
+Ahmedabad,11,25,Dunzo,17,No,30342.55
+Kolkata,10,20,Dunzo,21,No,26250.0
+Indore,9,27,Zepto,14,Yes,21589.62
+London,6,26,Zomato,21,No,126000.0
+Indore,12,25,Swiggy,22,No,38076.92
+Chennai,10,26,Dunzo,21,Yes,40425.0
+Ahmedabad,9,23,Blinkit,25,No,33587.74
+Singapore,9,21,Grab,18,Yes,85458.89
+Singapore,7,23,Swiggy,12,No,44120.19
+New York,10,27,Zepto,21,Yes,359826.92
+New York,12,20,Zepto,13,No,180000.0
+Mumbai,8,30,Swiggy,16,Yes,35538.46
+Pune,12,30,Swiggy,17,No,45605.77
+Pune,12,25,Talabat,16,No,35769.23
+Ahmedabad,12,22,Zepto,23,No,39409.62
+Kochi,8,25,DoorDash,25,No,26442.31
+Kolkata,12,29,Talabat,20,No,43500.0
+Bengaluru,8,25,Dunzo,15,Yes,28557.69
+Pune,10,26,Grab,22,No,42625.0
+Kochi,8,22,Zomato,11,No,10238.46
+Hyderabad,7,20,Deliveroo,21,Yes,23322.12
+Kochi,9,27,Dunzo,23,No,29557.21
+Mumbai,10,24,Talabat,11,Yes,24432.69
+Pune,11,27,Swiggy,21,Yes,51125.41
+Hyderabad,10,29,Talabat,25,Yes,57512.02
+Delhi NCR,12,24,Deliveroo,27,Yes,69909.23
+Chennai,11,25,DoorDash,10,No,18509.62
+Chennai,12,20,Deliveroo,21,No,33923.08
+Pune,10,27,Dunzo,10,Yes,22132.21
+Ahmedabad,9,26,Swiggy,18,Yes,30071.25
+Indore,9,26,Dunzo,14,No,18900.0
+New York,7,29,Deliveroo,26,Yes,334950.0
+Delhi NCR,9,21,Talabat,22,No,33983.65
+Jaipur,8,29,Swiggy,29,No,40432.69
+Kochi,9,28,Blinkit,16,Yes,23455.38
+Singapore,7,22,Zomato,28,No,98471.15
+Pune,11,22,Zomato,29,No,52297.6
+Chennai,12,30,DoorDash,23,Yes,61303.85
+Ahmedabad,12,25,Dunzo,28,Yes,59971.15
+Hyderabad,12,27,Deliveroo,21,No,49067.31
+Kolkata,11,25,Dunzo,27,No,46406.25
+Bengaluru,10,25,Grab,22,No,47596.15
+Delhi NCR,7,29,Dunzo,12,Yes,21900.58
+London,11,30,Zepto,20,Yes,279230.77
+Kochi,7,27,Swiggy,24,Yes,26387.31
+Delhi NCR,8,28,Deliveroo,18,Yes,36249.23
+Ahmedabad,8,24,Talabat,18,Yes,24673.85
+Singapore,12,29,Talabat,15,Yes,131127.4
+Indore,7,27,Deliveroo,16,Yes,19190.77
+Hyderabad,7,30,Dunzo,29,No,43918.27
+London,11,23,Deliveroo,19,Yes,203373.08
+Jaipur,9,30,Swiggy,19,Yes,33912.26
+Kolkata,6,29,Talabat,10,No,10875.0
+New York,6,22,Talabat,19,No,144692.31
+Kolkata,6,22,Swiggy,29,Yes,26317.5
+Ahmedabad,8,22,Dunzo,23,No,26273.08
+Bengaluru,8,29,Zomato,13,Yes,28710.0
+Kolkata,8,30,Talabat,21,No,31500.0
+Indore,12,25,Zepto,28,No,48461.54
+Bengaluru,10,23,Zepto,12,Yes,26273.08
+Lucknow,6,29,Zomato,21,Yes,22222.64
+Chennai,9,23,Dunzo,11,No,15325.96
+Hyderabad,9,29,Zepto,22,No,41408.65
+Chennai,12,26,Zomato,17,No,35700.0
+London,6,30,Dunzo,10,No,69230.77
+London,8,20,Grab,12,Yes,81230.77
+Kolkata,8,27,Swiggy,24,No,32400.0
+Lucknow,11,29,Swiggy,23,No,40565.14
+Hyderabad,11,27,Zomato,15,Yes,35340.14
+Pune,7,28,Zomato,11,No,16066.35
+Ahmedabad,8,26,Grab,13,Yes,19305.0
+London,6,23,Deliveroo,10,Yes,58384.62
+Bengaluru,6,24,Grab,10,No,12461.54
+Indore,10,25,Grab,27,Yes,42836.54
+Kolkata,7,25,Zepto,19,Yes,22859.38
+Pune,7,20,Talabat,16,Yes,18361.54
+Dubai,6,27,Swiggy,21,Yes,58471.88
+Lucknow,6,27,DoorDash,17,No,15226.44
+Bengaluru,7,20,Talabat,16,Yes,21323.08
+Delhi NCR,11,23,Dunzo,13,No,26881.25
+Singapore,10,29,Swiggy,30,No,198677.88
+Pune,8,21,Zomato,24,Yes,33050.77
+Pune,11,30,Dunzo,12,Yes,32460.58
+Jaipur,11,26,Swiggy,10,No,17187.5
+New York,12,30,Dunzo,30,Yes,685384.62
+Jaipur,6,27,Zepto,23,Yes,24631.01
+Delhi NCR,11,21,Grab,19,No,35871.63
+Dubai,12,27,Dunzo,20,No,101250.0
+Hyderabad,8,21,Zepto,12,No,14538.46
+New York,10,25,Blinkit,26,No,375000.0
+Delhi NCR,9,29,DoorDash,25,No,53329.33
+Jaipur,10,30,Talabat,23,No,41466.35
+Lucknow,12,29,Dunzo,19,No,36556.73
+Mumbai,8,26,Deliveroo,14,Yes,26950.0
+Pune,12,25,Zepto,17,Yes,41805.29
+Kochi,6,20,Blinkit,23,No,14596.15
+Indore,7,21,Dunzo,21,No,17809.62
+Dubai,6,21,Talabat,21,Yes,45478.13
+New York,8,30,Blinkit,11,No,152307.69
+Dubai,8,27,Dunzo,19,Yes,70537.5
+Kolkata,11,29,Blinkit,28,Yes,61407.5
+London,8,22,Blinkit,17,Yes,126584.62
+Delhi NCR,8,29,Deliveroo,13,Yes,27115.0
+Hyderabad,7,25,Talabat,23,Yes,31929.09
+Pune,11,22,Blinkit,28,Yes,55543.65
+Kochi,9,24,Dunzo,10,No,11423.08
+Indore,7,20,Zomato,26,No,21000.0
+Jaipur,8,26,Dunzo,21,Yes,28875.0
+Mumbai,11,24,Zepto,19,Yes,46422.12
+Chennai,11,28,Blinkit,24,No,49753.85
+London,11,29,Dunzo,19,Yes,256426.92
+Hyderabad,12,25,Deliveroo,14,No,30288.46
+Kolkata,12,29,Deliveroo,23,Yes,55027.5
+Singapore,10,30,Zomato,29,No,198677.88
+Kolkata,8,24,Grab,21,Yes,27720.0
+Indore,8,30,Talabat,26,Yes,39600.0
+Mumbai,9,28,Dunzo,23,No,48764.42
+Ahmedabad,11,27,Zomato,18,No,34697.6
+Ahmedabad,9,22,Deliveroo,21,No,26987.02
+London,7,25,Zomato,30,Yes,222115.38
+New York,11,20,Blinkit,17,Yes,237346.15
+Jaipur,10,26,DoorDash,21,No,32812.5
+Singapore,9,29,Zomato,23,Yes,150796.51
+Ahmedabad,9,20,DoorDash,19,No,22197.12
+Hyderabad,8,20,DoorDash,29,No,33461.54
+Kolkata,9,21,Grab,23,No,27168.75
+Mumbai,6,30,Zomato,28,Yes,46644.23
+Lucknow,8,23,DoorDash,19,Yes,21261.73
+Mumbai,12,26,Talabat,11,No,28875.0
+Pune,7,21,Talabat,27,Yes,32534.35
+Indore,12,28,Dunzo,20,No,38769.23
+Lucknow,6,29,Deliveroo,10,Yes,10582.21
+Chennai,7,29,Zepto,26,Yes,39077.5
+Mumbai,11,28,Zepto,26,No,67375.0
+New York,7,23,Zepto,21,No,195057.69
+Ahmedabad,8,28,Blinkit,22,No,31984.62
+Lucknow,11,30,Deliveroo,30,Yes,60209.13
+New York,8,23,DoorDash,20,No,212307.69
+Dubai,11,26,Blinkit,23,No,102781.25
+Indore,11,21,Deliveroo,16,No,21323.08
+Delhi NCR,7,20,DoorDash,22,No,25173.08
+Delhi NCR,12,24,Blinkit,13,No,30600.0
+Kolkata,12,30,Talabat,18,No,40500.0
+Jaipur,6,27,Zepto,23,No,22391.83
+Hyderabad,6,21,Dunzo,15,Yes,14992.79
+Chennai,11,24,Dunzo,20,No,35538.46
+Indore,9,25,Blinkit,28,Yes,39980.77
+Chennai,11,20,Grab,27,Yes,43978.85
+Ahmedabad,9,27,Zepto,23,Yes,39902.24
+London,7,22,Talabat,26,Yes,169400.0
+Singapore,10,25,Blinkit,17,No,97055.29
+Ahmedabad,9,27,Deliveroo,15,Yes,26023.2
+Chennai,12,26,Dunzo,23,Yes,53130.0
+Dubai,11,26,Zepto,10,No,44687.5
+Hyderabad,12,29,Grab,19,Yes,52450.96
+Bengaluru,8,21,Grab,16,No,23261.54
+Pune,11,24,Swiggy,17,Yes,36788.65
+Mumbai,8,21,Blinkit,30,No,42403.85
+Kochi,9,30,Deliveroo,24,No,34269.23
+Lucknow,12,23,Zomato,18,Yes,30214.04
+Kochi,7,27,Grab,13,Yes,14293.13
+New York,7,30,Zomato,15,Yes,199903.85
+London,11,30,Dunzo,28,No,355384.62
+London,10,30,Deliveroo,12,Yes,152307.69
+Chennai,7,27,Dunzo,28,Yes,39181.15
+Chennai,11,21,Talabat,10,No,15548.08
+London,9,21,Deliveroo,19,Yes,151926.92
+Singapore,10,23,Grab,25,No,131310.1
+Ahmedabad,8,23,Deliveroo,15,Yes,19704.81
+Jaipur,11,22,Swiggy,19,No,27632.21
+Jaipur,11,20,Grab,12,Yes,17451.92
+Chennai,9,25,DoorDash,24,No,36346.15
+Delhi NCR,6,22,Talabat,21,No,22655.77
+Dubai,8,22,Talabat,17,No,46750.0
+Pune,8,29,Zepto,25,Yes,47543.27
+Singapore,11,26,Deliveroo,21,No,137156.25
+London,9,24,Zomato,10,No,83076.92
+Ahmedabad,7,21,Blinkit,16,No,15265.38
+London,11,20,Dunzo,11,No,93076.92
+Bengaluru,8,22,Blinkit,15,Yes,25130.77
+Ahmedabad,10,21,Swiggy,19,Yes,28486.3
+Singapore,6,22,Dunzo,20,No,60288.46
+Lucknow,7,27,Swiggy,16,Yes,18391.15
+Chennai,9,25,Dunzo,18,Yes,29985.58
+Dubai,7,23,Dunzo,21,No,52828.12
+London,9,20,Talabat,23,No,159230.77
+London,6,22,Talabat,26,No,132000.0
+Pune,10,23,Dunzo,17,No,29137.02
+Lucknow,9,25,Dunzo,23,No,28611.78
+Mumbai,7,30,Talabat,16,Yes,31096.15
+Kolkata,6,26,Grab,28,Yes,30030.0
+Ahmedabad,11,25,Grab,30,No,53545.67
+Kolkata,7,24,Zomato,18,Yes,20790.0
+Bengaluru,7,26,Talabat,29,Yes,50242.5
+Bengaluru,11,20,Zomato,15,No,28557.69
+Pune,10,28,Zepto,22,Yes,50494.23
+Bengaluru,9,21,DoorDash,24,No,39253.85
+Hyderabad,8,26,Deliveroo,10,Yes,16500.0
+Delhi NCR,10,22,Zepto,16,No,28769.23
+Lucknow,9,25,Deliveroo,18,Yes,24631.01
+Ahmedabad,11,30,Grab,23,Yes,54188.22
+Dubai,9,28,Deliveroo,29,No,114187.5
+Jaipur,6,20,Talabat,29,Yes,23004.81
+Indore,12,29,Dunzo,11,Yes,24293.08
+Singapore,6,22,Zomato,19,Yes,63001.44
+Mumbai,10,30,Swiggy,20,No,50480.77
+Dubai,10,26,Blinkit,20,No,81250.0
+New York,10,21,Deliveroo,22,No,266538.46
+Mumbai,12,30,Blinkit,16,No,48461.54
+Delhi NCR,10,20,Blinkit,10,Yes,17980.77
+Indore,7,27,Talabat,19,Yes,22789.04
+Kolkata,10,20,Zepto,12,No,15000.0
+Indore,6,26,DoorDash,25,No,22500.0
+Dubai,12,22,Deliveroo,13,No,53625.0
+Kochi,10,24,Dunzo,28,No,35538.46
+Bengaluru,6,25,Deliveroo,29,No,37644.23
+Chennai,11,21,DoorDash,21,Yes,35916.06
+Dubai,12,27,Deliveroo,20,No,101250.0
+Singapore,7,24,Zomato,20,Yes,84403.85
+Delhi NCR,10,22,Talabat,25,No,44951.92
+Chennai,8,27,Talabat,19,No,27623.08
+Kochi,6,29,Talabat,16,Yes,16195.38
+Chennai,12,25,DoorDash,20,No,40384.62
+Lucknow,10,22,Zomato,30,No,36490.38
+Chennai,6,27,Talabat,26,Yes,31185.0
+Lucknow,12,20,Blinkit,25,No,33173.08
+Lucknow,10,30,Zomato,11,No,18245.19
+Ahmedabad,10,27,Swiggy,25,Yes,48191.11
+Pune,10,29,Blinkit,25,No,54026.44
+Jaipur,11,27,Grab,18,Yes,35340.14
+Bengaluru,12,28,DoorDash,30,Yes,95953.85
+Singapore,7,26,Deliveroo,15,Yes,68578.12
+Mumbai,9,21,Zepto,13,Yes,22739.06
+Lucknow,8,30,Talabat,27,No,35826.92
+Singapore,10,30,Blinkit,19,Yes,143185.1
+Bengaluru,7,22,DoorDash,15,Yes,21989.42
+Chennai,11,30,Zepto,12,No,26653.85
+Delhi NCR,8,25,Talabat,29,Yes,52144.23
+New York,11,20,DoorDash,19,No,241153.85
+Mumbai,10,23,Zepto,24,Yes,51086.54
+Indore,12,24,Zepto,16,Yes,29243.08
+Lucknow,11,28,Swiggy,17,Yes,31843.94
+Bengaluru,7,22,Deliveroo,27,No,35982.69
+Lucknow,10,29,Zepto,25,Yes,44092.55
+Chennai,10,23,Deliveroo,30,No,46442.31
+Pune,12,26,Zomato,11,Yes,28132.5
+Pune,12,21,Talabat,24,No,45069.23
+Mumbai,8,28,Zomato,29,Yes,60119.23
+Chennai,10,28,Swiggy,19,Yes,39388.46
+Bengaluru,7,26,Grab,16,No,25200.0
+Hyderabad,7,23,Dunzo,17,No,19737.98
+Hyderabad,11,27,Zomato,14,Yes,32984.13
+Indore,7,25,Swiggy,27,Yes,29985.58
+Lucknow,10,23,Zepto,15,Yes,20981.97
+Jaipur,7,24,Dunzo,29,Yes,32206.73
+Kochi,11,20,Grab,27,Yes,34554.81
+Hyderabad,10,25,Grab,16,No,28846.15
+Singapore,9,22,Zomato,26,No,117562.5
+Hyderabad,8,24,Blinkit,21,Yes,31984.62
+Mumbai,7,26,Blinkit,11,Yes,18528.12
+Jaipur,9,24,Swiggy,14,No,18173.08
+New York,9,24,Dunzo,16,No,199384.62
+Delhi NCR,8,25,Deliveroo,16,Yes,28769.23
+New York,8,25,Talabat,10,Yes,126923.08
+London,7,28,Dunzo,25,Yes,207307.69
+Singapore,8,28,Talabat,18,No,92076.92
+Kolkata,7,27,DoorDash,22,No,25987.5
+Bengaluru,12,24,Zepto,24,Yes,65796.92
+Kochi,9,30,Talabat,20,Yes,31413.46
+Chennai,8,28,DoorDash,19,No,28646.15
+New York,6,22,Talabat,15,No,114230.77
+New York,8,22,Blinkit,29,No,294461.54
+Bengaluru,10,20,Dunzo,20,No,34615.38
+Bengaluru,6,28,Swiggy,28,No,40707.69
+New York,7,20,Zepto,14,No,113076.92
+Kolkata,7,21,Zomato,21,No,19293.75
+Jaipur,8,30,DoorDash,17,Yes,26971.15
+Pune,12,22,Dunzo,24,Yes,51936.92
+Dubai,11,28,Zomato,25,Yes,132343.75
+Ahmedabad,8,22,Deliveroo,30,Yes,37696.15
+Mumbai,6,21,DoorDash,13,No,13781.25
+Kolkata,11,25,Dunzo,19,No,32656.25
+Dubai,9,23,Blinkit,17,No,54984.38
+Bengaluru,10,29,Zepto,22,No,55211.54
+Singapore,6,23,Zomato,10,Yes,34665.87
+Kochi,11,29,Blinkit,27,No,45549.52
+Lucknow,8,20,Dunzo,25,Yes,24326.92
+Indore,8,29,Talabat,26,No,34800.0
+Jaipur,12,24,Grab,12,No,20769.23
+Kochi,10,30,DoorDash,29,No,46009.62
+Kochi,6,20,Deliveroo,11,Yes,7678.85
+Ahmedabad,9,29,Deliveroo,23,Yes,42857.96
+Indore,9,30,Dunzo,17,No,26480.77
+Ahmedabad,12,29,Dunzo,27,Yes,67082.02
+London,11,29,DoorDash,15,Yes,202442.31
+New York,8,22,Blinkit,16,No,162461.54
+London,11,24,Zomato,24,No,243692.31
+Delhi NCR,7,21,Deliveroo,15,No,18021.63
+Jaipur,6,27,Deliveroo,26,No,25312.5
+Delhi NCR,10,29,Dunzo,28,No,66365.38
+Hyderabad,8,28,Zomato,14,Yes,24876.92
+Indore,12,30,Grab,21,No,43615.38
+Mumbai,12,23,Blinkit,28,No,65019.23
+Lucknow,11,28,Swiggy,19,Yes,35590.29
+Jaipur,10,20,Zomato,25,No,30048.08
+Jaipur,10,27,Deliveroo,26,No,42187.5
+Kolkata,7,30,Dunzo,19,No,24937.5
+Indore,10,28,Dunzo,25,No,40384.62
+Jaipur,7,20,Dunzo,23,Yes,21286.06
+New York,11,25,DoorDash,15,Yes,261778.85
+Mumbai,7,22,Blinkit,11,No,14252.4
+Bengaluru,12,27,Dunzo,10,Yes,30842.31
+Ahmedabad,9,24,Grab,16,No,22430.77
+Dubai,10,29,Zepto,10,Yes,49843.75
+Kochi,11,25,Zepto,27,No,39266.83
+Dubai,11,24,Blinkit,22,Yes,99825.0
+Dubai,12,28,Grab,13,Yes,75075.0
+Hyderabad,8,27,Grab,19,Yes,32555.77
+Kolkata,7,20,Deliveroo,21,No,18375.0
+London,11,27,Grab,11,No,125653.85
+Kolkata,11,20,Deliveroo,13,Yes,19662.5
+Dubai,12,23,Talabat,21,Yes,99618.75
+Jaipur,11,26,Grab,14,No,24062.5
+Chennai,12,27,DoorDash,13,Yes,31185.0
+London,9,25,Swiggy,15,No,129807.69
+Pune,7,26,Talabat,25,Yes,37296.88
+Kochi,7,21,Swiggy,23,No,17880.29
+Mumbai,7,23,DoorDash,25,No,33864.18
+Lucknow,12,20,Zomato,23,No,30519.23
+Delhi NCR,7,21,Zomato,21,No,25230.29
+Delhi NCR,12,21,Grab,23,No,47371.15
+Hyderabad,11,29,Dunzo,29,No,66713.94
+Lucknow,8,27,Dunzo,10,Yes,13136.54
+Chennai,10,24,Zepto,15,Yes,26653.85
+Chennai,6,29,Grab,18,Yes,23188.85
+Pune,8,26,Blinkit,13,Yes,22165.0
+Dubai,12,24,Blinkit,28,No,126000.0
+Hyderabad,7,27,Dunzo,30,No,40889.42
+Dubai,9,20,Talabat,29,No,81562.5
+Pune,6,29,Deliveroo,28,No,36305.77
+Bengaluru,11,29,Deliveroo,12,No,33126.92
+Indore,9,25,DoorDash,29,No,37644.23
+Bengaluru,9,29,Talabat,17,No,38397.12
+Mumbai,12,22,Blinkit,19,No,42201.92
+Indore,12,24,Blinkit,15,Yes,27415.38
+Bengaluru,12,25,Zepto,28,Yes,79961.54
+Ahmedabad,11,23,DoorDash,28,No,45977.88
+Ahmedabad,10,22,Blinkit,30,No,42836.54
+Kochi,12,22,Zomato,19,No,26526.92
+Hyderabad,9,26,Blinkit,21,Yes,38981.25
+Mumbai,10,23,Blinkit,30,Yes,63858.17
+Hyderabad,6,30,Grab,29,Yes,41408.65
+Singapore,11,26,Zomato,29,No,189406.25
+Lucknow,8,29,Deliveroo,15,No,19240.38
+Kochi,7,20,Grab,15,No,11105.77
+Chennai,12,28,Zepto,20,No,45230.77
+Hyderabad,10,21,DoorDash,16,Yes,26653.85
+Kolkata,8,21,DoorDash,19,No,19950.0
+Dubai,6,23,Grab,21,Yes,49809.38
+Ahmedabad,10,28,Zepto,30,No,54519.23
+Ahmedabad,11,30,Dunzo,29,No,62112.98
+Lucknow,12,26,Deliveroo,23,No,39675.0
+Kolkata,11,21,Dunzo,16,No,23100.0
+Ahmedabad,11,30,Grab,11,No,23560.1
+Kolkata,6,26,Dunzo,10,No,9750.0
+London,7,24,Zomato,27,Yes,191907.69
+London,6,24,Zomato,14,No,77538.46
+Jaipur,7,25,Zepto,27,Yes,31234.98
+Dubai,6,30,Zomato,24,Yes,74250.0
+Ahmedabad,9,20,Zepto,22,Yes,28272.12
+Kolkata,8,30,DoorDash,11,No,16500.0
+London,12,25,DoorDash,18,Yes,228461.54
+Indore,7,30,DoorDash,22,Yes,29319.23
+Kochi,8,20,Dunzo,10,No,8461.54
+New York,11,30,Zepto,16,Yes,335076.92
+Indore,8,24,DoorDash,10,No,11076.92
+Kolkata,12,23,DoorDash,18,Yes,34155.0
+Dubai,11,21,Dunzo,13,No,46921.88
+London,12,27,Swiggy,22,Yes,301569.23
+Kochi,9,27,Deliveroo,27,Yes,38167.36
+New York,8,30,Deliveroo,22,Yes,335076.92
+Hyderabad,6,25,Zomato,15,Yes,17848.56
+Singapore,10,28,Dunzo,12,No,76730.77
+Chennai,6,21,Blinkit,26,Yes,24255.0
+Pune,7,27,Swiggy,27,No,38027.16
+Lucknow,9,25,Swiggy,20,Yes,27367.79
+Mumbai,12,29,Talabat,23,Yes,74075.48
+Delhi NCR,7,25,Talabat,11,No,15733.17
+Lucknow,12,26,Deliveroo,24,Yes,45540.0
+Indore,11,27,Zepto,22,Yes,41465.77
+Jaipur,8,30,Grab,15,No,21634.62
+Kolkata,11,26,Talabat,29,No,51837.5
+Kolkata,8,23,DoorDash,25,Yes,31625.0
+Jaipur,7,24,Swiggy,13,No,13125.0
+Kochi,12,27,Deliveroo,26,No,44550.0
+New York,6,26,Swiggy,26,Yes,257400.0
+Pune,6,23,Deliveroo,11,Yes,12443.22
+Jaipur,8,28,Swiggy,25,Yes,37019.23
+Indore,9,28,Deliveroo,29,Yes,46377.69
+Delhi NCR,12,27,Dunzo,22,No,58257.69
+Hyderabad,6,26,DoorDash,24,Yes,29700.0
+Chennai,7,25,Dunzo,17,Yes,22026.44
+Kochi,11,21,Grab,19,Yes,25532.16
+Kochi,7,20,Deliveroo,16,No,11846.15
+Kolkata,9,26,Deliveroo,13,Yes,20913.75
+Mumbai,8,26,Swiggy,30,Yes,57750.0
+Indore,7,24,Grab,20,No,19384.62
+New York,11,26,Zomato,15,Yes,272250.0
+London,6,27,Talabat,12,Yes,82246.15
+New York,7,30,Dunzo,13,No,157500.0
+Mumbai,9,22,Blinkit,22,Yes,40313.94
+New York,9,26,Blinkit,26,No,351000.0
+Kochi,10,30,Zepto,14,No,22211.54
+Bengaluru,10,24,Deliveroo,25,No,51923.08
+Chennai,9,26,Swiggy,27,No,42525.0
+Singapore,8,22,Talabat,28,No,112538.46
+Singapore,11,30,Talabat,11,Yes,91186.3
+Bengaluru,11,28,DoorDash,27,No,71965.38
+Bengaluru,11,22,Blinkit,29,No,60732.69
+New York,8,21,Zomato,21,No,203538.46
+Jaipur,6,22,Grab,24,Yes,20942.31
+Dubai,11,21,DoorDash,11,Yes,43673.44
+Kochi,9,21,Talabat,22,Yes,24188.37
+Jaipur,8,21,Dunzo,27,No,27259.62
+Delhi NCR,6,27,Zomato,28,No,37073.08
+Jaipur,10,24,Zepto,26,Yes,41250.0
+Chennai,10,24,Grab,30,Yes,53307.69
+Singapore,11,21,Deliveroo,28,No,147706.73
+Chennai,7,21,DoorDash,16,Yes,17413.85
+Hyderabad,9,30,Blinkit,14,Yes,29985.58
+Kolkata,12,23,DoorDash,26,No,44850.0
+New York,8,21,Zomato,20,No,193846.15
+Lucknow,12,22,Deliveroo,11,Yes,17661.35
+Ahmedabad,6,22,Deliveroo,25,Yes,23560.1
+Indore,8,28,Talabat,15,Yes,21323.08
+Pune,11,27,Swiggy,29,Yes,70601.75
+New York,8,23,Zepto,16,No,169846.15
+Kochi,9,22,Dunzo,28,No,29319.23
+Hyderabad,9,22,Zepto,23,Yes,36125.48
+Dubai,9,28,DoorDash,30,Yes,129937.5
+Kochi,11,20,Deliveroo,10,Yes,12798.08
+Dubai,6,28,Swiggy,23,No,60375.0
+Delhi NCR,11,29,Talabat,30,Yes,86037.98
+London,8,26,Talabat,22,No,176000.0
+London,9,22,Blinkit,16,No,121846.15
+Chennai,10,25,Dunzo,30,No,50480.77
+Chennai,11,22,Deliveroo,18,No,29319.23
+Bengaluru,6,30,Zomato,28,No,43615.38
+Hyderabad,6,27,Grab,15,No,17524.04
+Jaipur,10,26,DoorDash,14,Yes,24062.5
+Indore,9,22,Deliveroo,25,No,28557.69
+London,7,20,Dunzo,11,Yes,65153.85
+Indore,11,29,Grab,18,Yes,36439.62
+Singapore,10,26,Zepto,29,Yes,189406.25
+Pune,10,26,Grab,20,Yes,42625.0
+London,9,29,Zepto,13,Yes,143550.0
+Pune,10,29,Talabat,27,Yes,64183.41
+Hyderabad,11,27,Grab,12,Yes,28272.12
+Bengaluru,12,27,Swiggy,20,No,56076.92
+Hyderabad,10,20,Dunzo,13,Yes,20625.0
+Kochi,9,21,Zomato,22,Yes,24188.37
+Kolkata,8,24,DoorDash,27,No,32400.0
+Singapore,8,28,Talabat,22,No,112538.46
+London,9,25,Grab,25,No,216346.15
+Indore,9,27,Grab,24,Yes,37010.77
+London,9,26,Dunzo,11,No,99000.0
+Dubai,9,22,Dunzo,25,No,77343.75
+Kochi,9,30,Talabat,21,Yes,32984.13
+London,10,23,Blinkit,23,Yes,223807.69
+Hyderabad,6,23,Talabat,28,Yes,30651.92
+Kolkata,7,26,Blinkit,19,Yes,23773.75
+Bengaluru,11,27,Grab,24,Yes,67853.08
+Bengaluru,9,21,Swiggy,26,No,42525.0
+Jaipur,8,22,Blinkit,18,No,19038.46
+Ahmedabad,6,26,DoorDash,22,Yes,24502.5
+Mumbai,11,21,Dunzo,29,No,56361.78
+Singapore,12,27,Dunzo,27,No,199774.04
+Singapore,12,22,Swiggy,23,Yes,152529.81
+Bengaluru,6,25,Dunzo,27,No,35048.08
+Kolkata,7,20,Swiggy,27,No,23625.0
+Lucknow,9,26,Deliveroo,17,Yes,24193.13
+Delhi NCR,11,26,Talabat,17,Yes,43711.25
+London,8,21,Zomato,18,Yes,127938.46

@@ -1,0 +1,151 @@
+freelancer_id,age,gender,country,education_level,platform,years_experience,primary_skill,secondary_skill,hourly_rate_usd,weekly_hours,projects_completed,client_rating,repeat_clients,certifications,communication_score,deadline_adherence,monthly_income_usd,income_category,satisfaction_level
+F001,23,Female,Canada,UG,Freelancer,12,Graphic Design,Branding,16,23,122,3.9,3,No,8,99,1472,Low,Low
+F002,45,Male,Germany,Diploma,Fiverr,0,Video Editing,Animation,42,38,26,3.8,69,Yes,8,86,6384,High,Medium
+F003,44,Female,Canada,PG,Upwork,11,Web Development,React,75,22,133,4.6,58,No,5,93,6600,High,High
+F004,43,Female,India,PG,Fiverr,13,Data Analysis,Python,31,35,274,4.8,85,Yes,7,89,4340,Medium,High
+F005,38,Male,Canada,Diploma,Freelancer,12,Video Editing,Animation,72,27,227,4.6,46,No,5,94,7776,High,High
+F006,25,Female,UK,UG,Freelancer,0,Mobile App Development,Flutter,21,39,255,3.9,90,No,10,85,3276,Medium,Low
+F007,44,Male,Germany,PG,Upwork,12,Mobile App Development,Flutter,37,15,278,4.2,73,No,8,88,2220,Low,High
+F008,45,Male,Germany,PG,Upwork,13,Mobile App Development,Flutter,8,27,43,4.4,46,Yes,9,93,864,Low,Medium
+F009,20,Female,Canada,PG,Upwork,7,Digital Marketing,Social Media,61,26,340,4.0,74,Yes,5,97,6344,High,Medium
+F010,20,Female,India,UG,Upwork,8,Web Development,React,17,17,71,4.8,23,No,7,82,1156,Low,Low
+F011,25,Female,Australia,PG,Fiverr,14,Graphic Design,Branding,40,31,179,4.4,14,Yes,7,92,4960,Medium,Medium
+F012,23,Female,Australia,PG,Upwork,13,Cloud Computing,DevOps,32,23,25,4.1,50,Yes,5,85,2944,Medium,Medium
+F013,27,Female,USA,PG,Freelancer,0,Mobile App Development,Flutter,62,32,217,4.6,41,No,5,89,7936,High,Low
+F014,22,Male,UK,UG,Freelancer,5,Content Writing,SEO,14,24,228,4.5,16,Yes,9,81,1344,Low,High
+F015,44,Male,Canada,Diploma,Fiverr,3,Content Writing,SEO,66,20,120,4.5,55,Yes,8,83,5280,Medium,High
+F016,35,Male,UK,PG,Fiverr,9,Cloud Computing,DevOps,45,31,24,4.0,41,Yes,7,93,5580,High,Low
+F017,32,Female,Australia,PG,Fiverr,7,Machine Learning,Data Science,20,41,48,4.7,10,Yes,6,85,3280,Medium,High
+F018,30,Female,UK,UG,Fiverr,3,Content Writing,SEO,42,39,164,4.1,77,No,6,98,6552,High,High
+F019,33,Male,Canada,Diploma,Upwork,10,Data Analysis,Python,49,16,73,4.5,48,Yes,9,97,3136,Medium,Low
+F020,28,Female,UK,PG,Freelancer,3,UI/UX Design,Prototyping,18,45,249,4.9,13,Yes,7,80,3240,Medium,High
+F021,23,Male,USA,Diploma,Freelancer,13,Web Development,React,19,28,97,3.9,21,Yes,6,83,2128,Low,Medium
+F022,28,Female,UK,Diploma,Upwork,10,Cloud Computing,DevOps,45,32,35,3.8,37,No,8,92,5760,High,Medium
+F023,30,Female,India,UG,Upwork,15,Cloud Computing,DevOps,16,17,197,4.1,69,Yes,7,86,1088,Low,Low
+F024,28,Male,Canada,Diploma,Freelancer,10,Digital Marketing,Social Media,18,41,131,4.3,39,Yes,7,85,2952,Medium,Medium
+F025,30,Male,Germany,PG,Freelancer,2,UI/UX Design,Prototyping,46,22,140,4.1,31,No,5,88,4048,Medium,High
+F026,40,Male,UK,UG,Fiverr,15,Data Analysis,Python,17,15,93,3.9,41,Yes,9,85,1020,Low,Low
+F027,30,Female,India,PG,Freelancer,9,Graphic Design,Branding,26,41,79,4.9,18,Yes,7,99,4264,Medium,High
+F028,29,Female,Germany,Diploma,Upwork,7,Mobile App Development,Flutter,34,20,144,4.7,87,No,8,97,2720,Medium,Medium
+F029,37,Female,India,UG,Fiverr,5,Mobile App Development,Flutter,64,42,147,4.4,82,No,9,80,10752,High,Low
+F030,24,Male,UK,UG,Fiverr,12,Digital Marketing,Social Media,25,33,103,4.5,29,No,5,85,3300,Medium,High
+F031,40,Female,Australia,PG,Freelancer,7,Digital Marketing,Social Media,72,43,137,4.2,87,No,6,93,12384,High,Medium
+F032,27,Male,India,PG,Freelancer,11,Mobile App Development,Flutter,43,35,96,4.4,26,No,7,89,6020,High,High
+F033,42,Female,Germany,Diploma,Upwork,12,Digital Marketing,Social Media,29,37,105,4.0,54,Yes,9,81,4292,Medium,Medium
+F034,36,Male,Germany,PG,Upwork,2,Cloud Computing,DevOps,52,27,145,4.6,34,Yes,6,99,5616,High,High
+F035,27,Female,Canada,UG,Upwork,10,Data Analysis,Python,64,42,239,4.0,62,Yes,5,93,10752,High,High
+F036,23,Female,UK,Diploma,Fiverr,0,Mobile App Development,Flutter,60,44,112,4.4,74,Yes,5,100,10560,High,High
+F037,25,Female,USA,PG,Upwork,8,Content Writing,SEO,41,21,174,4.5,32,No,6,97,3444,Medium,Medium
+F038,23,Male,Germany,UG,Upwork,9,Video Editing,Animation,61,42,70,4.9,3,Yes,9,80,10248,High,High
+F039,36,Female,Germany,UG,Fiverr,11,Machine Learning,Data Science,25,17,285,4.2,15,No,10,94,1700,Low,Medium
+F040,45,Female,India,PG,Fiverr,12,Machine Learning,Data Science,59,25,119,4.5,35,Yes,8,99,5900,High,High
+F041,25,Female,Germany,PG,Freelancer,6,Cloud Computing,DevOps,47,37,199,4.4,86,No,9,93,6956,High,Medium
+F042,43,Male,Australia,PG,Fiverr,0,Digital Marketing,Social Media,16,30,223,4.7,19,No,7,85,1920,Low,Low
+F043,28,Female,Australia,PG,Fiverr,4,UI/UX Design,Prototyping,9,26,251,4.8,62,Yes,8,96,936,Low,Low
+F044,43,Female,India,UG,Upwork,14,Machine Learning,Data Science,73,18,25,4.0,90,Yes,10,82,5256,Medium,Medium
+F045,36,Male,USA,UG,Fiverr,2,Machine Learning,Data Science,46,21,53,4.6,66,No,8,96,3864,Medium,High
+F046,40,Female,UK,PG,Freelancer,7,Web Development,React,29,24,215,4.5,22,No,7,99,2784,Medium,Medium
+F047,39,Male,Australia,Diploma,Freelancer,12,Content Writing,SEO,41,45,177,4.9,31,No,6,82,7380,High,High
+F048,43,Male,Germany,UG,Fiverr,5,Graphic Design,Branding,64,33,85,4.7,56,No,7,92,8448,High,Low
+F049,41,Female,India,Diploma,Upwork,12,Data Analysis,Python,34,37,179,4.4,12,Yes,5,81,5032,Medium,High
+F050,21,Female,Australia,PG,Freelancer,14,Web Development,React,35,36,190,4.6,35,Yes,9,85,5040,Medium,Low
+F051,35,Female,Canada,Diploma,Upwork,7,Content Writing,SEO,59,22,160,4.4,74,No,6,94,5192,Medium,High
+F052,38,Male,USA,Diploma,Upwork,0,Machine Learning,Data Science,50,30,17,4.8,40,No,9,89,6000,High,Low
+F053,44,Male,India,Diploma,Fiverr,4,Cloud Computing,DevOps,28,43,292,3.9,48,No,6,82,4816,Medium,Medium
+F054,37,Male,Germany,Diploma,Upwork,8,Machine Learning,Data Science,9,16,75,4.3,24,Yes,8,100,576,Low,Low
+F055,34,Female,UK,PG,Fiverr,8,Machine Learning,Data Science,32,36,343,4.6,31,Yes,9,98,4608,Medium,Low
+F056,42,Male,UK,PG,Fiverr,6,Digital Marketing,Social Media,62,34,289,4.3,84,Yes,10,88,8432,High,High
+F057,25,Male,USA,Diploma,Upwork,13,UI/UX Design,Prototyping,17,23,37,3.9,11,No,9,91,1564,Low,Low
+F058,37,Male,Canada,PG,Upwork,12,Digital Marketing,Social Media,13,19,243,3.8,67,No,5,88,988,Low,Medium
+F059,32,Male,Australia,UG,Fiverr,4,Data Analysis,Python,46,16,148,4.8,14,No,5,93,2944,Medium,Low
+F060,30,Female,Germany,UG,Upwork,4,Mobile App Development,Flutter,34,25,349,4.8,67,Yes,7,85,3400,Medium,Low
+F061,30,Male,Canada,UG,Upwork,2,Digital Marketing,Social Media,57,31,37,4.2,83,No,8,89,7068,High,Medium
+F062,43,Male,Germany,Diploma,Upwork,10,Digital Marketing,Social Media,42,25,181,4.7,73,Yes,8,88,4200,Medium,Medium
+F063,43,Female,India,PG,Upwork,4,Video Editing,Animation,54,44,39,4.4,73,No,6,98,9504,High,High
+F064,45,Female,Canada,UG,Fiverr,10,Digital Marketing,Social Media,54,45,287,4.4,3,Yes,7,87,9720,High,High
+F065,44,Female,Australia,PG,Upwork,3,Graphic Design,Branding,22,20,294,4.6,13,Yes,7,82,1760,Low,High
+F066,22,Male,USA,PG,Upwork,13,UI/UX Design,Prototyping,75,35,26,4.5,62,No,6,86,10500,High,High
+F067,34,Female,Germany,Diploma,Fiverr,2,Video Editing,Animation,38,28,146,4.3,1,No,9,95,4256,Medium,Low
+F068,38,Female,India,UG,Fiverr,0,Cloud Computing,DevOps,73,40,112,5.0,89,Yes,9,83,11680,High,Medium
+F069,37,Female,Germany,UG,Freelancer,13,Mobile App Development,Flutter,48,39,323,4.6,39,No,7,84,7488,High,High
+F070,44,Male,UK,PG,Upwork,13,Video Editing,Animation,25,32,304,3.8,53,No,7,80,3200,Medium,Low
+F071,28,Female,UK,UG,Freelancer,15,Data Analysis,Python,8,27,187,4.3,14,No,7,84,864,Low,Medium
+F072,28,Female,USA,PG,Fiverr,13,Graphic Design,Branding,10,20,147,4.9,36,No,10,88,800,Low,Medium
+F073,42,Female,Canada,PG,Fiverr,2,Digital Marketing,Social Media,70,21,47,4.0,19,Yes,10,80,5880,High,Low
+F074,44,Male,Canada,PG,Freelancer,5,Machine Learning,Data Science,27,30,16,3.9,78,Yes,9,86,3240,Medium,High
+F075,40,Male,Australia,PG,Freelancer,13,Cloud Computing,DevOps,52,16,75,5.0,87,No,6,95,3328,Medium,High
+F076,40,Male,Canada,Diploma,Freelancer,14,Web Development,React,35,36,165,4.6,63,No,5,99,5040,Medium,Medium
+F077,39,Male,USA,PG,Fiverr,13,Data Analysis,Python,27,27,289,4.1,63,Yes,9,90,2916,Medium,Medium
+F078,43,Female,Australia,UG,Upwork,14,Data Analysis,Python,9,39,168,4.7,12,Yes,9,88,1404,Low,Medium
+F079,24,Female,USA,UG,Freelancer,1,Content Writing,SEO,60,19,287,4.8,65,Yes,8,88,4560,Medium,Medium
+F080,35,Male,Canada,UG,Freelancer,15,Video Editing,Animation,47,23,138,4.2,77,Yes,10,98,4324,Medium,High
+F081,36,Female,Germany,PG,Upwork,6,Video Editing,Animation,27,16,176,4.5,61,No,5,84,1728,Low,Low
+F082,40,Male,Germany,Diploma,Freelancer,3,Machine Learning,Data Science,36,17,130,4.5,64,No,8,90,2448,Low,Low
+F083,39,Male,India,PG,Upwork,8,Web Development,React,47,41,335,5.0,43,No,9,96,7708,High,Medium
+F084,31,Male,India,UG,Upwork,1,Web Development,React,23,25,192,3.9,13,No,7,87,2300,Low,Medium
+F085,20,Male,USA,UG,Fiverr,7,Mobile App Development,Flutter,14,26,63,4.6,35,Yes,9,90,1456,Low,Low
+F086,28,Female,India,PG,Freelancer,15,Digital Marketing,Social Media,24,34,303,4.3,50,No,6,100,3264,Medium,Medium
+F087,39,Male,USA,Diploma,Upwork,13,Mobile App Development,Flutter,25,16,155,4.5,32,No,9,88,1600,Low,Medium
+F088,23,Female,India,PG,Freelancer,11,Graphic Design,Branding,59,37,293,4.5,64,Yes,9,89,8732,High,Medium
+F089,38,Male,Australia,Diploma,Fiverr,10,Graphic Design,Branding,27,17,201,4.9,20,Yes,8,94,1836,Low,Medium
+F090,29,Male,Germany,Diploma,Freelancer,4,Data Analysis,Python,26,23,209,4.7,12,No,5,93,2392,Low,High
+F091,31,Female,Canada,PG,Fiverr,1,Cloud Computing,DevOps,43,44,65,4.4,4,Yes,5,83,7568,High,High
+F092,44,Female,Germany,UG,Freelancer,11,Graphic Design,Branding,75,31,257,4.8,31,Yes,5,97,9300,High,Medium
+F093,21,Female,Canada,PG,Fiverr,8,Graphic Design,Branding,22,39,335,5.0,7,No,8,92,3432,Medium,Medium
+F094,45,Male,Australia,PG,Freelancer,4,Machine Learning,Data Science,51,29,43,4.2,14,Yes,9,100,5916,High,High
+F095,42,Male,Germany,Diploma,Fiverr,6,Video Editing,Animation,51,39,211,4.6,22,No,10,87,7956,High,Low
+F096,41,Male,Australia,UG,Freelancer,15,Content Writing,SEO,50,25,204,4.4,84,Yes,8,94,5000,Medium,Medium
+F097,35,Female,USA,Diploma,Upwork,12,Mobile App Development,Flutter,23,33,227,3.9,3,Yes,6,94,3036,Medium,Medium
+F098,24,Male,Germany,Diploma,Fiverr,0,Mobile App Development,Flutter,44,44,252,4.3,81,Yes,9,92,7744,High,Low
+F099,25,Male,UK,PG,Upwork,2,Mobile App Development,Flutter,39,28,289,4.9,20,Yes,8,98,4368,Medium,Low
+F100,27,Male,Germany,PG,Upwork,2,Mobile App Development,Flutter,35,28,141,4.3,59,Yes,9,100,3920,Medium,Low
+F101,23,Female,India,PG,Upwork,0,Cloud Computing,DevOps,19,32,25,4.9,39,No,7,93,2432,Low,Low
+F102,42,Female,Germany,PG,Fiverr,13,UI/UX Design,Prototyping,25,32,298,4.0,50,No,6,95,3200,Medium,Medium
+F103,38,Female,USA,PG,Freelancer,2,Digital Marketing,Social Media,27,23,199,4.2,18,No,7,88,2484,Low,Medium
+F104,34,Male,USA,Diploma,Fiverr,7,Cloud Computing,DevOps,43,33,115,3.9,74,Yes,9,93,5676,High,High
+F105,34,Female,Australia,Diploma,Upwork,2,Content Writing,SEO,25,32,93,4.7,7,Yes,10,92,3200,Medium,Medium
+F106,39,Male,Australia,PG,Freelancer,2,Cloud Computing,DevOps,25,33,138,4.8,17,No,6,92,3300,Medium,Medium
+F107,42,Male,UK,UG,Freelancer,9,Graphic Design,Branding,36,24,60,4.4,38,Yes,10,94,3456,Medium,Low
+F108,31,Female,UK,PG,Upwork,1,Machine Learning,Data Science,21,34,176,4.0,16,Yes,5,93,2856,Medium,High
+F109,26,Female,India,PG,Upwork,12,UI/UX Design,Prototyping,39,38,279,4.0,74,No,10,80,5928,High,High
+F110,38,Female,Australia,UG,Freelancer,7,Data Analysis,Python,33,39,152,3.8,21,Yes,8,88,5148,Medium,High
+F111,35,Male,Australia,Diploma,Upwork,0,Cloud Computing,DevOps,59,23,247,4.7,62,Yes,8,97,5428,Medium,Medium
+F112,41,Male,Canada,UG,Upwork,5,Content Writing,SEO,20,17,319,4.4,65,No,9,91,1360,Low,Low
+F113,38,Male,UK,Diploma,Fiverr,1,Content Writing,SEO,54,36,327,4.0,18,No,8,81,7776,High,High
+F114,38,Female,India,UG,Freelancer,9,Mobile App Development,Flutter,16,42,216,4.1,45,No,5,97,2688,Medium,Medium
+F115,38,Female,USA,PG,Freelancer,8,Web Development,React,62,24,48,4.8,46,No,8,96,5952,High,Low
+F116,38,Male,India,UG,Fiverr,11,UI/UX Design,Prototyping,22,16,297,3.8,47,Yes,8,100,1408,Low,Low
+F117,36,Male,USA,UG,Fiverr,6,Mobile App Development,Flutter,65,25,89,4.9,18,Yes,8,90,6500,High,High
+F118,28,Female,India,PG,Upwork,7,Cloud Computing,DevOps,54,25,150,4.7,50,No,9,99,5400,Medium,Low
+F119,28,Female,India,Diploma,Fiverr,8,Data Analysis,Python,29,43,135,4.1,35,No,5,96,4988,Medium,Medium
+F120,30,Female,UK,PG,Upwork,1,Content Writing,SEO,17,32,241,4.8,4,Yes,7,93,2176,Low,High
+F121,38,Female,USA,Diploma,Upwork,3,Graphic Design,Branding,13,37,315,4.0,75,Yes,10,88,1924,Low,Medium
+F122,34,Female,Germany,PG,Fiverr,7,Content Writing,SEO,15,26,340,3.8,62,Yes,6,88,1560,Low,High
+F123,44,Male,Germany,Diploma,Upwork,6,Web Development,React,9,22,122,4.3,31,No,9,91,792,Low,Medium
+F124,39,Male,USA,PG,Freelancer,9,Cloud Computing,DevOps,17,21,312,4.3,60,No,5,95,1428,Low,Low
+F125,42,Female,UK,Diploma,Freelancer,13,Data Analysis,Python,63,41,114,4.6,63,No,9,98,10332,High,Medium
+F126,28,Female,Germany,UG,Freelancer,8,UI/UX Design,Prototyping,68,20,145,4.2,77,Yes,8,94,5440,Medium,Medium
+F127,26,Female,UK,PG,Freelancer,4,Content Writing,SEO,73,29,211,4.8,6,Yes,7,80,8468,High,Medium
+F128,32,Male,UK,UG,Fiverr,1,Mobile App Development,Flutter,14,24,121,4.7,42,Yes,10,100,1344,Low,Low
+F129,33,Female,USA,Diploma,Freelancer,5,Graphic Design,Branding,45,45,273,4.7,82,No,7,89,8100,High,Medium
+F130,45,Male,USA,UG,Upwork,1,Cloud Computing,DevOps,75,29,331,4.1,28,Yes,10,92,8700,High,Medium
+F131,29,Female,India,PG,Freelancer,9,Content Writing,SEO,27,38,242,4.4,86,Yes,5,91,4104,Medium,Medium
+F132,45,Female,UK,PG,Upwork,9,Mobile App Development,Flutter,51,42,295,4.6,54,Yes,7,82,8568,High,High
+F133,27,Female,Canada,UG,Upwork,1,Video Editing,Animation,22,31,67,4.5,65,Yes,6,89,2728,Medium,Low
+F134,41,Male,Canada,PG,Freelancer,0,Data Analysis,Python,35,15,48,3.9,4,No,7,80,2100,Low,High
+F135,26,Female,UK,PG,Freelancer,8,Web Development,React,35,30,134,4.0,50,Yes,6,97,4200,Medium,High
+F136,30,Female,India,Diploma,Freelancer,5,Video Editing,Animation,12,25,273,4.6,23,Yes,6,85,1200,Low,Medium
+F137,30,Male,India,UG,Upwork,7,Data Analysis,Python,15,40,37,4.7,44,Yes,9,82,2400,Low,Medium
+F138,25,Male,India,Diploma,Upwork,3,Content Writing,SEO,37,36,59,4.9,28,No,10,88,5328,Medium,High
+F139,21,Female,USA,UG,Fiverr,11,Cloud Computing,DevOps,39,38,247,4.7,84,No,10,92,5928,High,Low
+F140,35,Female,USA,PG,Freelancer,3,Cloud Computing,DevOps,39,41,137,3.9,55,No,9,89,6396,High,Medium
+F141,31,Female,UK,UG,Fiverr,0,Digital Marketing,Social Media,60,29,204,4.0,21,No,9,84,6960,High,High
+F142,40,Male,USA,Diploma,Upwork,8,Graphic Design,Branding,29,29,135,4.2,40,Yes,7,95,3364,Medium,Medium
+F143,37,Female,Canada,Diploma,Upwork,10,Data Analysis,Python,62,19,50,4.6,61,Yes,5,86,4712,Medium,High
+F144,31,Female,UK,PG,Upwork,5,Digital Marketing,Social Media,54,31,207,3.8,34,Yes,5,87,6696,High,Medium
+F145,31,Male,USA,UG,Freelancer,0,Digital Marketing,Social Media,59,22,115,3.9,17,Yes,7,96,5192,Medium,Medium
+F146,22,Female,Germany,PG,Freelancer,13,Graphic Design,Branding,28,22,239,4.5,60,Yes,9,91,2464,Low,Low
+F147,26,Male,USA,Diploma,Upwork,0,Cloud Computing,DevOps,17,23,98,4.4,23,Yes,7,82,1564,Low,High
+F148,34,Male,Germany,UG,Upwork,0,Content Writing,SEO,35,17,126,4.2,61,Yes,5,91,2380,Low,Medium
+F149,35,Male,Germany,UG,Freelancer,9,Mobile App Development,Flutter,52,19,324,4.2,73,Yes,8,90,3952,Medium,Medium
+F150,41,Female,India,Diploma,Fiverr,7,Data Analysis,Python,41,17,175,4.1,32,No,8,93,2788,Medium,Low

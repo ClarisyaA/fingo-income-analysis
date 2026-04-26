@@ -1,0 +1,15 @@
+# Data sensitif
+data/raw/form_responses.csv
+
+# Model files (terlalu besar)
+*.keras
+*.h5
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+
+# OS
+.DS_Store
