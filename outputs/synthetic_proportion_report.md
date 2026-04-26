@@ -1,39 +1,25 @@
-# Laporan Proporsi Data — income_clean.csv
+# Synthetic Proportion Report — Fingo Income Dataset
 
-Dibuat: 2026-04-26 10:43
-Dibuat oleh: Clarisya Adeline (DS2) — Tim CC26-PSU217
+## Kalibrasi
+Dataset ini menggunakan **Indonesia-validated calibration** berdasarkan:
+- IDinsight 2025: net monthly income platform driver
+- Sakernas Jakarta 2023 (Arafat et al.): upah per jam per sektor gig
+- CELIOS 2024: rata-rata net income driver daring
 
-## Ringkasan
-| Kategori | Baris | Persentase |
+## Distribusi gig_type
+- content_creator: 18 user (9%), mean Rp1,025,281/minggu
+- freelancer_desain: 19 user (10%), mean Rp1,332,099/minggu
+- freelancer_it: 58 user (29%), mean Rp1,562,921/minggu
+- jualan_online: 23 user (12%), mean Rp897,833/minggu
+- kurir: 28 user (14%), mean Rp756,436/minggu
+- ojek_online: 54 user (27%), mean Rp698,553/minggu
+
+## Catatan kalibrasi income
+| gig_type | mu (mean/minggu) | Sumber |
 |---|---|---|
-| Data Sintetis | 10,400 | 100.0% |
-| Data Survei (real) | 0 | 0.0% |
-| **Total** | **10,400** | **100%** |
-
-## Metodologi Data Sintetis
-- N user: 200
-- N minggu per user: 52
-- Parameter kalibrasi: dari 3 dataset Kaggle
-  (Freelancer Work Patterns, Freelancer Earnings BD, Delivery Boy Salary)
-- Pola musiman Indonesia: Ramadan, Lebaran, post-Lebaran,
-  akhir tahun, Januari-Februari, akhir bulan/gajian
-- Random seed: 42 (reproducible)
-
-## Distribusi Gig Type
-gig_type
-ojek_online          51
-kurir                48
-freelancer_it        32
-jualan_online        27
-freelancer_desain    24
-content_creator      18
-
-## Statistik Income Mingguan per Gig Type
-                         mean         std      min        max
-gig_type                                                     
-content_creator    49096653.0  29773068.0    41000  184325000
-freelancer_desain  36937067.0  24496977.0    68000  145409000
-freelancer_it      40227795.0  21192929.0  7556000  144335000
-jualan_online      35581402.0  25005445.0    49000  170137000
-kurir               1216618.0    367552.0   496000    2996000
-ojek_online         1211176.0    374850.0   390000    3082000
+| ojek_online | Rp700,000 | IDinsight 2025 net + Sakernas Jakarta transport |
+| kurir | Rp730,000 | IDinsight 2025 net + CELIOS 2024 |
+| freelancer_it | Rp1,550,000 | Sakernas Jakarta 2023 — sektor informasi & komunikasi |
+| freelancer_desain | Rp1,250,000 | Sakernas Jakarta 2023 — sektor jasa perusahaan |
+| content_creator | Rp1,100,000 | Estimasi: midpoint skilled gig Jakarta, high volatility |
+| jualan_online | Rp900,000 | IDinsight 2025: casual Rp2.515jt + self-employed Rp4.098jt/bln |
