@@ -2,16 +2,16 @@
 Data Scientist 2: Clarisya Adeline | Tim CC26-PSU217
 
 ## Ringkasan Dataset
-- Total baris    : 10,400
-- Total user     : 200
+- Total baris    : 15,600
+- Total user     : 300
 - Minggu per user: 52
 
 ## Proporsi Data
 | Kategori | Baris | Persentase |
 |---|---|---|
-| Sintetis | 10,400 | 100.0% |
+| Sintetis | 15,600 | 100.0% |
 | Survei (real) | 0 | 0.0% |
-| Total | 10,400 | 100% |
+| Total | 15,600 | 100% |
 
 ## Benchmark Income
 | gig_type | Mean/Minggu | Sumber |

@@ -1,5 +1,5 @@
 {
-  "n_users": 200,
+  "n_users": 300,
   "n_weeks": 52,
   "random_seed": 42,
   "gig_distribution": {
