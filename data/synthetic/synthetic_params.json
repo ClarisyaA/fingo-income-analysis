@@ -1,38 +1,26 @@
 {
-  "ojek_online": {
-    "mu": 700000,
-    "sigma": 220000,
-    "min": 250000,
-    "max": 1800000
+  "n_users": 200,
+  "n_weeks": 52,
+  "random_seed": 42,
+  "gig_distribution": {
+    "ojek_online": 0.3,
+    "kurir": 0.2,
+    "freelancer_it": 0.2,
+    "freelancer_desain": 0.1,
+    "content_creator": 0.1,
+    "jualan_online": 0.1
   },
-  "kurir": {
-    "mu": 730000,
-    "sigma": 200000,
-    "min": 250000,
-    "max": 1800000
+  "volatility_map": {
+    "ojek_online": 0.28,
+    "kurir": 0.22,
+    "freelancer_it": 0.45,
+    "freelancer_desain": 0.45,
+    "content_creator": 0.7,
+    "jualan_online": 0.45
   },
-  "freelancer_it": {
-    "mu": 1550000,
-    "sigma": 700000,
-    "min": 300000,
-    "max": 5500000
-  },
-  "freelancer_desain": {
-    "mu": 1250000,
-    "sigma": 600000,
-    "min": 200000,
-    "max": 4500000
-  },
-  "content_creator": {
-    "mu": 1100000,
-    "sigma": 900000,
-    "min": 0,
-    "max": 5000000
-  },
-  "jualan_online": {
-    "mu": 900000,
-    "sigma": 450000,
-    "min": 150000,
-    "max": 4000000
-  }
+  "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024",
+  "split_method": "chronological_by_week",
+  "train_weeks": "1-36",
+  "val_weeks": "37-44",
+  "test_weeks": "45-52"
 }

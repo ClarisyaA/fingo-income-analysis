@@ -1,0 +1,41 @@
+# 📖 Data Dictionary — income_clean.csv
+**File:** `data/processed/income_clean.csv`
+**Dibuat oleh:** Clarisya Adeline (DS2) — Tim CC26-PSU217
+**Kurs konversi:** 1 USD = Rp 17.252 | 1 INR = Rp 183 (kurs acuan Apr 2026)
+**Sumber benchmark:** IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024
+
+> ⚠️ **Catatan untuk Martha (AI Eng 2):**
+> - Gunakan `income_amount` sebagai **target/output** LSTM
+> - Semua fitur di bagian "Fitur Engineered" adalah **input features** LSTM
+> - `income_volatility` adalah fitur konstan per user (tidak berubah per minggu)
+> - `is_payday_week`, `is_lebaran`, `is_harbolnas`, `seasonal_income_pattern` adalah fitur kontekstual musiman
+
+| Kolom | Tipe | Range | Deskripsi | Catatan |
+|---|---|---|---|---|
+| `user_id` | string | SYN_0001 – SYN_0200 | ID unik per pengguna. 200 user sintetis. | Prefix SYN_ menandakan data sintetis |
+| `gig_type` | string | 6 nilai kategori | Jenis pekerjaan gig: ojek_online / kurir / freelancer_it / freelancer_desain / content_creator / jualan_online | Dikalibrasi dari benchmark Indonesia |
+| `region` | string | 10 nilai wilayah | Wilayah domisili user: jabodetabek / bandung / dll | Distribusi berdasarkan proporsi penduduk gig worker Indonesia |
+| `week_number` | int | 1 – 52 | Nomor minggu dalam setahun (2024) |  |
+| `week_of_month` | int | 1 – 4 | Minggu ke-berapa dalam bulan. 4 = akhir bulan (efek gajian) | Dihitung: ((week_number - 1) % 4) + 1 |
+| `income_amount` | float | ≥ 0 | Pendapatan bersih (net income) mingguan dalam IDR. INI yang menjadi TARGET LSTM. | ⭐ Kolom utama. Dibulatkan ke ribuan terdekat. Min = 0 untuk content_creator. |
+| `is_ramadan` | int 0/1 | 0 atau 1 | Flag Ramadan (minggu 10-13 ≈ Mar-Apr 2024) |  |
+| `is_lebaran` | int 0/1 | 0 atau 1 | Flag Lebaran Idul Fitri (minggu 14) | Ojol & kurir justru TURUN saat Lebaran (mudik) |
+| `is_post_lebaran` | int 0/1 | 0 atau 1 | Flag post-Lebaran recovery (minggu 15-16) |  |
+| `is_harbolnas` | int 0/1 | 0 atau 1 | Flag Harbolnas 11.11 & 12.12 (minggu 45-46) | Paling berdampak pada kurir (+40%) dan jualan_online (+50%) |
+| `is_yearend` | int 0/1 | 0 atau 1 | Flag Natal & Tahun Baru (minggu 49-52) |  |
+| `is_jan_feb` | int 0/1 | 0 atau 1 | Flag low season awal tahun (minggu 1-6) |  |
+| `is_payday_week` | int 0/1 | 0 atau 1 | Flag minggu ke-4 dalam bulan (akhir bulan / gajian) | is_payday_week = 1 jika week_of_month == 4 |
+| `seasonal_label` | string | 7 nilai | Label musiman: normal / ramadan / lebaran / post_lebaran / harbolnas / yearend / jan_feb | Versi string dari seasonal_income_pattern |
+| `seasonal_income_pattern` | int | 0 – 6 | Encoding integer musiman: 0=normal, 1=lebaran, 2=harbolnas, 3=yearend, 4=jan_feb, 5=ramadan, 6=post_lebaran |  |
+| `data_source` | string | synthetic_id_calibrated | Sumber data — semua sintetis dengan kalibrasi Indonesia |  |
+| `rolling_mean_4w` | float | ≥ 0 | Rata-rata income 4 minggu terakhir per user (IDR) | Dihitung per user_id. Menangkap tren jangka pendek. FITUR LSTM. |
+| `rolling_std_4w` | float | ≥ 0 | Std deviasi income 4 minggu terakhir per user (IDR). 0 di minggu pertama. | FITUR LSTM untuk mengukur volatilitas jangka pendek. |
+| `income_volatility` | float | 0 – ~1.5 | CoV = std/mean keseluruhan history income per user. Nilai konstan per user. | ⭐ FITUR PENTING. Semakin tinggi = pendapatan semakin tidak stabil. |
+| `income_lag_1w` | float | ≥ 0 | Income minggu sebelumnya. 0 pada minggu pertama. | Digunakan untuk menghitung income_growth_1w |
+| `income_growth_1w` | float | -1 hingga 5 (di-clip) | Pertumbuhan income week-over-week (pct change). Clipped [-1, 5]. | FITUR LSTM untuk mendeteksi lonjakan/penurunan mendadak. 0 pada minggu pertama. |
+| `gig_ojek_online` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == ojek_online |  |
+| `gig_kurir` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == kurir |  |
+| `gig_freelancer_it` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == freelancer_it |  |
+| `gig_freelancer_desain` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == freelancer_desain |  |
+| `gig_content_creator` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == content_creator |  |
+| `gig_jualan_online` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == jualan_online |  |
