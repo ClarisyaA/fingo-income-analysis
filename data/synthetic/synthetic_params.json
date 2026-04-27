@@ -10,6 +10,11 @@
     "content_creator": 0.1,
     "jualan_online": 0.1
   },
+  "experience_distribution": {
+    "junior": 0.25,
+    "mid": 0.5,
+    "senior": 0.25
+  },
   "volatility_map": {
     "ojek_online": 0.28,
     "kurir": 0.22,
@@ -18,9 +23,15 @@
     "content_creator": 0.7,
     "jualan_online": 0.45
   },
+  "experience_multiplier": {
+    "junior": 0.65,
+    "mid": 1.0,
+    "senior": 1.45
+  },
   "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024",
   "split_method": "chronological_by_week",
   "train_weeks": "1-36",
   "val_weeks": "37-44",
-  "test_weeks": "45-52"
+  "test_weeks": "45-52",
+  "survey_rows_merged": 0
 }

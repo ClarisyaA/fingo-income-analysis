@@ -1,41 +1,30 @@
-# 📖 Data Dictionary — income_clean.csv
-**File:** `data/processed/income_clean.csv`
-**Dibuat oleh:** Clarisya Adeline (DS2) — Tim CC26-PSU217
-**Kurs konversi:** 1 USD = Rp 17.252 | 1 INR = Rp 183 (kurs acuan Apr 2026)
-**Sumber benchmark:** IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024
-
-> ⚠️ **Catatan untuk Martha (AI Eng 2):**
-> - Gunakan `income_amount` sebagai **target/output** LSTM
-> - Semua fitur di bagian "Fitur Engineered" adalah **input features** LSTM
-> - `income_volatility` adalah fitur konstan per user (tidak berubah per minggu)
-> - `is_payday_week`, `is_lebaran`, `is_harbolnas`, `seasonal_income_pattern` adalah fitur kontekstual musiman
-
+# Data Dictionary - income_clean.csv
+**Dibuat:** Clarisya Adeline | Tim CC26-PSU217
 | Kolom | Tipe | Range | Deskripsi | Catatan |
 |---|---|---|---|---|
-| `user_id` | string | SYN_0001 – SYN_0200 | ID unik per pengguna. 200 user sintetis. | Prefix SYN_ menandakan data sintetis |
-| `gig_type` | string | 6 nilai kategori | Jenis pekerjaan gig: ojek_online / kurir / freelancer_it / freelancer_desain / content_creator / jualan_online | Dikalibrasi dari benchmark Indonesia |
-| `region` | string | 10 nilai wilayah | Wilayah domisili user: jabodetabek / bandung / dll | Distribusi berdasarkan proporsi penduduk gig worker Indonesia |
-| `week_number` | int | 1 – 52 | Nomor minggu dalam setahun (2024) |  |
-| `week_of_month` | int | 1 – 4 | Minggu ke-berapa dalam bulan. 4 = akhir bulan (efek gajian) | Dihitung: ((week_number - 1) % 4) + 1 |
-| `income_amount` | float | ≥ 0 | Pendapatan bersih (net income) mingguan dalam IDR. INI yang menjadi TARGET LSTM. | ⭐ Kolom utama. Dibulatkan ke ribuan terdekat. Min = 0 untuk content_creator. |
-| `is_ramadan` | int 0/1 | 0 atau 1 | Flag Ramadan (minggu 10-13 ≈ Mar-Apr 2024) |  |
-| `is_lebaran` | int 0/1 | 0 atau 1 | Flag Lebaran Idul Fitri (minggu 14) | Ojol & kurir justru TURUN saat Lebaran (mudik) |
-| `is_post_lebaran` | int 0/1 | 0 atau 1 | Flag post-Lebaran recovery (minggu 15-16) |  |
-| `is_harbolnas` | int 0/1 | 0 atau 1 | Flag Harbolnas 11.11 & 12.12 (minggu 45-46) | Paling berdampak pada kurir (+40%) dan jualan_online (+50%) |
-| `is_yearend` | int 0/1 | 0 atau 1 | Flag Natal & Tahun Baru (minggu 49-52) |  |
-| `is_jan_feb` | int 0/1 | 0 atau 1 | Flag low season awal tahun (minggu 1-6) |  |
-| `is_payday_week` | int 0/1 | 0 atau 1 | Flag minggu ke-4 dalam bulan (akhir bulan / gajian) | is_payday_week = 1 jika week_of_month == 4 |
-| `seasonal_label` | string | 7 nilai | Label musiman: normal / ramadan / lebaran / post_lebaran / harbolnas / yearend / jan_feb | Versi string dari seasonal_income_pattern |
-| `seasonal_income_pattern` | int | 0 – 6 | Encoding integer musiman: 0=normal, 1=lebaran, 2=harbolnas, 3=yearend, 4=jan_feb, 5=ramadan, 6=post_lebaran |  |
-| `data_source` | string | synthetic_id_calibrated | Sumber data — semua sintetis dengan kalibrasi Indonesia |  |
-| `rolling_mean_4w` | float | ≥ 0 | Rata-rata income 4 minggu terakhir per user (IDR) | Dihitung per user_id. Menangkap tren jangka pendek. FITUR LSTM. |
-| `rolling_std_4w` | float | ≥ 0 | Std deviasi income 4 minggu terakhir per user (IDR). 0 di minggu pertama. | FITUR LSTM untuk mengukur volatilitas jangka pendek. |
-| `income_volatility` | float | 0 – ~1.5 | CoV = std/mean keseluruhan history income per user. Nilai konstan per user. | ⭐ FITUR PENTING. Semakin tinggi = pendapatan semakin tidak stabil. |
-| `income_lag_1w` | float | ≥ 0 | Income minggu sebelumnya. 0 pada minggu pertama. | Digunakan untuk menghitung income_growth_1w |
-| `income_growth_1w` | float | -1 hingga 5 (di-clip) | Pertumbuhan income week-over-week (pct change). Clipped [-1, 5]. | FITUR LSTM untuk mendeteksi lonjakan/penurunan mendadak. 0 pada minggu pertama. |
-| `gig_ojek_online` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == ojek_online |  |
-| `gig_kurir` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == kurir |  |
-| `gig_freelancer_it` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == freelancer_it |  |
-| `gig_freelancer_desain` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == freelancer_desain |  |
-| `gig_content_creator` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == content_creator |  |
-| `gig_jualan_online` | int 0/1 | 0 atau 1 | One-hot encoding: 1 jika gig_type == jualan_online |  |
+| user_id | string | SYN_0001-SYN_0200 / SRV_0001+ | ID unik per pengguna. Prefix SYN_ = sintetis, SRV_ = dari survei. |  |
+| gig_type | string | 6 kategori | Jenis pekerjaan: ojek_online / kurir / freelancer_it / freelancer_desain / content_creator / jualan_online | Dikalibrasi dari benchmark Indonesia |
+| region | string | 10 wilayah | Wilayah domisili user. Mempengaruhi income via REGION_MULTIPLIER. | jabodetabek=1.10x, lainnya=0.82x |
+| experience_tier | string | junior / mid / senior | Tier pengalaman kerja. Mempengaruhi income via EXPERIENCE_MULTIPLIER. | junior=0.65x, mid=1.0x, senior=1.45x dari mu benchmark |
+| platform | string | nama platform | Platform utama yang digunakan user (Gojek, Grab, Shopee, Fiverr, dll.) | Disesuaikan dengan gig_type |
+| week_number | int | 1-52 | Nomor minggu dalam setahun. | Split: train=1-36, val=37-44, test=45-52 |
+| week_of_month | int | 1-4 | Minggu ke-berapa dalam bulan. 4 = akhir bulan (efek gajian). | Dihitung: ((week_number-1) % 4) + 1 |
+| income_amount | float | >= 0 | KOLOM UTAMA. Pendapatan bersih (net) mingguan dalam IDR. Target LSTM. | Dibulatkan ke ribuan. Min=0 untuk content_creator. |
+| income_normalized | float | 0.0-1.0 | income_amount yang sudah di-MinMaxScaler per user. | Scaler disimpan di income_scalers.pkl. Gunakan untuk inverse transform prediksi. |
+| target_next_week | float | >= 0 atau NaN | Income minggu berikutnya. Label y untuk training LSTM. | NaN pada baris terakhir setiap user (tidak ada minggu ke-53). |
+| is_ramadan | int 0/1 | 0 atau 1 | Flag Ramadan (minggu 10-13). |  |
+| is_lebaran | int 0/1 | 0 atau 1 | Flag Lebaran Idul Fitri (minggu 14). | Ojol & kurir TURUN saat Lebaran karena mudik. |
+| is_post_lebaran | int 0/1 | 0 atau 1 | Flag post-Lebaran recovery (minggu 15-16). |  |
+| is_harbolnas | int 0/1 | 0 atau 1 | Flag Harbolnas 11.11 & 12.12 (minggu 45-46). | Kurir +40%, jualan_online +50%. |
+| is_yearend | int 0/1 | 0 atau 1 | Flag Natal & Tahun Baru (minggu 49-52). |  |
+| is_jan_feb | int 0/1 | 0 atau 1 | Flag low season awal tahun (minggu 1-6). |  |
+| is_payday_week | int 0/1 | 0 atau 1 | Flag minggu ke-4 dalam bulan (akhir bulan/gajian). | = 1 jika week_of_month == 4 |
+| seasonal_label | string | 7 nilai | Label musiman: normal/ramadan/lebaran/post_lebaran/harbolnas/yearend/jan_feb |  |
+| seasonal_income_pattern | int | 0-6 | Integer encoding seasonal_label. normal=0, lebaran=1, harbolnas=2, yearend=3, jan_feb=4, ramadan=5, post_lebaran=6 | Gunakan ini sebagai fitur numerik untuk LSTM. |
+| rolling_mean_4w | float | >= 0 | Rata-rata income 4 minggu terakhir (window rolling). | Menangkap tren jangka pendek. |
+| rolling_std_4w | float | >= 0 | Std dev income 4 minggu terakhir. | Proxy volatilitas jangka pendek. |
+| income_volatility | float | 0-1 | CoV (std/mean) keseluruhan history income per user. | Fitur profil user. Tinggi = tidak stabil. content_creator ~0.70, kurir ~0.22 |
+| income_growth_1w | float | -1 sd 5 | Persentase perubahan income minggu ini vs minggu lalu. | Di-clip ke [-1, 5] untuk menghindari outlier ekstrem. |
+| gig_* | int 0/1 | 0 atau 1 | One-hot encoding gig_type (6 kolom: gig_ojek_online, gig_kurir, dll.) |  |
+| exp_* | int 0/1 | 0 atau 1 | One-hot encoding experience_tier (3 kolom: exp_junior, exp_mid, exp_senior) |  |
+| data_source | string | synthetic / survey | Asal data. synthetic = data sintetis, survey = dari form_responses.csv. | Dokumentasikan proporsi di laporan teknis. |

@@ -1,7 +1,7 @@
-gig_type,mu_idr,mu_readable,sigma_idr,sigma_readable,min_readable,cap_p98,cov_kaggle,source_note
-ojek_online,700000,Rp 700rb,220000,Rp 220rb,Rp 250rb,Rp 1.8jt,N/A,IDinsight 2025 net + Sakernas Jakarta transport
-kurir,730000,Rp 730rb,200000,Rp 200rb,Rp 250rb,Rp 1.8jt,N/A,IDinsight 2025 net + CELIOS 2024
-freelancer_it,1550000,Rp 1.6jt,700000,Rp 700rb,Rp 300rb,Rp 5.5jt,0.592,Sakernas Jakarta 2023 — sektor informasi & komunikasi
-freelancer_desain,1250000,Rp 1.2jt,600000,Rp 600rb,Rp 200rb,Rp 4.5jt,0.619,Sakernas Jakarta 2023 — sektor jasa perusahaan
-content_creator,1100000,Rp 1.1jt,900000,Rp 900rb,Rp 0,Rp 5.0jt,0.568,"Estimasi midpoint skilled gig Jakarta, high volatility"
-jualan_online,900000,Rp 900rb,450000,Rp 450rb,Rp 150rb,Rp 4.0jt,N/A,IDinsight 2025: antara casual (Rp 579rb) dan self-employed (Rp 1.250rb)
+gig_type,mu_idr,sigma_idr,min_idr,max_idr,note,mu_readable
+ojek_online,700000,220000,250000,1800000,IDinsight 2025 net + Sakernas Jakarta transport,Rp 700rb
+kurir,730000,200000,250000,1800000,IDinsight 2025 net + CELIOS 2024,Rp 730rb
+freelancer_it,1550000,700000,300000,5500000,Sakernas Jakarta 2023 - sektor informasi & komunikasi,Rp 1.6jt
+freelancer_desain,1250000,600000,200000,4500000,Sakernas Jakarta 2023 - sektor jasa perusahaan,Rp 1.2jt
+content_creator,1100000,900000,0,6000000,Estimasi - midpoint transport & skilled,Rp 1.1jt
+jualan_online,900000,450000,100000,4000000,IDinsight 2025 casual + self-employed average,Rp 900rb
