@@ -50,5 +50,5 @@
   "train_weeks": "1-36",
   "val_weeks": "37-44",
   "test_weeks": "45-52",
-  "survey_rows_merged": 1196
+  "survey_rows_merged": 1820
 }
