@@ -28,7 +28,7 @@
     "mid": 1.0,
     "senior": 1.45
   },
-  "ar1_coefficient": 0.35,
+  "ar1_coefficient": 0.55,
   "distribution_type": "log_normal_ar1",
   "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024",
   "split_method": "chronological_by_week",

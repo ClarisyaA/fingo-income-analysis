@@ -33,12 +33,12 @@ Data Scientist 2: Clarisya Adeline | Tim CC26-PSU217
 
 | Gig Type               |    Benchmark |       Aktual |    Diff% | Status |
 | :--------------------- | -----------: | -----------: | -------: | :----- |
-| Ojek Online            |     Rp 700rb |     Rp 703rb |    +0.4% | PASS   |
-| Kurir                  |     Rp 730rb |     Rp 749rb |    +2.6% | PASS   |
-| Freelancer It          |     Rp 1.6jt |     Rp 1.5jt |    -1.7% | PASS   |
-| Freelancer Desain      |     Rp 1.2jt |     Rp 1.2jt |    -8.0% | PASS   |
-| Content Creator        |     Rp 1.1jt |     Rp 1.1jt |    +2.5% | PASS   |
-| Jualan Online          |     Rp 900rb |     Rp 968rb |    +7.6% | PASS   |
+| Ojek Online            |     Rp 700rb |     Rp 726rb |    +3.7% | PASS   |
+| Kurir                  |     Rp 730rb |     Rp 754rb |    +3.3% | PASS   |
+| Freelancer It          |     Rp 1.6jt |     Rp 1.6jt |    +1.4% | PASS   |
+| Freelancer Desain      |     Rp 1.2jt |     Rp 1.2jt |    -2.1% | PASS   |
+| Content Creator        |     Rp 1.1jt |     Rp 1.2jt |   +11.3% | PASS   |
+| Jualan Online          |     Rp 900rb |     Rp 1.0jt |   +16.1% | FAIL   |
 
 ## Sumber Benchmark
 
