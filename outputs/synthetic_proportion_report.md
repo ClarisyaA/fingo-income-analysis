@@ -8,6 +8,7 @@ Data Scientist 2: Clarisya Adeline | Tim CC26-PSU217
 | Total baris      |       15,600 |
 | Total user       |          300 |
 | Minggu per user  |           52 |
+| Distribusi       | Log-Normal AR(1) |
 
 ## Proporsi Data
 
@@ -27,6 +28,17 @@ Data Scientist 2: Clarisya Adeline | Tim CC26-PSU217
 | Freelancer Desain   |     Rp 1.2jt | Sakernas Jakarta 2023 - sektor jasa perusahaan             |
 | Content Creator     |     Rp 1.1jt | Estimasi - midpoint transport & skilled                    |
 | Jualan Online       |     Rp 900rb | IDinsight 2025 casual + self-employed average              |
+
+## Hasil Bias Test (Mean vs Benchmark)
+
+| Gig Type               |    Benchmark |       Aktual |    Diff% | Status |
+| :--------------------- | -----------: | -----------: | -------: | :----- |
+| Ojek Online            |     Rp 700rb |     Rp 703rb |    +0.4% | PASS   |
+| Kurir                  |     Rp 730rb |     Rp 749rb |    +2.6% | PASS   |
+| Freelancer It          |     Rp 1.6jt |     Rp 1.5jt |    -1.7% | PASS   |
+| Freelancer Desain      |     Rp 1.2jt |     Rp 1.2jt |    -8.0% | PASS   |
+| Content Creator        |     Rp 1.1jt |     Rp 1.1jt |    +2.5% | PASS   |
+| Jualan Online          |     Rp 900rb |     Rp 968rb |    +7.6% | PASS   |
 
 ## Sumber Benchmark
 
