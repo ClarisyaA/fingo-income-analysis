@@ -9,10 +9,10 @@
 | Minggu per user | 52 |
 | Distribusi | Log-Normal AR(1) |
 | Kaggle sources | 4 dataset |
-| BPS sources | 4 dataset |
+| BPS sources | 4 dataset (per provinsi) |
 | Skillstack premium ratio | 2.52x |
-| BPS Nasional Bebas Urban | Rp 2,400,000/bulan |
-| BPS DKI Bebas Urban | Rp 3,200,000/bulan |
+| BPS Nasional Bebas | Rp 16,525/bulan |
+| BPS DKI Bebas | Rp 26,636/bulan |
 
 ## Proporsi Data
 

@@ -28,9 +28,9 @@
     "mid": 1.0,
     "senior": 1.45
   },
-  "ar1_coefficient": 0.32,
+  "ar1_coefficient": 0.35,
   "distribution_type": "log_normal_ar1",
-  "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024 + BPS 2023-2024",
+  "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024 + BPS 2023-2025",
   "kaggle_sources": [
     "Freelancer_Work_Patterns_Income_Prediction_Dataset.csv",
     "freelancer_earnings_bd.csv",
@@ -38,14 +38,14 @@
     "freelancer_earnings_vs_skillstack_dataset.csv"
   ],
   "bps_sources": [
-    "Pekerja Bebas Perkotaan",
-    "Pekerja Bebas Perdesaan",
-    "Pekerja Informal Perkotaan",
-    "Pekerja Informal Perdesaan"
+    "bps_bebas_2025",
+    "bps_bebas_2024",
+    "bps_informal_2025",
+    "bps_informal_2023"
   ],
   "skillstack_premium_ratio": 2.524982616240076,
-  "bps_nasional_bebas_urban": 2400000,
-  "bps_dki_bebas_urban": 3200000,
+  "bps_nasional_bebas": 16525.0,
+  "bps_dki_bebas": 26636.0,
   "split_method": "chronological_by_week",
   "train_weeks": "1-36",
   "val_weeks": "37-44",
