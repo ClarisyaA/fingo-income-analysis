@@ -1,21 +1,24 @@
-kolom,tipe,range,deskripsi,catatan
-user_id,string,SYN_0001-SYN_0300 / SRV_0001+,"ID unik per pengguna. SYN_=sintetis, SRV_=survei.",
-gig_type,string,6 kategori,ojek_online/kurir/freelancer_it/freelancer_desain/content_creator/jualan_online,Dikalibrasi dari benchmark Indonesia
-region,string,10 wilayah,Wilayah domisili. Mempengaruhi income via REGION_MULTIPLIER.,jabodetabek=1.10x
-experience_tier,string,junior/mid/senior,Tier pengalaman kerja.,"junior=0.65x, mid=1.0x, senior=1.45x"
-platform,string,nama platform,Platform utama yang digunakan user.,Disesuaikan dengan gig_type
-week_number,int,1-52,Nomor minggu dalam setahun.,"train=1-36, val=37-44, test=45-52"
-week_of_month,int,1-4,Minggu ke-berapa dalam bulan. 4=akhir bulan (efek gajian).,
-seasonal_label,string,6 label,low_season/normal/ramadan/lebaran/harbolnas/yearend,
-income_amount,float,>= 0,KOLOM UTAMA. Pendapatan bersih mingguan IDR.,Log-Normal AR(1). Dibulatkan ke ribuan.
-income_normalized,float,0.0-1.0,income_amount yang di-MinMaxScaler per user.,Scaler di income_scalers.pkl
-target_next_week,float,>= 0,KOLOM TARGET. Income minggu berikutnya (shift -1).,NaN di baris terakhir per user
-rolling_mean_4w,float,>= 0,Rata-rata income 4 minggu terakhir per user.,Feature LSTM paling penting
-rolling_std_4w,float,>= 0,Standar deviasi income 4 minggu terakhir per user.,
-rolling_cov_8w,float,>= 0,CoV rolling 8 minggu (volatilitas jangka menengah).,
-income_volatility,float,>= 0,CoV global per user (std/mean seluruh 52 minggu).,Konstan per user
-lag_1w,float,>= 0,Income minggu sebelumnya.,
-lag_2w,float,>= 0,Income 2 minggu sebelumnya.,
-lag_4w,float,>= 0,Income 4 minggu sebelumnya.,
-data_source,string,synthetic/survey,Asal data.,
-is_payday_week,int,0/1,1 jika minggu ke-4 dalam bulan (efek gajian).,
+kategori,kolom,tipe_data,contoh/range,deskripsi_teknis,penjelasan_sederhana,catatan
+Identitas Pengguna,user_id,string,"SYN_0001, SYN_0300, SRV_0001","ID unik per pengguna. Prefix SYN_ menunjukkan data sintetis, sedangkan SRV_ menunjukkan data survei.",Kode unik untuk membedakan setiap pengguna.,Tidak boleh duplikat untuk user yang sama.
+Identitas Pengguna,gig_type,string,"ojek_online, kurir, freelancer_it, freelancer_desain, content_creator, jualan_online",Jenis pekerjaan utama pengguna dalam kategori gig worker.,Menunjukkan jenis pekerjaan pengguna.,Dikalibrasi dari benchmark Indonesia.
+Identitas Pengguna,region,string,"jabodetabek, bandung, jawa_barat_lainnya, jawa_tengah, dan lainnya",Wilayah domisili pengguna. Nilai ini memengaruhi pendapatan melalui REGION_MULTIPLIER.,Lokasi tempat pengguna bekerja atau tinggal.,Contoh: jabodetabek memiliki multiplier 1.10x.
+Identitas Pengguna,experience_tier,string,"junior, mid, senior",Tingkat pengalaman pengguna dalam pekerjaan gig.,"Menunjukkan apakah pengguna masih pemula, menengah, atau sudah berpengalaman.","junior=0.65x, mid=1.0x, senior=1.45x."
+Identitas Pengguna,platform,string,"Gojek, Grab, Shopee, Tokopedia, Fiverr, Upwork",Platform utama yang digunakan pengguna untuk memperoleh pendapatan.,Aplikasi atau platform tempat pengguna bekerja.,Platform disesuaikan dengan jenis pekerjaan.
+Informasi Waktu,week_number,int,1-52,Nomor minggu dalam satu tahun.,Menunjukkan data ini berasal dari minggu keberapa.,"train=1-36, validation=37-44, test=45-52."
+Informasi Waktu,week_of_month,int,1-4,Minggu keberapa dalam bulan. Nilai 4 menunjukkan minggu akhir bulan.,Dipakai untuk melihat efek akhir bulan atau payday week.,Minggu ke-4 diasumsikan sebagai minggu gajian.
+Informasi Waktu,seasonal_label,string,"low_season, normal, ramadan, lebaran, harbolnas, yearend",Label musim atau periode khusus yang memengaruhi pendapatan.,"Menunjukkan kondisi periode tertentu, misalnya Ramadan atau akhir tahun.",Digunakan untuk menangkap pola musiman.
+Informasi Waktu,seasonal_income_pattern,int,1-6,Representasi numerik dari seasonal_label.,Versi angka dari label musim agar lebih mudah diproses model.,Mapping dari SEASONAL_INT_MAP.
+Informasi Waktu,is_payday_week,int,0 atau 1,Bernilai 1 jika data berada pada minggu ke-4 dalam bulan.,Menandai apakah minggu tersebut adalah minggu akhir bulan.,Dipakai untuk melihat efek gajian terhadap pendapatan.
+Pendapatan,income_amount,float,>= 0,Pendapatan bersih mingguan dalam Rupiah.,Ini adalah kolom utama yang berisi penghasilan pengguna per minggu.,"Dihasilkan menggunakan distribusi Log-Normal AR(1), dibulatkan ke ribuan."
+Pendapatan,income_normalized,float,0.0-1.0,Income_amount yang sudah dinormalisasi menggunakan MinMaxScaler per user.,Pendapatan yang sudah diubah ke skala 0 sampai 1 agar lebih mudah dipelajari model.,Scaler disimpan di income_scalers.pkl.
+Pendapatan,income_growth_1w,float,-1.0 sampai 5.0,Persentase perubahan pendapatan dibanding minggu sebelumnya.,Menunjukkan apakah pendapatan naik atau turun dari minggu lalu.,Dihitung dari income minggu ini dibanding lag_1w.
+Pendapatan,income_vs_rolling,float,bisa negatif atau positif,Perbandingan income_amount terhadap rolling_mean_4w.,Menunjukkan apakah pendapatan minggu ini lebih tinggi atau lebih rendah dari rata-rata 4 minggu terakhir.,Nilai positif berarti lebih tinggi dari rata-rata.
+Feature Engineering,rolling_mean_4w,float,>= 0,Rata-rata pendapatan 4 minggu terakhir per pengguna.,Rata-rata penghasilan pengguna dalam 4 minggu terakhir.,Salah satu fitur penting untuk prediksi LSTM.
+Feature Engineering,rolling_std_4w,float,>= 0,Standar deviasi pendapatan 4 minggu terakhir per pengguna.,Menunjukkan seberapa naik-turun pendapatan pengguna dalam 4 minggu terakhir.,"Semakin tinggi nilainya, semakin tidak stabil pendapatannya."
+Feature Engineering,rolling_cov_8w,float,>= 0,Coefficient of Variation rolling 8 minggu.,Mengukur tingkat ketidakstabilan pendapatan dalam 8 minggu terakhir.,Volatilitas jangka menengah.
+Feature Engineering,income_volatility,float,>= 0,"Coefficient of Variation global per user, yaitu std/mean seluruh 52 minggu.",Mengukur seberapa tidak stabil pendapatan seorang pengguna selama setahun.,Nilainya konstan untuk user yang sama.
+Feature Engineering,lag_1w,float,>= 0,Pendapatan pengguna pada 1 minggu sebelumnya.,Penghasilan minggu lalu.,Dipakai agar model bisa belajar pola waktu.
+Feature Engineering,lag_2w,float,>= 0,Pendapatan pengguna pada 2 minggu sebelumnya.,Penghasilan 2 minggu lalu.,Dipakai untuk menangkap pola jangka pendek.
+Feature Engineering,lag_4w,float,>= 0,Pendapatan pengguna pada 4 minggu sebelumnya.,Penghasilan 4 minggu lalu.,Membantu membaca pola bulanan.
+Target Model,target_next_week,float,>= 0,"Pendapatan minggu berikutnya, dibuat dengan shift -1 dari income_amount.",Nilai yang akan diprediksi oleh model.,Baris terakhir tiap user bernilai NaN karena tidak punya minggu berikutnya.
+Metadata,data_source,string,synthetic atau survey,Menunjukkan asal data.,Menandai apakah data berasal dari hasil sintesis atau survei asli.,Berguna untuk validasi proporsi data.
