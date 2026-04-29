@@ -4,23 +4,23 @@
 
 | Informasi | Nilai |
 |---|---|
-| Total baris | 15,600 |
-| Total user | 300 |
+| Total baris | 16,796 |
+| Total user | 323 |
 | Minggu per user | 52 |
 | Distribusi | Log-Normal AR(1) |
 | Kaggle sources | 4 dataset |
 | BPS sources | 4 dataset (per provinsi) |
 | Skillstack premium ratio | 2.52x |
-| BPS Nasional Bebas | Rp 16,525/bulan |
-| BPS DKI Bebas | Rp 26,636/bulan |
+| BPS Nasional Bebas | Rp 2,400,000/bulan |
+| BPS DKI Bebas | Rp 3,200,000/bulan |
 
 ## Proporsi Data
 
 | Kategori | Baris | Persentase |
 |---|---|---|
-| Sintetis | 15,600 | 100.0% |
-| Survei (real) | 0 | 0.0% |
-| Total | 15,600 | 100.0% |
+| Sintetis | 15,600 | 92.9% |
+| Survei (real) | 1,196 | 7.1% |
+| Total | 16,796 | 100.0% |
 
 ## Benchmark per Gig Type
 

@@ -19,7 +19,7 @@
     "ojek_online": 0.65,
     "kurir": 0.65,
     "jualan_online": 0.35,
-    "freelancer_it": 0.5915533205691843,
+    "freelancer_it": 0.5790549618969588,
     "freelancer_desain": 0.6185075796845771,
     "content_creator": 0.5682919653968834
   },
@@ -28,7 +28,7 @@
     "mid": 1.0,
     "senior": 1.45
   },
-  "ar1_coefficient": 0.35,
+  "ar1_coefficient": 0.45,
   "distribution_type": "log_normal_ar1",
   "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024 + BPS 2023-2025",
   "kaggle_sources": [
@@ -44,11 +44,11 @@
     "bps_informal_2023"
   ],
   "skillstack_premium_ratio": 2.524982616240076,
-  "bps_nasional_bebas": 16525.0,
-  "bps_dki_bebas": 26636.0,
+  "bps_nasional_bebas": 2400000.0,
+  "bps_dki_bebas": 3200000.0,
   "split_method": "chronological_by_week",
   "train_weeks": "1-36",
   "val_weeks": "37-44",
   "test_weeks": "45-52",
-  "survey_rows_merged": 0
+  "survey_rows_merged": 1196
 }
