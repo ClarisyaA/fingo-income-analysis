@@ -16,21 +16,36 @@
     "senior": 0.2
   },
   "volatility_map": {
-    "ojek_online": 0.28,
-    "kurir": 0.22,
-    "freelancer_it": 0.45,
-    "freelancer_desain": 0.45,
-    "content_creator": 0.7,
-    "jualan_online": 0.45
+    "ojek_online": 0.65,
+    "kurir": 0.65,
+    "jualan_online": 0.35,
+    "freelancer_it": 0.5915533205691843,
+    "freelancer_desain": 0.6185075796845771,
+    "content_creator": 0.5682919653968834
   },
   "experience_multiplier": {
     "junior": 0.65,
     "mid": 1.0,
     "senior": 1.45
   },
-  "ar1_coefficient": 0.55,
+  "ar1_coefficient": 0.32,
   "distribution_type": "log_normal_ar1",
-  "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024",
+  "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024 + BPS 2023-2024",
+  "kaggle_sources": [
+    "Freelancer_Work_Patterns_Income_Prediction_Dataset.csv",
+    "freelancer_earnings_bd.csv",
+    "delivery_boy_salary.csv",
+    "freelancer_earnings_vs_skillstack_dataset.csv"
+  ],
+  "bps_sources": [
+    "Pekerja Bebas Perkotaan",
+    "Pekerja Bebas Perdesaan",
+    "Pekerja Informal Perkotaan",
+    "Pekerja Informal Perdesaan"
+  ],
+  "skillstack_premium_ratio": 2.524982616240076,
+  "bps_nasional_bebas_urban": 2400000,
+  "bps_dki_bebas_urban": 3200000,
   "split_method": "chronological_by_week",
   "train_weeks": "1-36",
   "val_weeks": "37-44",
