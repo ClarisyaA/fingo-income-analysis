@@ -1,411 +1,908 @@
-# Dokumentasi Menyeluruh — Fingo DS2: Income Predictor Data Pipeline
+# Dokumentasi Notebook — Fingo DS2: Income Predictor Data Pipeline
 **Tim:** CC26-PSU217 | **Role:** Data Scientist 2 — Clarisya Adeline  
-**Versi Notebook:**  | **Tujuan:** End-to-end Data Wrangling untuk Fitur 3 Fingo (Income Predictor)
+**File Notebook:** `notebook__5_.ipynb`  
+**Judul Notebook:** Fingo DS2 - Kaggle Calibration + Synthetic Income Generator (FIXED)
 
 ---
 
 ## Gambaran Besar
 
-Notebook ini membangun **dataset time-series pendapatan mingguan gig worker Indonesia** yang siap dipakai untuk melatih model prediksi (target: LSTM). Karena tidak ada dataset publik yang spesifik untuk gig worker Indonesia dengan time-series 52 minggu, pendekatan yang dipakai adalah:
+Notebook ini membangun **dataset time-series pendapatan mingguan gig worker Indonesia** yang siap dipakai untuk melatih model prediksi LSTM (target: Fitur 3 Fingo — Income Predictor). Karena tidak ada dataset publik yang spesifik untuk gig worker Indonesia dengan time-series 52 minggu, pendekatan yang dipakai adalah:
 
-1. **Kalibrasi benchmark** dari publikasi resmi Indonesia (BPS, IDinsight, Sakernas)
-2. **Ekstraksi statistik (mu, sigma, CoV)** dari 4 dataset Kaggle global sebagai referensi distribusi
-3. **Generate data sintetis** 300 user × 52 minggu dengan distribusi Log-Normal + AR(1) yang sudah disesuaikan ke konteks Indonesia
-4. **Merge data survei primer** (form_responses.csv) jika tersedia
-5. **Validasi 6 bias test** sebelum data dianggap layak
+1. **Kalibrasi benchmark** dari publikasi resmi Indonesia (BPS, IDinsight, Sakernas Jakarta)
+2. **Ekstraksi statistik (CoV = std/mean)** dari 4 dataset Kaggle global sebagai referensi volatilitas distribusi
+3. **Generate data sintetis** 300 user × 52 minggu dengan distribusi Log-Normal + AR(1) proper di log-space
+4. **Merge data survei primer** (`form_responses.csv`) jika tersedia
+5. **Validasi 6 bias test** sebelum data dianggap layak untuk modeling
 
-Output akhir adalah `income_clean.csv` (± 15.600 baris) beserta train/val/test split kronologis.
+Output akhir adalah `income_clean.csv` (±15.600 baris) beserta train/val/test split kronologis.
+
+### Daftar Bagian Notebook
+
+| Bagian | Isi |
+|---|---|
+| 0 | Setup & clone GitHub |
+| 1 | Gathering Data — load 4 dataset Kaggle + 4 dataset BPS + form_responses.csv |
+| 2 | Assessing Data — evaluasi kualitas & struktur |
+| 3 | Cleaning & Domain Adaptation ke konteks Indonesia |
+| 4 | Kalibrasi parameter benchmark (mu, sigma, CoV per gig_type) |
+| 5 | EDA dataset Kaggle — Bar chart, Boxplot, Skill premium, BPS provinsi |
+| 6 | Generate data sintetis 300 user × 52 minggu (Log-Normal AR(1) proper log-space) |
+| 7 | Feature engineering (rolling, lag, volatility) |
+| 8 | Mapping & merge form_responses.csv (FIXED — fuzzy column matching + exhaustive) |
+| 9 | EDA data final + jawaban BQ4 & BQ5 |
+| 10 | Bias testing (6 test — target 5/6 PASS PENUH) |
+| 11 | MinMax scaling per user + kolom target_next_week |
+| 12 | Export CSV (train/val/test split kronologis) |
+| 13 | Data Dictionary (23 kolom) |
+| 14 | Push ke GitHub (branch management + force-with-lease) |
 
 ---
 
 ## Bagian 0 — Setup & Clone GitHub
 
-### Yang Dilakukan
-- Clone atau pull repo `fingo-income-analysis` dari GitHub milik `ClarisyaA`
-- Sinkronisasi working tree dengan `git reset --hard origin/main` untuk memastikan tidak ada file stale
-- Install library tambahan: `faker`, `scipy`
-- Import semua library (stdlib → 3rd-party, urutan PEP 8)
-- Definisikan **konstanta global** yang dipakai di seluruh notebook
+### CELL 0.1 — Clone/Pull Repo GitHub
 
-### Konstanta Kunci & Penjelasannya
+Notebook di-setup untuk berjalan di Google Colab. Proses clone/pull dilakukan dengan logika branch management yang robust:
 
-| Konstanta | Nilai | Penjelasan |
+- `GITHUB_USERNAME = 'ClarisyaA'`
+- `REPO_NAME = 'fingo-income-analysis'`
+- `BRANCH_NAME = 'feature/income-predictor-base'`
+- `LOCAL_DIR = '/content/fingo-income-analysis'`
+
+**Logika branch (3 skenario):**
+1. Branch sudah ada di local → `git checkout {BRANCH_NAME}` + `git pull`
+2. Branch ada di remote tapi belum di local → `git checkout -b {BRANCH_NAME} origin/{BRANCH_NAME}`
+3. Branch belum ada di mana-mana → checkout main, pull, buat branch baru
+
+Token GitHub dibaca dari Colab Secrets (`userdata.get('GITHUB_TOKEN')`). Jika tidak ada, repo diasumsikan public.
+
+### CELL 0.2 — Install Library Tambahan
+
+```python
+!pip install faker scipy --quiet
+```
+
+### CELL 0.3 — Import Library + Konstanta Global
+
+**Library yang digunakan:**
+
+| Library | Fungsi |
+|---|---|
+| `pandas` | Manipulasi DataFrame |
+| `numpy` | Komputasi numerik dan generate distribusi |
+| `matplotlib`, `seaborn` | Visualisasi data |
+| `faker` (id_ID) | Generate nama/data palsu Indonesia |
+| `sklearn.preprocessing.MinMaxScaler` | Normalisasi income per user |
+| `scipy.stats` | Uji statistik (KS Test) |
+| `json`, `pickle` | Export parameter dan scaler |
+
+**Konstanta global yang didefinisikan:**
+
+| Konstanta | Nilai Aktual | Penjelasan |
 |---|---|---|
-| `USD_TO_IDR` | 17.252 | Kurs tengah Bank Indonesia (USD → IDR). Dipakai untuk mengkonversi income USD dari dataset Kaggle ke Rupiah |
-| `INR_TO_IDR` | 183 | Kurs INR (Rupee India) → IDR. Dipakai untuk dataset delivery_boy_salary.csv yang bersumber dari India |
-| `INDIA_ADAPT` | 0.55 | Faktor adaptasi Purchasing Power Parity (PPP) India → Indonesia. Income India dikalikan 0.55 karena biaya hidup Indonesia ≈ 55% dari India di sektor gig |
-| `SANITY_MIN_MONTHLY_IDR` | 500.000 | Batas bawah wajar income bulanan pekerja informal Indonesia (dari BPS). Di bawah ini dianggap parsing error |
-| `SANITY_MAX_MONTHLY_IDR` | 10.000.000 | Batas atas wajar income bulanan pekerja informal Indonesia. Di atas ini dianggap outlier atau error parsing |
-| `RIBUAN_THRESHOLD_IDR` | 100.000 | Threshold untuk deteksi otomatis apakah nilai BPS dalam ribu rupiah atau rupiah penuh |
-| `RANDOM_SEED` | 42 | Seed untuk reproducibility di semua proses random |
+| `USD_TO_IDR` | `17_252` | Kurs tengah Bank Indonesia (USD → IDR) |
+| `INR_TO_IDR` | `183` | Kurs INR (Rupee India) → IDR |
+| `INDIA_ADAPT` | `0.23` | Faktor adaptasi PPP India → Indonesia |
+| `RANDOM_SEED` | `42` | Seed numpy untuk reproducibility |
+
+> **Catatan penting:** Nilai `INDIA_ADAPT = 0.23` berbeda dengan dokumentasi draft (`0.55`). Nilai yang aktual dipakai di notebook adalah **0.23**.
+
+**Helper functions:**
+- `fmt_idr(val)` — format angka ke string rupiah ringkas (`Rp 1.5jt`, `Rp 250rb`)
+- `IDR_FORMATTER` — matplotlib ticker formatter untuk sumbu Y grafik
+
+**Direktori output yang dibuat:**
+- `data/raw/`, `data/processed/`, `data/synthetic/`, `outputs/charts/`
 
 ---
 
 ## Bagian 1 — Gathering Data
 
-### Sumber Data yang Digunakan
+### Sumber Data
 
-#### 4 Dataset Kaggle (Data Global)
-Dataset Kaggle **tidak dipakai langsung sebagai income** untuk data sintetis. Fungsinya adalah **mengekstrak statistik distribusi (CoV = std/mean)** untuk mengkalibrasi volatilitas income per gig type.
+#### 4 Dataset Kaggle (sumber statistik distribusi — bukan income langsung)
 
-| Dataset | File | Mata Uang | Relevansi |
+Dataset Kaggle **tidak dipakai sebagai nilai income** untuk data sintetis. Fungsinya hanya **mengekstrak CoV (std/mean)** sebagai kalibrasi volatilitas per gig_type.
+
+| Variabel | File | Mata Uang | Kegunaan |
 |---|---|---|---|
-| Freelancer Work Patterns | `Freelancer_Work_Patterns_Income_Prediction_Dataset.csv` | USD | CoV untuk freelancer_it, freelancer_desain, content_creator |
-| Freelancer Earnings BD | `freelancer_earnings_bd.csv` | USD | CoV tambahan + rasio experience (Beginner vs Expert) |
-| Delivery Boy Salary | `delivery_boy_salary.csv` | INR (India) | CoV untuk ojek_online dan kurir, dikonversi + adaptasi PPP |
-| Freelancer Earnings vs Skillstack | `freelancer_earnings_vs_skillstack_dataset.csv` | USD/annual | Skill premium ratio (senior vs junior), CoV per kategori skill |
+| `df_freelancer` | `Freelancer_Work_Patterns_Income_Prediction_Dataset.csv` | USD | CoV untuk freelancer_it, freelancer_desain, content_creator |
+| `df_earnings` | `freelancer_earnings_bd.csv` | USD | CoV + rasio Expert/Beginner |
+| `df_delivery` | `delivery_boy_salary.csv` | INR (India) | CoV ojek_online & kurir, setelah adaptasi PPP |
+| `df_skillstack` | `freelancer_earnings_vs_skillstack_dataset.csv` | USD/annual | Skill premium ratio (senior vs junior) + CoV per skill |
 
-#### 4 Dataset BPS (Data Indonesia)
-Dataset BPS digunakan sebagai **ground truth benchmark nasional** untuk memvalidasi apakah income sintetis yang dihasilkan sesuai kenyataan Indonesia.
+### CELL 1.1 — Load Dataset Kaggle
 
-| Dataset | File | Fungsi |
+```python
+PATH_RAW = 'data/raw/'
+df_freelancer  = pd.read_csv(PATH_RAW + 'Freelancer_Work_Patterns_Income_Prediction_Dataset.csv')
+df_earnings    = pd.read_csv(PATH_RAW + 'freelancer_earnings_bd.csv')
+df_delivery    = pd.read_csv(PATH_RAW + 'delivery_boy_salary.csv')
+df_skillstack  = pd.read_csv(PATH_RAW + 'freelancer_earnings_vs_skillstack_dataset.csv')
+
+SURVEY_PATH      = PATH_RAW + 'form_responses.csv'
+SURVEY_AVAILABLE = os.path.exists(SURVEY_PATH)
+```
+
+#### 4 Dataset BPS (ground truth benchmark Indonesia per provinsi)
+
+| Key | File | Fungsi |
 |---|---|---|
-| BPS Pekerja Bebas 2025 | `Rata-Rata Pendapatan Bersih Sebulan Pekerja Informal...2025.csv` | Benchmark terbaru nasional + per provinsi |
-| BPS Pekerja Bebas 2024  | `Rata-Rata Pendapatan Bersih Sebulan Pekerja Bebas...2024.csv` | Benchmark utama  |
-| BPS Pekerja Informal 2025 | Sama dengan file 2025 | Validasi silang |
-| BPS Pekerja Informal 2023 | `...2023.csv` | Baseline historis |
+| `bps_bebas_2025` | `Rata-Rata Pendapatan Bersih Sebulan Pekerja Informal...2025.csv` | Benchmark terbaru nasional + per provinsi |
+| `bps_bebas_2024` | `Rata-Rata_Pendapatan_Bersih_Sebulan_Pekerja_Bebas...2024.csv` | Benchmark utama (prioritas 1) |
+| `bps_informal_2025` | File sama dengan `bps_bebas_2025` | Validasi silang |
+| `bps_informal_2023` | `...2023.csv` | Baseline historis |
 
-#### Data Survei Primer
-- `form_responses.csv` — hasil Google Form survei lapangan dari gig worker. Dimuat otomatis jika tersedia. Jika tidak ada, 100% data sintetis.
+### CELL 1.2 — Load Dataset BPS
 
-### Utility Baru: `clean_bps_csv()`
-Fungsi untuk membersihkan CSV BPS mentah (multi-row header, format ribuan rupiah) menjadi format bersih dengan kolom snake_case dan nilai dalam rupiah penuh. Disediakan sebagai alat bantu untuk penggunaan di masa depan.
+BPS dimuat dengan encoding fallback (utf-8 → latin-1) dan separator fallback (`;` → `,`). Jika file tidak ditemukan, key disimpan sebagai `None` dan di-skip pada bagian berikutnya.
 
 ---
 
 ## Bagian 2 — Assessing Data
 
-### Yang Dilakukan
-- Evaluasi kualitas setiap dataset: shape, tipe data, missing values, duplikat
-- Identifikasi isu utama secara otomatis:
-  - Dataset Kaggle: income dalam USD/global (bukan time-series Indonesia)
-  - Delivery: data India (INR), ada outlier ekstrem
-  - BPS: format tabel multi-header, perlu parsing khusus
+### CELL 2.1 — Fungsi `assess_dataset()` (Dataset Kaggle)
 
-### Output Assessing
-Tabel ringkasan `df_summary` yang menampilkan Missing Values, Duplikat, dan Isu Utama per dataset — memudahkan keputusan cleaning berikutnya.
+Fungsi reusable yang menampilkan:
+- Shape, info tipe data
+- Statistik deskriptif (`df.describe()`)
+- Missing values (hanya yang > 0)
+- Jumlah duplikat
+
+Dipanggil untuk ke-4 dataset Kaggle.
+
+### CELL 2.2 — Fungsi `assess_bps()` (Dataset BPS)
+
+Menampilkan shape, daftar kolom, missing values, duplikat, dan preview 3 baris pertama. Skip otomatis jika dataframe `None`.
+
+### CELL 2.3 — Tabel Ringkasan Assessing
+
+Membuat `df_summary` yang berisi kolom `Dataset`, `Missing Values`, `Duplikat`, dan `Isu Utama`. Isu utama dideteksi otomatis:
+- Kolom mengandung `usd` → `'Income USD (global), bukan time-series'`
+- Kolom mengandung `salary` → `'Data India (INR), ada outlier ekstrem'`
+- Dataset BPS → `'Format tabel BPS per provinsi, perlu parsing'`
 
 ---
 
 ## Bagian 3 — Cleaning & Domain Adaptation
 
-Ini adalah langkah paling kritis. Setiap dataset dibersihkan dan diadaptasi ke konteks Indonesia.
+### CELL 3.1 — Cleaning Dataset 1: Freelancer Work Patterns
 
-### CELL 3.1 — Cleaning Dataset 1: Freelancer Work Patterns (USD → IDR)
+**Konversi mata uang:**
+```python
+df1['monthly_income_idr'] = df1['monthly_income_usd'] * USD_TO_IDR
+df1['weekly_income_idr']  = df1['monthly_income_idr'] / 4.345
+df1['hourly_rate_idr']    = df1['hourly_rate_usd'] * USD_TO_IDR
+```
+> Pembagi `4.345` = rata-rata minggu per bulan (365.25 / 12 / 7), lebih akurat dari 4.333.
 
-**Sumber:** Dataset Kaggle global dengan income dalam USD.
+**Mapping skill ke gig_type Indonesia:**
 
-**Yang Dilakukan:**
-- Konversi `monthly_income_usd` × `USD_TO_IDR` → `monthly_income_idr`
-- Turunkan ke mingguan: `monthly_income_idr / 4.345`
-- Map `primary_skill` ke `gig_type` Indonesia (contoh: "Graphic Design" → `freelancer_desain`)
-- Buat `experience_tier` (junior/mid/senior) dari `years_experience`
-- Hitung CoV (std/mean) per gig_type → masuk ke kalibrasi volatilitas
+| primary_skill | gig_type |
+|---|---|
+| Graphic Design, Video Editing, UI/UX Design | `freelancer_desain` |
+| Content Writing, Digital Marketing | `content_creator` |
+| Web Development, Mobile App Development, Data Analysis, Machine Learning, Cloud Computing | `freelancer_it` |
 
-**Mengapa dibagi 4.345?** Rata-rata minggu per bulan = 365.25/12/7 ≈ 4.345. Ini lebih akurat dari 4.333 karena memperhitungkan tahun kabisat.
+**Experience tier** dari `years_experience`: `bins=[0,1,3,100]` → `['junior','mid','senior']`
 
-### CELL 3.2 — Cleaning Dataset 2: Freelancer Earnings BD (USD → IDR)
+**Output:** `cov_df1` — CoV per gig_type dari dataset ini.
 
-**Sumber:** Dataset Kaggle global, kolom `Earnings_USD`.
+### CELL 3.2 — Cleaning Dataset 2: Freelancer Earnings BD
 
-**Yang Dilakukan:**
-- Konversi USD → IDR → weekly
-- Map `Job_Category` ke `gig_type` Indonesia
-- Hitung rasio Expert/Beginner income (dipakai untuk validasi experience multiplier)
-- Hitung CoV per gig_type
+**Mapping Job_Category ke gig_type:**
 
-### CELL 3.3 — Cleaning Dataset 3: Delivery Boy Salary (INR India → IDR Indonesia)
+| Job_Category | gig_type |
+|---|---|
+| Web Development, App Development | `freelancer_it` |
+| SEO, Digital Marketing, Content Writing | `content_creator` |
+| Graphic Design | `freelancer_desain` |
 
-**Sumber:** Dataset India dengan salary dalam Rupee (INR).
+**Output tambahan:** Rasio Expert/Beginner per gig_type (dari kolom `Experience_Level`).
+
+### CELL 3.3 — Cleaning Dataset 3: Delivery Boy Salary (INR India → IDR)
+
+**Penghapusan outlier (IQR Method):**
+```python
+upper = Q3 + 3 * IQR   # batas 3x IQR, lebih longgar karena distribusi sangat skewed
+```
 
 **Pipeline konversi berlapis:**
 ```
-Salary (INR) × INR_TO_IDR (183) × INDIA_ADAPT (0.55) = Monthly Gross IDR
-Monthly Gross IDR × NET_GROSS_RATIO (0.584) = Monthly Net IDR
+Salary (INR) × INR_TO_IDR (183) × INDIA_ADAPT (0.23) = Monthly Gross IDR
+Monthly Gross IDR × NET_GROSS_RATIO (2_668_261 / 4_564_083) = Monthly Net IDR
 Monthly Net IDR / 4.345 = Weekly Net IDR
 ```
 
-**NET_GROSS_RATIO = 2.668.261 / 4.564.083 = 0.584** berasal dari perbandingan data IDinsight 2025 (net income ojek online Indonesia) vs estimasi gross income rata-rata. Ini dipakai karena dataset India adalah gross salary, bukan net income.
+**Mapping platform India → Indonesia:**
 
-**Penghapusan outlier:** IQR method dengan batas atas Q3 + 3×IQR (lebih longgar dari 1.5×IQR biasa karena distribusi income gig worker sangat skewed).
+| Platform India | Platform Indonesia |
+|---|---|
+| Zomato | GoFood |
+| Swiggy | ShopeeFood |
+| DoorDash | GoFood |
+| Deliveroo, Grab | Grab |
+| Blinkit, Dunzo | GoSend |
+| Zepto | J&T |
+| Talabat | SiCepat |
+| (tidak ada mapping) | Gojek |
 
-**Map platform India → Indonesia:** Zomato → GoFood, Swiggy → ShopeeFood, DoorDash → GoFood, dst.
+**Klasifikasi gig_type:** Dari kolom `peak_hours` — nilai `yes/1/true` → `ojek_online`, lainnya → `kurir`.
 
-**Deteksi ojek_online vs kurir:** dari kolom `peak_hours` — jika ada jam puncak = ojek_online, lainnya = kurir.
+### CELL 3.4 — Cleaning Dataset 4: Freelancer Earnings vs Skillstack (FIX)
 
-### CELL 3.4 — Cleaning Dataset 4: Freelancer Earnings vs Skillstack (USD → IDR)
+**Deteksi otomatis kolom income** (prioritas: `Earnings_USD`, `hourly_rate`, `Annual_Income`, dsb.) dengan fallback keyword search jika nama exact tidak ditemukan.
 
-**Sumber:** Dataset Kaggle dengan income dalam berbagai unit (hourly/monthly/annual USD).
+**Deteksi unit income berdasarkan median:**
+- Median < 1.000 → hourly rate → weekly = `× 40 jam`
+- Median 1.000–10.000 → monthly → weekly = `/ 4.345`
+- Median > 10.000 → annual → weekly = `/ 52`
 
-**Deteksi otomatis unit income:**
-- Median < 1.000 → hourly rate → weekly = rate × 40 jam
-- Median 1.000–10.000 → monthly → weekly = / 4.345
-- Median > 10.000 → annual → weekly = / 52
+**Deteksi kolom skill (FIX):** Kandidat: `Job_Category`, `Skill`, `Primary_Skill`, `Category`, `Niche`, `Specialization`, `Field`, dst. Fallback: kolom kategorikal dengan 3–50 unique values.
 
-**Fungsi utama dataset ini:** menghitung **Skill Premium Ratio** (income tertinggi / terendah per experience level) dan CoV per kategori skill.
+**Output:**
+- `SKILLSTACK_PREMIUM_RATIO` — rasio income tertinggi/terendah per experience (default `2.0` jika gagal)
+- `cov_df4` — CoV per kategori skill (dikosongkan jika single observation)
+- `overall_cov_sk` — CoV keseluruhan skillstack
 
-### CELL 3.5 — Cleaning & Parsing Dataset BPS
+### CELL 3.5 — Parsing Dataset BPS (FIX)
 
-**Dua jalur eksekusi:**
+**Fungsi `parse_bps(df, label)`** — self-contained parser untuk semua format CSV BPS:
 
-**Fast Path** (CSV sudah bersih): Deteksi otomatis jika CSV punya kolom `provinsi` (snake_case) tanpa `Unnamed:N`. Langsung pilih kolom `jumlah_agustus` atau setara.
+1. Strip whitespace dari semua string
+2. Konversi format angka Indonesia (`.` sebagai pemisah ribuan, `,` sebagai desimal) ke float
+3. Pilih kolom nilai: prioritas kolom `L+P`/`total`/`jumlah`, fallback kolom numerik terakhir
+4. **Deteksi skala dari median** (bukan baris pertama):
+   - Median < 100.000 → dalam ribuan rupiah → kalikan 1.000
+   - Median ≥ 100.000 → sudah rupiah penuh
+5. Cari baris provinsi kunci: `Indonesia` (nasional), `DKI Jakarta`, `Jawa Barat`
 
-**Slow Path** (CSV masih messy): Parser lama yang robust — skip baris header bertingkat, deteksi format angka English vs Indonesia (titik vs koma), deteksi unit ribu rupiah vs rupiah penuh.
-
-**Output:** Nilai rata-rata income per bulan untuk provinsi: Indonesia (nasional), DKI Jakarta, Jawa Barat — dipakai sebagai anchor validasi.
+**Output per dataset BPS:** `dict` berisi `{'indonesia': float, 'dki_jakarta': float, 'jawa_barat': float}`
 
 ---
 
-## Bagian 4 — Kalibrasi Parameter & Benchmark Indonesia
+## Bagian 4 — Kalibrasi Parameter + Benchmark Indonesia
 
-### CELL 4.1 — Tabel Benchmark Final
+### Referensi Benchmark
 
-Inilah jantung dari seluruh notebook. **Benchmark ini adalah nilai yang menjadi target distribusi data sintetis.**
+| No | Sumber | Tahun | Digunakan untuk |
+|---|---|---|---|
+| 1 | IDinsight DERII Gig Worker Survey | 2025 | Net income ojek_online & kurir |
+| 2 | Arafat et al. — Sakernas Jakarta | 2023 | Income freelancer_it & freelancer_desain |
+| 3 | Katadata/CELIOS | 2024 | Validasi range keseluruhan |
+| 4 | BPS Pekerja Bebas & Informal | 2023–2025 | Validasi benchmark per provinsi |
+| 5 | Kaggle Freelancer Earnings vs Skillstack | 2024 | Skill premium ratio |
 
-#### Asal-Usul Benchmark India (INR) — Penjelasan Lengkap
+### CELL 4.1 — Tabel Benchmark Final + Parameter Log-Normal
 
-Dataset `delivery_boy_salary.csv` berasal dari India dengan income dalam INR. Pipeline adaptasinya:
+**Fungsi `get_bps_ref()`** mengambil nilai BPS dengan sanity check (500.000 ≤ val ≤ 15.000.000). Fallback ke nilai default jika di luar range:
 
-1. **INR_TO_IDR = 183**: Kurs pasar INR ke IDR (referensi Bank Indonesia/XE.com)
-2. **INDIA_ADAPT = 0.55**: Faktor PPP (Purchasing Power Parity). India dan Indonesia memiliki struktur biaya hidup berbeda. Berdasarkan data World Bank PPP 2023, daya beli Rp 1 di Indonesia setara ≈ 55% dari 1 Rupee di India untuk sektor jasa informal. Faktor ini memastikan income yang dikonversi mencerminkan daya beli nyata gig worker Indonesia, bukan sekedar konversi kurs langsung.
+```python
+BPS_NASIONAL_BEBAS = get_bps_ref(['bps_bebas_2024','bps_bebas_2025'], 'indonesia', 2_400_000)
+BPS_DKI_BEBAS      = get_bps_ref(['bps_bebas_2024','bps_bebas_2025'], 'dki_jakarta', 3_200_000)
+BPS_NASIONAL_INF   = get_bps_ref(['bps_informal_2023','bps_informal_2025'], 'indonesia', 2_100_000)
+BPS_DKI_INF        = get_bps_ref(['bps_informal_2023','bps_informal_2025'], 'dki_jakarta', 2_900_000)
+```
 
-#### Asal-Usul Benchmark USD — Penjelasan Lengkap
+**`ID_BENCHMARK` — Dictionary benchmark per gig_type (mingguan, IDR):**
 
-Dataset Kaggle 1, 2, 4 menggunakan USD. Konversi langsung dengan kurs: **USD_TO_IDR = 17.252** (kurs tengah BI pada saat pengembangan). Income USD dari Kaggle **tidak dipakai sebagai target benchmark** langsung karena terlalu tinggi untuk konteks Indonesia. Income USD Kaggle hanya dipakai untuk:
-- Menghitung CoV (proporsi volatilitas, bukan nilai absolut)
-- Menghitung skill premium ratio (perbandingan level, bukan nilai absolut)
-
-#### Benchmark Indonesia per Gig Type (Mingguan, IDR)
-
-| Gig Type | Mu (Rp/minggu) | Sigma | Min | Max | Sumber Utama |
+| gig_type | mu (Rp/minggu) | sigma | min | max | Sumber Utama |
 |---|---|---|---|---|---|
-| ojek_online | 700.000 | 220.000 | 250.000 | 1.800.000 | IDinsight DERII 2025 + Sakernas Jakarta transport |
-| kurir | 730.000 | 200.000 | 250.000 | 1.800.000 | IDinsight DERII 2025 + CELIOS 2024 |
-| freelancer_it | 1.550.000 | 700.000 | 300.000 | 5.500.000 | Sakernas Jakarta 2023 — sektor informasi & komunikasi |
-| freelancer_desain | 1.250.000 | 600.000 | 200.000 | 4.500.000 | Sakernas Jakarta 2023 — sektor jasa perusahaan |
-| content_creator | 1.100.000 | 900.000 | 50.000 | 6.000.000 | Estimasi midpoint transport & skilled |
-| jualan_online | 900.000 | 450.000 | 100.000 | 4.000.000 | IDinsight 2025 casual + self-employed average |
+| `ojek_online` | 700.000 | 220.000 | 250.000 | 1.800.000 | IDinsight 2025 + Sakernas Jakarta transport |
+| `kurir` | 730.000 | 200.000 | 250.000 | 1.800.000 | IDinsight 2025 + CELIOS 2024 |
+| `freelancer_it` | 1.550.000 | 700.000 | 300.000 | 5.500.000 | Sakernas Jakarta 2023 — sektor informasi & komunikasi |
+| `freelancer_desain` | 1.250.000 | 600.000 | 200.000 | 4.500.000 | Sakernas Jakarta 2023 — sektor jasa perusahaan |
+| `content_creator` | 1.100.000 | 900.000 | 50.000 | 6.000.000 | Estimasi midpoint transport & skilled |
+| `jualan_online` | 900.000 | 450.000 | 100.000 | 4.000.000 | IDinsight 2025 casual + self-employed average |
 
-#### Referensi Benchmark yang Digunakan
+**Validasi rasio benchmark vs BPS:** Rasio `mu_mingguan / (BPS_NASIONAL_BEBAS / 4.345)` harus dalam range 0.5×–3.0× (ditampilkan dengan tanda ✓ atau `! cek`).
 
-| Sumber | Tahun | Yang Diambil |
-|---|---|---|
-| **IDinsight DERII Gig Worker Survey** | 2025 | Net income ojek_online (Rp 700rb/minggu) dan kurir (Rp 730rb/minggu). Survei langsung pada 1.000+ gig worker Indonesia. |
-| **Arafat et al. — Sakernas Jakarta** | 2023 | Income freelancer IT (sektor informasi & komunikasi Rp 1,55jt/minggu) dan desain (sektor jasa perusahaan Rp 1,25jt/minggu). Sakernas = Survei Angkatan Kerja Nasional BPS. |
-| **Katadata/CELIOS** | 2024 | Validasi range keseluruhan dan income kurir/ojek. CELIOS = Center of Economic and Law Studies. |
-| **BPS Pekerja Bebas & Informal** | 2023-2025 | Validasi benchmark per provinsi. BPS Nasional Bebas ≈ Rp 2,4jt/bulan → ≈ Rp 552rb/minggu (± wajar dengan benchmark ojek_online Rp 700rb karena DKI lebih tinggi dari nasional). |
-| **Kaggle Freelancer vs Skillstack** | 2024 | Skill premium ratio: berapa kali lipat income senior vs junior. |
+**Konversi ke parameter Log-Normal** (dihitung otomatis dari mu & sigma):
+```python
+sigma_ln = sqrt(log(1 + (sigma/mu)²))
+mu_ln    = log(mu) - 0.5 × sigma_ln²
+```
+Hasil disimpan kembali ke `ID_BENCHMARK[gig]['mu_ln']` dan `ID_BENCHMARK[gig]['sigma_ln']`.
 
-#### Validasi Benchmark vs BPS
-Benchmark mingguan divalidasi terhadap BPS bulanan (/4.345):
-- Ratio yang wajar: 0.5x – 3.0x dari BPS nasional per minggu
-- Income ojek_online Rp 700rb/minggu vs BPS nasional ≈ Rp 552rb/minggu → rasio 1.27x ✓ (masuk akal, ojek lebih tinggi dari rata-rata pekerja bebas karena efisiensi platform)
+### CELL 4.2 — Kalibrasi CoV + Visualisasi
 
-### CELL 4.2 — Kalibrasi CoV (Volatilitas)
+CoV dari ke-4 dataset Kaggle digabungkan dalam `cov_combined`. Untuk `cov_df4` (skillstack), dilakukan mapping skill ke gig_type terlebih dahulu:
 
-CoV (Coefficient of Variation = std/mean) dari 4 dataset Kaggle digabungkan menjadi `VOLATILITY_MAP`. Ini menentukan **seberapa fluktuatif income** setiap gig_type dalam data sintetis.
+| Skill | gig_type |
+|---|---|
+| Web Development, App Development, Data Science, Machine Learning | `freelancer_it` |
+| Graphic Design, Video Editing | `freelancer_desain` |
+| Content Writing, Digital Marketing, SEO | `content_creator` |
 
-**VOLATILITY_MAP diclip ke [0.15, 0.65]** untuk menghindari distribusi terlalu datar atau terlalu ekstrem.
+**`VOLATILITY_MAP`** = `clip(cov_mean, 0.15, 0.65)` per gig_type. Nilai default jika CoV tidak tersedia:
+- `ojek_online: 0.28`, `kurir: 0.25`, `jualan_online: 0.35`
+- `freelancer_it: 0.40`, `freelancer_desain: 0.38`, `content_creator: 0.55`
+
+**Visualisasi:** 2 panel — grouped bar CoV per sumber Kaggle + bar CoV mean final.  
+Disimpan ke: `outputs/charts/00_cov_calibration.png`
 
 ### CELL 4.3 — Parameter Kalibrasi Lainnya
 
-| Parameter | Nilai | Penjelasan |
-|---|---|---|
-| `EXPERIENCE_MULTIPLIER` | junior=0.65, mid=1.00, senior=1.45 | Multiplier terhadap mu benchmark. Senior mendapat 1.45× income mid. Dari skill premium ratio dataset Kaggle Skillstack. |
-| `AR1_COEF` | 0.45 | Koefisien autokorelasi AR(1) dalam log-space. Menghasilkan lag-1 AC ≈ 0.35-0.40 (target 0.20-0.60). Nilai 0.45 dipilih setelah iterasi untuk melewati Bias Test 5. |
-| `SEASONAL_MULT` | dict per gig_type per periode | Multiplier musiman. Contoh: kurir naik 20% saat Ramadan (lebih banyak pesanan makanan), turun 35% saat Lebaran (orang libur). |
-| `PAYDAY_MULT` | dict per gig_type | Efek gajian di minggu ke-4 bulan. Ojek_online naik 18% karena lebih banyak orang keluar setelah gajian. |
+**`EXPERIENCE_MULTIPLIER`:**
+```python
+{'junior': 0.65, 'mid': 1.00, 'senior': 1.45}
+```
 
-**Seasonal Label Assignment:**
-- Minggu 1-6: low_season (awal tahun sepi)
-- Minggu 7-9: normal
-- Minggu 10-13: ramadan
-- Minggu 14-15: lebaran
-- Minggu 16-44: normal
-- Minggu 45-46: harbolnas (11.11, 12.12)
-- Minggu 47-48: normal
-- Minggu 49-52: yearend
+**`AR1_COEF = 0.45`** — koefisien autokorelasi AR(1) di log-space. Dipilih setelah iterasi untuk menghasilkan lag-1 AC ≈ 0.35–0.40 (range target Bias Test 5: 0.20–0.60).
+
+**`SEASONAL_MULT`** — multiplier per gig_type per periode musiman:
+
+| Periode | ojek_online | kurir | jualan_online | freelancer_it | freelancer_desain | content_creator |
+|---|---|---|---|---|---|---|
+| normal | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| ramadan | 1.15 | 1.20 | 1.35 | 0.90 | 1.05 | 1.25 |
+| lebaran | 0.60 | 0.65 | 0.70 | 0.70 | 0.75 | 0.80 |
+| harbolnas | 1.05 | 1.35 | 1.50 | 1.00 | 1.10 | 1.20 |
+| yearend | 1.10 | 1.15 | 1.20 | 0.85 | 0.90 | 1.15 |
+| low_season | 0.90 | 0.92 | 0.88 | 0.95 | 0.93 | 0.88 |
+
+**`SEASONAL_INT_MAP`:** `low_season=1, normal=2, ramadan=3, harbolnas=4, lebaran=5, yearend=6`
+
+**`PAYDAY_MULT`** (efek gajian di minggu ke-4 bulan):
+```python
+{'ojek_online': 1.18, 'kurir': 1.15, 'jualan_online': 1.25,
+ 'freelancer_it': 1.10, 'freelancer_desain': 1.12, 'content_creator': 1.08}
+```
+
+**Fungsi `get_seasonal_label(week)`:**
+
+| Minggu | Label |
+|---|---|
+| 1–6 | `low_season` |
+| 7–9 | `normal` |
+| 10–13 | `ramadan` |
+| 14–15 | `lebaran` |
+| 16–44 | `normal` |
+| 45–46 | `harbolnas` |
+| 47–48 | `normal` |
+| 49–52 | `yearend` |
 
 ---
 
 ## Bagian 5 — EDA Dataset Kaggle
 
-### CELL 5.1 — Kaggle Raw vs Benchmark Indonesia
-Bar chart membandingkan income Kaggle sebelum override (terlalu tinggi untuk Indonesia) vs benchmark Indonesia final. Ini memvisualisasikan mengapa income Kaggle tidak bisa dipakai langsung.
+### CELL 5.1 — Bar Chart: Kaggle Raw vs Benchmark Indonesia
+
+2 panel: income Kaggle sebelum override (terlalu tinggi) vs benchmark Indonesia final (IDinsight + Sakernas + BPS). Memvisualisasikan mengapa income Kaggle tidak bisa dipakai langsung untuk konteks Indonesia.  
+Disimpan ke: `outputs/charts/01_kaggle_vs_benchmark.png`
 
 ### CELL 5.2 — Boxplot Delivery Dataset
-Visualisasi distribusi income dataset delivery yang sudah diadaptasi ke Indonesia. Pola Log-Normal terlihat dari distribusi histogram yang right-skewed.
 
-### CELL 5.3 — EDA Skillstack
-3 panel:
-1. KDE distribusi income per experience level
-2. Bar chart skill premium (rata-rata income per experience tier)
-3. CoV per kategori skill (ada fallback ke histogram jika cov_df4 kosong)
+2 panel:
+1. Boxplot `monthly_income_idr` per gig_type (ojek_online vs kurir) — setelah adaptasi Indonesia
+2. Histogram `weekly_income_idr` dengan KDE per gig_type — memperlihatkan pola Log-Normal
 
-### CELL 5.4 — Visualisasi Benchmark BPS per Provinsi
-Bar chart horizontal income rata-rata per provinsi dari dataset BPS. DKI Jakarta dihighlight merah sebagai referensi. Ada fallback manual jika parsing BPS gagal.
+Disimpan ke: `outputs/charts/02_boxplot_delivery.png`
+
+### CELL 5.3 — EDA Skillstack (FIX: ada fallback panel)
+
+3 panel (hanya dieksekusi jika `income_col` dan `exp_col` terdeteksi):
+1. KDE distribusi income per experience level (skip jika sample < 10)
+2. Bar chart skill premium per experience tier dengan label rasio
+3. **FIX:** Bar horizontal CoV per skill — jika `cov_df4` kosong, fallback ke histogram `weekly_income_idr` dengan garis median
+
+Disimpan ke: `outputs/charts/02b_skillstack_eda.png`
+
+### CELL 5.4 — Visualisasi BPS per Provinsi (FIX: ada fallback manual)
+
+**Path utama:** Ambil dataset BPS yang sudah punya kolom `_val_idr` (hasil `parse_bps()`), filter baris ringkasan, ambil top 20 provinsi, bar chart horizontal dengan DKI Jakarta dihighlight merah.
+
+**Fallback manual** jika semua BPS gagal di-parse: menggunakan daftar 15 provinsi referensi dengan nilai hardcoded dari publikasi BPS.
+
+Disimpan ke: `outputs/charts/02c_bps_benchmark_provinsi.png`
 
 ---
 
 ## Bagian 6 — Generate Data Sintetis Time-Series
 
-**Target:** 300 user × 52 minggu = 15.600 baris.
+Target: **300 user × 52 minggu = 15.600 baris.**
 
-### CELL 6.1 — Konfigurasi Distribusi
+### CELL 6.1 — Konstanta Distribusi
 
-**Distribusi gig_type:**
-- ojek_online: 30%, kurir: 20%, jualan_online: 20%, freelancer_it: 10%, freelancer_desain: 10%, content_creator: 10%
+```python
+N_USERS = 300
+N_WEEKS = 52
+```
 
-**Distribusi experience:**
-- junior: 35%, mid: 45%, senior: 20%
+**`GIG_DISTRIBUTION`** (proporsi user per gig_type):
+```python
+{'ojek_online': 0.30, 'kurir': 0.20, 'jualan_online': 0.20,
+ 'freelancer_it': 0.10, 'freelancer_desain': 0.10, 'content_creator': 0.10}
+```
 
-**Region multiplier:** jabodetabek (1.10×) sampai lainnya (0.82×) — mencerminkan perbedaan upah antar wilayah.
+**`EXPERIENCE_DIST`:**
+```python
+{'junior': 0.35, 'mid': 0.45, 'senior': 0.20}
+```
+
+**`REGION_MULTIPLIER`** (efek wilayah terhadap mu):
+
+| Region | Multiplier |
+|---|---|
+| jabodetabek | 1.10× |
+| bandung | 0.95× |
+| jawa_barat_lainnya | 0.88× |
+| jawa_tengah | 0.85× |
+| jawa_timur | 0.90× |
+| sumatera | 0.85× |
+| kalimantan | 0.88× |
+| sulawesi | 0.83× |
+| bali_nusa | 0.90× |
+| lainnya | 0.82× |
+
+**`REGION_DIST`** (proporsi user per region): jabodetabek 40%, bandung 12%, jawa_barat_lainnya 8%, jawa_tengah 10%, jawa_timur 10%, sumatera 8%, kalimantan 4%, sulawesi 3%, bali_nusa 3%, lainnya 2%.
+
+**`GIG_PLATFORM_MAP`** (platform per gig_type):
+- `ojek_online`: Gojek, Grab, Maxim
+- `kurir`: Shopee Express, J&T, SiCepat, Anteraja
+- `freelancer_it`: Upwork, Fiverr, Projects.co.id, Toptal
+- `freelancer_desain`: Fiverr, Instagram, Canva, Freelancer.com
+- `content_creator`: TikTok, Instagram, YouTube, Tokopedia Affiliate
+- `jualan_online`: Shopee, Tokopedia, TikTok Shop, Lazada
 
 ### CELL 6.2 — Generate User Profiles
 
-Untuk setiap user dibuat:
-- `mu_user` = `bench['mu']` × `exp_mult` × `region_mult` × `personal_mu_factor`
-- `personal_mu_factor` ~ LogNormal(0, 0.10) → variasi heterogeneitas antar user
-- `sigma_ln`, `mu_ln` → parameter distribusi Log-Normal dalam log-space
+Menggunakan `np.random.default_rng(42)` untuk reproducibility. Per user dibuat:
 
-### CELL 6.3 — Generate Time-Series (AR(1) di Log-Space) 
-
-**Persamaan AR(1) proper dalam log-space:**
-```
-sigma_innov = sigma_ln × sqrt(1 - AR1_COEF²)     # variance stationary
-log_inc[0]  ~ N(mu_ln, sigma_ln²)
-log_inc[w]  = mu_ln + AR1_COEF × (log_inc[w-1] - mu_ln) + N(0, sigma_innov²)
-income      = exp(log_inc) × seasonal_mult × payday_mult
+```python
+mu_user            = bench['mu'] × exp_mult × region_mult × personal_mu_factor
+personal_mu_factor ~ LogNormal(0, 0.10)   # heterogeneitas antar user
+sigma_ln           = VOLATILITY_MAP[gig]
+mu_ln              = log(mu_user) - 0.5 × sigma_ln²
 ```
 
-**Mengapa di log-space?** AR(1) dalam log-space menjaga distribusi log-normal tetap stationary (mean-reverting). Jika AR(1) diterapkan pada income langsung (linear), income bisa drift ke nilai negatif atau tak terbatas. Dengan log-space, autokorelasi lag-1 mendekati AR1_COEF yang diinginkan (0.20-0.60 untuk Bias Test 5 PASS).
+Output: `df_users` (DataFrame 300 baris) dengan kolom `user_id (SYN_0001–SYN_0300)`, `gig_type`, `experience_tier`, `region`, `platform`, `mu_user`, `mu_ln`, `sigma_ln`.
+
+### CELL 6.3 — Generate Time-Series AR(1) di Log-Space (FIX)
+
+**Persamaan AR(1) proper di log-space (stationary):**
+```
+sigma_innov = sigma_ln × sqrt(max(0, 1 - AR1_COEF²))
+log_inc[0]  ~ N(mu_ln, sigma_ln)
+log_inc[w]  = mu_ln + AR1_COEF × (log_inc[w-1] - mu_ln) + N(0, sigma_innov)
+base_income = exp(log_inc)
+income      = base_income × seasonal_mult × payday_mult
+income      = clip(income, bench['min'], bench['max'] × 1.20)
+income      = round(income / 1.000) × 1.000
+```
+
+> **Mengapa di log-space?** AR(1) pada log-income menjaga distribusi Log-Normal tetap stationary (mean-reverting). Jika AR(1) diterapkan pada nilai linear, income bisa drift ke negatif. Dengan log-space, lag-1 autocorrelation mendekati AR1_COEF (0.20–0.60 untuk Bias Test 5 PASS).
+
+Setelah generate, dilakukan **quick AR(1) sanity check** pada 30 user sampling untuk memverifikasi lag-1 AC sebelum lanjut.
+
+Output disimpan ke: `data/synthetic/synthetic_income_raw.csv`
 
 ---
 
 ## Bagian 7 — Feature Engineering
 
-Fitur-fitur yang dibangun dari time-series income:
+### CELL 7.1 — Fitur yang Dibangun
 
-| Fitur | Formula | Fungsi untuk Model |
+Dataset `df_syn` diurutkan per `user_id, week_number` kemudian ditambahkan fitur berikut:
+
+| Fitur | Formula / Kode | Fungsi untuk Model |
 |---|---|---|
-| `rolling_mean_4w` | rolling(4).mean() per user | Baseline income 4 minggu terakhir (trend jangka pendek) |
-| `rolling_std_4w` | rolling(4).std() | Volatilitas jangka pendek |
-| `rolling_cov_8w` | rolling(8).std() / rolling(8).mean() | Volatilitas jangka menengah |
-| `income_volatility` | std/mean seluruh 52 minggu | Karakteristik volatilitas user (konstan per user) |
-| `lag_1w`, `lag_2w`, `lag_4w` | shift(1), shift(2), shift(4) | History income — input kunci LSTM |
-| `income_vs_rolling` | (income - rolling_mean) / rolling_mean | Deviasi dari baseline |
-| `income_growth_1w` | (income - prev) / prev | Persentase pertumbuhan minggu ke minggu |
-| `seasonal_income_pattern` | map dari seasonal_label | Versi numerik periode musiman |
-| `is_payday_week` | 1 jika week_of_month == 4 | Flag minggu gajian |
-| Dummy gig_type | gig_ojek_online, dll. | One-hot encoding gig type |
-| Dummy experience | exp_junior, dll. | One-hot encoding experience |
+| `rolling_mean_4w` | `rolling(4, min_periods=1).mean()` per user | Baseline income 4 minggu — input kunci LSTM |
+| `rolling_std_4w` | `rolling(4, min_periods=2).std().fillna(0)` | Volatilitas jangka pendek |
+| `rolling_cov_8w` | `rolling(8, min_p=3).std() / rolling(8, min_p=3).mean()` | Volatilitas jangka menengah |
+| `income_volatility` | `std/mean` seluruh 52 minggu per user | Karakteristik volatilitas user (konstan) |
+| `seasonal_income_pattern` | map dari `SEASONAL_INT_MAP` | Versi numerik seasonal label |
+| `gig_{gig_type}` | one-hot encoding | Identitas gig type untuk model |
+| `exp_{tier}` | one-hot encoding | Identitas experience tier untuk model |
+| `lag_1w` | `shift(1).fillna(0)` per user | Income 1 minggu lalu — input kunci LSTM |
+| `lag_2w` | `shift(2).fillna(0)` per user | Income 2 minggu lalu |
+| `lag_4w` | `shift(4).fillna(0)` per user | Income 4 minggu lalu — pola bulanan |
+| `income_vs_rolling` | `(income - rolling_mean_4w) / rolling_mean_4w` | Deviasi dari baseline (0 jika rolling_mean=0) |
 
 ---
 
 ## Bagian 8 — Merge Data Survei
 
-### CELL 8.1 — Mapping Survei
+Bagian ini hanya dieksekusi jika `SURVEY_AVAILABLE = True`.
 
-Setiap kolom Google Form dimapping ke nilai numerik/kategori yang konsisten dengan data sintetis.
-- Menggunakan **en-dash (U+2013)** bukan hyphen biasa untuk range income (sesuai output Google Forms)
-- Tambahan opsi gig_type: "Pekerja harian" → jualan_online, "Tutor" → freelancer_desain
-- Region tambahan: Jatinangor, Sumedang → jawa_barat_lainnya; Lampung → sumatera
+### CELL 8.1 — Mapping Survei ke Nilai Numerik
 
-### CELL 8.2 — Fuzzy Column Matching & Merge
+**Masalah utama yang di-fix:** Google Form output menggunakan **en-dash (U+2013 `–`)** untuk range, bukan hyphen biasa (`-`). Mapping didefinisikan dengan kedua versi.
 
-**Masalah:** Header CSV dari Google Forms mengandung pertanyaan panjang dengan newline ganda. Matching exact string sering gagal.
+**`INCOME_MIDPOINT_MAP`** — 8 bucket income mingguan (dari `< Rp250.000` hingga `> Rp5.000.000`), masing-masing dipetakan ke nilai midpoint.
 
-**Solusi:** Fungsi `find_col_by_keywords()` yang mencari kolom berdasarkan keyword (case-insensitive, normalized whitespace).
+**`INCOME_COMPACT_MAP`** — format ringkas (`Rp250–500rb`, dst.) untuk kolom W1–W4.
 
-**Strategi 4-minggu real data:** Jika responden mengisi data W1-W4 (income 4 minggu terakhir), data real ini dipakai untuk minggu 1-4 dalam series 52 minggu. Sisanya diproyeksikan dengan seasonal multiplier.
+**`SURVEY_GIG_MAP`** — mapping teks jawaban form ke gig_type internal:
+
+| Jawaban Form | gig_type |
+|---|---|
+| `Ojek online / driver aplikasi` | `ojek_online` |
+| `Kurir / pengantar barang atau makanan` | `kurir` |
+| `Jualan online / reseller / toko online` | `jualan_online` |
+| `Freelance desain / editing / ilustrasi` | `freelancer_desain` |
+| `Freelance IT / website / programming / data` | `freelancer_it` |
+| `Content creator / admin media sosial` | `content_creator` |
+| `Pekerja harian / event / part-time` | `jualan_online` |
+| `Tutor / guru les / pengajar lepas` | `freelancer_desain` |
+
+**`SURVEY_EXP_MAP`** — mapping durasi pengalaman ke tier:
+
+| Jawaban Form | experience_tier |
+|---|---|
+| Kurang dari 3 bulan, 3–6 bulan, 7–12 bulan | `junior` |
+| 1–2 tahun, 2–3 tahun | `mid` |
+| Lebih dari 3 tahun | `senior` |
+
+**`SURVEY_REGION_MAP`** — tambahan region yang di-fix: Jatinangor/Sumedang → `jawa_barat_lainnya`, Lampung → `sumatera`, Jawa Tengah/Yogyakarta → `jawa_tengah`.
+
+### CELL 8.2 — Fuzzy Column Matching + Merge (FIX)
+
+**Fungsi `find_col_by_keywords(df, keywords, exclude)`** — mencari kolom berdasarkan keyword (case-insensitive, normalized whitespace), bukan exact string match. Ini mengatasi masalah header Google Form yang panjang dan berisi newline ganda.
+
+**Kolom yang di-match dengan keyword:**
+
+| Variabel Internal | Keywords |
+|---|---|
+| `col_consent` | `['bersedia']` |
+| `col_region` | `['domisili']` |
+| `col_gig` | `['pekerjaan', 'lakukan']` |
+| `col_exp` | `['lama', 'menjalankan']` |
+| `col_inc_norm` | `['penghasilan', 'satu', 'minggu']` |
+| `col_inc_low` | `['sedang', 'sepi']` |
+| `col_inc_high` | `['sedang', 'ramai']` |
+| `col_w1`–`col_w4` | `['minggu lalu']`, `['dua minggu']`, `['tiga minggu']`, `['empat minggu']` |
+
+**Strategi 4-minggu real data:** Jika responden mengisi W1–W4, data real dipakai untuk minggu 1–4 series. Minggu 5–52 diproyeksikan dengan `income_norm × seasonal_mult × payday_mult`.
+
+**Fallback income:** Jika kolom income utama tidak match, coba rata-rata W1–W4, lalu midpoint antara `inc_low` dan `inc_high`.
+
+**Filter consent:** Responden dengan jawaban `'tidak'` (exact, lowercase) di-skip.
+
+Output: list `df_survey_rows` — setiap responden valid menghasilkan 52 baris (prefix `SRV_XXXX`).
 
 ### CELL 8.3 — Gabungkan Sintetis + Survei
 
-Data survei diberi prefix `SRV_XXXX`, sintetis `SYN_XXXX`. Keduanya digabung dengan `pd.concat`. Feature engineering dasar (rolling, lag) di-set ke 0 untuk data survei karena tidak ada history sebelumnya.
+```python
+df_final = pd.concat([df, df_survey_fe], ignore_index=True)
+```
+
+Data survei diset `rolling/lag = 0` karena tidak ada history. `seasonal_income_pattern` di-map dari `seasonal_label`.
 
 ---
 
-## Bagian 9 — EDA Data Final
+## Bagian 9 — EDA Data Final + Jawaban BQ4 & BQ5
 
-6 visualisasi utama:
-1. **Bar chart mean income per gig_type** — validasi visual benchmark
-2. **Bar chart income per gig × experience** — membuktikan senior > mid > junior (BQ5)
-3. **Time-series 52 minggu per gig_type** — pola musiman terlihat jelas (BQ4)
-4. **Heatmap gig × minggu dalam bulan** — efek gajian minggu ke-4 (BQ4)
-5. **Boxplot volatilitas income per gig** — content_creator paling volatil (BQ5)
-6. **Correlation heatmap fitur** — lag_1w, rolling_mean_4w berkorelasi tinggi dengan income (input model LSTM)
+### CELL 9.1 — Bar Chart Mean Income per Gig Type
+
+Mean income per `gig_type` dengan label nilai di atas bar.  
+Judul: *"Mean Income Mingguan per Gig Type (Kalibrasi Indonesia)"*  
+Disimpan ke: `outputs/charts/03_mean_income_by_gig.png`
+
+### CELL 9.2 — Bar Chart Income per Gig × Experience (BQ5)
+
+Grouped bar chart `gig_type × experience_tier` dengan `mean().unstack()`.  
+Judul: *"Mean Income per Gig Type x Experience Tier (BQ5) → Senior berpenghasilan lebih tinggi"*  
+Disimpan ke: `outputs/charts/04_income_by_gig_experience.png`
+
+### CELL 9.3 — Time-Series 52 Minggu per Gig Type (BQ4)
+
+Line chart dengan shading untuk setiap periode musiman:
+- Hijau (10–13): Ramadan
+- Lime (14–14.5): Lebaran
+- Orange (45–46): Harbolnas
+- Ungu (49–52): Yearend
+- Biru (1–6): Low Season
+
+Judul: *"Pola Income Mingguan Setahun per Gig Type (BQ4) — Pola musiman ini yang perlu dipelajari model LSTM"*  
+Disimpan ke: `outputs/charts/05_timeseries_by_gig.png`
+
+### CELL 9.4 — Heatmap Gig × Minggu dalam Bulan (BQ4)
+
+`pivot_table(index='gig_type', columns='week_of_month')` dengan annotasi label `fmt_idr`.  
+Judul: *"Efek gajian: income naik di minggu ke-4"*  
+Disimpan ke: `outputs/charts/06_heatmap_gig_week_of_month.png`
+
+### CELL 9.5 — Boxplot + Bar Chart Volatilitas per Gig (BQ5)
+
+2 panel: boxplot distribusi CoV per user per gig_type + bar chart mean CoV. Garis merah putus-putus di `CoV = 0.30` sebagai threshold referensi.  
+Disimpan ke: `outputs/charts/07_volatility_by_gig.png`
+
+### CELL 9.6 — Correlation Heatmap Fitur (BQ5)
+
+Kolom yang dimasukkan: `income_amount`, `rolling_mean_4w`, `rolling_std_4w`, `rolling_cov_8w`, `income_volatility`, `income_growth_1w`, `lag_1w`, `lag_4w`, `week_of_month`, `seasonal_income_pattern`, `is_payday_week`.  
+Judul: *"Fitur mana yang paling berkorelasi dengan income_amount?"*  
+Disimpan ke: `outputs/charts/08_correlation_heatmap.png`
 
 ---
 
 ## Bagian 10 — Bias Testing & Validasi
 
-Target minimum: 5/6 test PASS PENUH.
+Target minimum: **5/6 test PASS PENUH.**
 
-### Test 1 — Mean vs Benchmark (threshold ±15%)
-Memastikan mean income sintetis per gig_type tidak drift jauh dari benchmark IDinsight/Sakernas. Kegagalan → ada bug di parameter mu atau experience multiplier.
+### Bias Test 1 — Mean vs Benchmark (threshold ±15%)
 
-### Test 2 — KS Test vs Log-Normal Teoritis (p-value > 0.01)
-Kolmogorov-Smirnov test: apakah distribusi income sintetis benar-benar Log-Normal? Catatan: p-value rendah masih wajar karena seasonal multiplier menggeser distribusi — bukan berarti data salah.
+Untuk setiap gig_type, cek apakah `mean(income_sintetis)` dalam ±15% dari `benchmark['mu']`.
 
-### Test 3 — Seasonal Direction
-Apakah arah efek musiman benar? (Ramadan → kurir naik, bukan turun). Tidak mengecek magnitudo, hanya arah.
+```python
+pct_diff  = (actual_mu - bench_mu) / bench_mu * 100
+passed    = abs(pct_diff) <= 15.0
+```
 
-### Test 4 — Experience Multiplier (tolerance ±25%)
-Rasio senior/junior aktual harus mendekati 1.45/0.65 = 2.23×. Toleransi 25% karena ada noise dari region multiplier dan personal_mu_factor.
+Visualisasi: grouped bar Benchmark vs Aktual per gig_type.  
+Disimpan ke: `outputs/charts/09_bias_test_mean.png`
 
-### Test 5 — Autocorrelation AR(1) (target 0.20–0.60)
-Lag-1 autocorrelation income series harus dalam range 0.20–0.60. Ini membuktikan AR(1) berfungsi dengan benar dalam log-space.(AR1_COEF = 0.45 + proper log-space).
+### Bias Test 2 — KS Test vs Log-Normal Teoritis (p-value > 0.01)
 
-### Test 6 — BPS Range Validation
-Monthly mean income per gig_type harus dalam range Rp 500rb – Rp 8jt/bulan. Range ini diambil dari threshold absolut BPS pekerja informal Indonesia (tidak tergantung hasil parsing BPS yang mungkin gagal).
+```python
+ks_stat, p_val = stats.kstest(gig_data, 'lognorm', args=(sigma_ln, 0, np.exp(mu_ln)))
+passed = p_val > 0.01
+```
+
+Catatan: p-value rendah masih wajar karena seasonal multiplier menggeser distribusi — bukan berarti data salah (diberi label `WARN` bukan `FAIL`).
+
+### Bias Test 3 — Seasonal Direction
+
+Untuk setiap kombinasi `seasonal_label × gig_type`, cek apakah **arah** (naik/turun) income seasonal vs normal sesuai dengan `SEASONAL_MULT`. Tidak mengecek besaran, hanya arah.
+
+```python
+direction_ok = (actual_ratio > 1) == (expected_mult > 1)
+```
+
+### Bias Test 4 — Experience Multiplier (tolerance ±25%)
+
+Rasio `mean(senior) / mean(junior)` per gig_type vs target `1.45 / 0.65 = 2.23×`.
+
+```python
+pct_diff = abs(actual_ratio - target_ratio) / target_ratio * 100
+passed   = pct_diff <= 25.0
+```
+
+### Bias Test 5 — Autocorrelation AR(1) (target 0.20–0.60)
+
+Sampling 30 user, hitung lag-1 AC dari series income:
+```python
+ac = np.corrcoef(series[:-1], series[1:])[0, 1]
+passed = 0.20 <= mean_ac <= 0.60
+```
+
+### Bias Test 6 — BPS Range Validation
+
+Mean income bulanan (`× 4.345`) per gig_type harus dalam range `Rp 500.000 – Rp 8.000.000`:
+```python
+BPS_RANGE_MIN = 500_000
+BPS_RANGE_MAX = 8_000_000
+in_range = BPS_RANGE_MIN <= monthly_mean <= BPS_RANGE_MAX
+```
+
+### Ringkasan Bias Test
+
+Semua hasil dirangkum dalam `df_bias_summary` dengan styling warna (hijau=PASS, kuning=PARTIAL/WARN, merah=FAIL). Interpretasi otomatis: ≥5 PASS = "Sangat baik", ≥3 PASS = "Cukup baik", < 3 = "Perlu perbaikan".
 
 ---
 
-## Bagian 11 — Normalisasi & Target
+## Bagian 11 — Normalisasi per User + Kolom Target
 
-- **MinMaxScaler per user**: normalisasi income 0–1 per user (bukan global) karena income antar user sangat bervariasi. Scaler disimpan di `income_scalers.pkl` untuk inverse transform saat inference.
-- **target_next_week**: `shift(-1)` dari income_amount → nilai yang diprediksi model. Baris terakhir setiap user bernilai NaN (tidak ada minggu berikutnya).
+### CELL 11.1 — MinMaxScaler per User + target_next_week
+
+```python
+# MinMaxScaler per user (bukan global)
+scaler = MinMaxScaler()
+df_final.loc[mask, 'income_normalized'] = scaler.fit_transform(values).flatten()
+scalers[uid] = scaler
+
+# Kolom target — nilai yang diprediksi model
+df_final['target_next_week'] = df_final.groupby('user_id')['income_amount'].shift(-1)
+```
+
+Scaler disimpan ke `data/processed/income_scalers.pkl` untuk inverse transform saat inference.
+
+> **Catatan anti-leakage:** Scaler di-fit hanya pada `income_amount` per user, bukan pada kolom target. Baris terakhir tiap user memiliki `target_next_week = NaN` — harus di-drop sebelum training.
 
 ---
 
-## Bagian 12 — Export & Chronological Split
+## Bagian 12 — Export + Chronological Split
 
-**Chronological split** (bukan random split) wajib untuk time-series agar tidak ada data leakage:
+### CELL 12.1 — Export + Split
+
+**Chronological split** (bukan random) wajib untuk time-series:
 
 | Set | Minggu | Proporsi |
 |---|---|---|
-| Train | 1–36 | 69% |
-| Validation | 37–44 | 15% |
-| Test | 45–52 | 15% |
+| Train | 1–36 | ~69% |
+| Validation | 37–44 | ~15% |
+| Test | 45–52 | ~15% |
 
-File yang diexport:
-- `income_clean.csv` — dataset final lengkap
-- `income_train/val/test.csv` — split siap training
-- `income_scalers.pkl` — scaler per user
-- `synthetic_params.json` — parameter lengkap untuk reproducibility
-- `synthetic_proportion_report.md` — laporan proporsi sintetis vs survei
+```python
+TRAIN_END = 36
+VAL_END   = 44
+```
+
+**File yang diexport:**
+
+| File | Deskripsi |
+|---|---|
+| `data/processed/income_clean.csv` | Dataset final lengkap |
+| `data/processed/income_train.csv` | Train set (minggu 1–36) |
+| `data/processed/income_val.csv` | Validation set (minggu 37–44) |
+| `data/processed/income_test.csv` | Test set (minggu 45–52) |
+| `data/processed/income_scalers.pkl` | MinMaxScaler per user |
+| `data/synthetic/synthetic_params.json` | Semua parameter sintesis untuk reproducibility |
+
+**`synthetic_params.json`** berisi: `n_users`, `n_weeks`, `random_seed`, `gig_distribution`, `experience_distribution`, `volatility_map`, `experience_multiplier`, `ar1_coefficient`, `distribution_type`, semua sumber Kaggle & BPS, `split_method`, range minggu per split, dan `survey_rows_merged`.
+
+### CELL 12.2 — Laporan Proporsi Sintetis vs Survei
+
+Menggunakan helper functions `make_md_table()` dan `safe_pct()` untuk membuat laporan Markdown yang berisi tabel ringkasan dataset, proporsi data, dan benchmark per gig_type.  
+Disimpan ke: `outputs/synthetic_proportion_report.md`
 
 ---
 
 ## Bagian 13 — Data Dictionary
 
-Dokumentasi 23 kolom dataset dalam format CSV dan Markdown, dibagi per kategori:
-- **Identitas Pengguna:** user_id, gig_type, region, experience_tier, platform
-- **Informasi Waktu:** week_number, week_of_month, seasonal_label, seasonal_income_pattern, is_payday_week
-- **Pendapatan:** income_amount, income_normalized, income_growth_1w, income_vs_rolling
-- **Feature Engineering:** rolling_mean_4w, rolling_std_4w, rolling_cov_8w, income_volatility, lag_1w, lag_2w, lag_4w
-- **Target Model:** target_next_week
-- **Metadata:** data_source
+### CELL 13.1 — Data Dictionary Lengkap (23 Kolom)
+
+Diekspor dalam 2 format: CSV dan Markdown.
+
+#### Identitas Pengguna (5 kolom)
+
+| Kolom | Tipe | Contoh/Range | Catatan |
+|---|---|---|---|
+| `user_id` | string | `SYN_0001`, `SRV_0001` | Prefix SYN_ = sintetis, SRV_ = survei |
+| `gig_type` | string | ojek_online, kurir, freelancer_it, ... | 6 kategori, dikalibrasi dari benchmark Indonesia |
+| `region` | string | jabodetabek, bandung, jawa_barat_lainnya, ... | jabodetabek = multiplier 1.10× |
+| `experience_tier` | string | junior, mid, senior | junior=0.65×, mid=1.0×, senior=1.45× |
+| `platform` | string | Gojek, Grab, Shopee, Fiverr, Upwork, ... | Disesuaikan per gig_type |
+
+#### Informasi Waktu (5 kolom)
+
+| Kolom | Tipe | Contoh/Range | Catatan |
+|---|---|---|---|
+| `week_number` | int | 1–52 | train=1-36, val=37-44, test=45-52 |
+| `week_of_month` | int | 1–4 | Nilai 4 = minggu akhir bulan (payday) |
+| `seasonal_label` | string | low_season, normal, ramadan, lebaran, harbolnas, yearend | 6 label musim |
+| `seasonal_income_pattern` | int | 1–6 | Encoding numerik dari seasonal_label |
+| `is_payday_week` | int | 0 atau 1 | 1 jika week_of_month == 4 |
+
+#### Pendapatan (4 kolom)
+
+| Kolom | Tipe | Contoh/Range | Catatan |
+|---|---|---|---|
+| `income_amount` | float | ≥ 0 | Income bersih mingguan IDR, dibulatkan ke ribuan |
+| `income_normalized` | float | 0.0–1.0 | MinMaxScaler per user; scaler di income_scalers.pkl |
+| `income_growth_1w` | float | -1.0 s/d 5.0 | Perubahan % vs minggu sebelumnya |
+| `income_vs_rolling` | float | negatif atau positif | Deviasi dari rolling_mean_4w (relatif) |
+
+#### Feature Engineering (7 kolom)
+
+| Kolom | Tipe | Contoh/Range | Catatan |
+|---|---|---|---|
+| `rolling_mean_4w` | float | ≥ 0 | Rata-rata 4 minggu terakhir per user |
+| `rolling_std_4w` | float | ≥ 0 | Std 4 minggu terakhir |
+| `rolling_cov_8w` | float | ≥ 0 | CoV rolling 8 minggu |
+| `income_volatility` | float | ≥ 0 | CoV global per user (konstan 52 minggu) |
+| `lag_1w` | float | ≥ 0 | Income 1 minggu lalu |
+| `lag_2w` | float | ≥ 0 | Income 2 minggu lalu |
+| `lag_4w` | float | ≥ 0 | Income 4 minggu lalu |
+
+#### Target Model (1 kolom)
+
+| Kolom | Tipe | Contoh/Range | Catatan |
+|---|---|---|---|
+| `target_next_week` | float | ≥ 0 | `shift(-1)` dari income_amount; baris terakhir = NaN → drop sebelum training |
+
+#### Metadata (1 kolom)
+
+| Kolom | Tipe | Contoh/Range | Catatan |
+|---|---|---|---|
+| `data_source` | string | `synthetic` atau `survey` | Untuk validasi proporsi data |
+
+#### Ringkasan untuk AI Engineer (dari data_dictionary.md)
+
+- Kolom target utama: **`target_next_week`**
+- Input penting LSTM: `income_amount`, `lag_1w`, `lag_2w`, `lag_4w`, `rolling_mean_4w`, `rolling_std_4w`, `seasonal_income_pattern`
+- Gunakan `income_normalized` agar skala stabil antar user
+- **Drop baris dengan `target_next_week = NaN` sebelum training**
 
 ---
 
 ## Bagian 14 — Push ke GitHub
 
-Strategi push dengan `--force-with-lease` (lebih aman dari `--force`):
-1. Fetch origin untuk sync
-2. Hapus file lama dari git index (`git rm --cached`)
-3. Add file baru
-4. Commit hanya jika ada perubahan
-5. Verifikasi 22 file output tersedia sebelum push
+### CELL 14A — Git Config + Branch Management
+
+```python
+BRANCH_NAME = "feature/income-predictor"
+```
+
+Konfigurasi git identity:
+- `user.email = 'nayyafn2006@gmail.com'`
+- `user.name = 'Clarisya Adeline'`
+
+Logika branch sama dengan CELL 0.1: cek local branch → remote branch → buat baru.
+
+### CELL 14B — Push ke Branch
+
+Strategi push (5 langkah):
+1. `git fetch origin`
+2. `git rm -r --cached data/processed/ data/synthetic/ outputs/` — hapus tracking file lama
+3. `git add -A data/processed/ data/synthetic/ outputs/`
+4. `git diff --cached --quiet || git commit -m "{commit_message}"` — commit hanya jika ada perubahan
+5. `git push -u origin {BRANCH_NAME}` — push ke branch (bukan `--force`, bukan ke main)
+
+Commit message: `"feat: DS2 income pipeline v9-FINAL - AR1 survey, KS+AD, leakage fix, lag8/12, week_sin/cos, 500 users, BPS 8 provinsi"`
+
+> Perbedaan dengan Notebook 2: menggunakan `git push -u origin {BRANCH_NAME}` (push ke branch spesifik), bukan `--force-with-lease` ke main.
+
+### CELL 14.3 — Verifikasi File Output
+
+Memeriksa keberadaan **22 file output** yang wajib ada sebelum dianggap selesai:
+
+| Kategori | File |
+|---|---|
+| Dataset utama | `income_clean.csv`, `income_train/val/test.csv`, `income_scalers.pkl` |
+| Data Dictionary | `data_dictionary.csv`, `data_dictionary.md` |
+| Data sintetis | `synthetic_income_raw.csv`, `synthetic_params.json` |
+| Laporan | `synthetic_proportion_report.md` |
+| Charts (11 file) | `00_cov_calibration.png` s/d `09_bias_test_mean.png` |
+
+Jika semua ada → `"Semua file tersedia dan siap di-push ke GitHub."`. Jika ada yang missing → ditampilkan dengan tanda `[x MISSING]`.
 
 ---
+
+## Catatan Perbedaan vs Dokumentasi Draft
+
+Beberapa nilai aktual di notebook berbeda dari dokumen draft yang diunggah:
+
+| Parameter | Nilai di Draft | Nilai Aktual di Notebook |
+|---|---|---|
+| `INDIA_ADAPT` | 0.55 | **0.23** |
+| `USD_TO_IDR` | 17.545 | **17.252** |
+| `SANITY_MAX_MONTHLY_IDR` | 10.000.000 | **15.000.000** (di CELL 4.1) |
+| Branch git | push ke `main` | **`feature/income-predictor`** |
+| Commit message | versi 8 | **versi 9-FINAL** |
+| Total file verify | 22 file | **22 file** (sama) |
+
+---
+
+## File Output Lengkap
+
+```
+data/
+├── raw/
+│   ├── Freelancer_Work_Patterns_Income_Prediction_Dataset.csv
+│   ├── freelancer_earnings_bd.csv
+│   ├── delivery_boy_salary.csv
+│   ├── freelancer_earnings_vs_skillstack_dataset.csv
+│   ├── Rata-Rata Pendapatan Bersih Sebulan ... 2025.csv  (×2)
+│   ├── Rata-Rata_Pendapatan_Bersih...2024.csv
+│   ├── Rata-rata Pendapatan Bersih...2023.csv
+│   └── form_responses.csv  (opsional)
+├── processed/
+│   ├── income_clean.csv          ← FILE UTAMA
+│   ├── income_train.csv
+│   ├── income_val.csv
+│   ├── income_test.csv
+│   ├── income_scalers.pkl
+│   ├── data_dictionary.csv
+│   └── data_dictionary.md
+└── synthetic/
+    ├── synthetic_income_raw.csv
+    └── synthetic_params.json
+
+outputs/
+├── synthetic_proportion_report.md
+└── charts/
+    ├── 00_cov_calibration.png
+    ├── 01_kaggle_vs_benchmark.png
+    ├── 02_boxplot_delivery.png
+    ├── 02b_skillstack_eda.png
+    ├── 02c_bps_benchmark_provinsi.png
+    ├── 03_mean_income_by_gig.png
+    ├── 04_income_by_gig_experience.png
+    ├── 05_timeseries_by_gig.png
+    ├── 06_heatmap_gig_week_of_month.png
+    ├── 07_volatility_by_gig.png
+    ├── 08_correlation_heatmap.png
+    └── 09_bias_test_mean.png
+```
