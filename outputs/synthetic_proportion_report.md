@@ -11,8 +11,8 @@
 | Kaggle sources | 4 dataset |
 | BPS sources | 4 dataset per provinsi |
 | Skillstack premium ratio | 2.52x |
-| BPS Nasional Bebas | Rp 1,652,500/bulan |
-| BPS DKI Bebas | Rp 2,663,600/bulan |
+| BPS Nasional Bebas | Rp 1,940,844/bulan |
+| BPS DKI Bebas | Rp 4,301,411/bulan |
 
 ## Proporsi Data
 
