@@ -1,34 +1,43 @@
-# Laporan Proporsi Data & Validasi Bias
+# Laporan Proporsi Data, Split & Validasi Bias (v9)
 
 ## Ringkasan Dataset
-
 | Informasi | Nilai |
 | --- | --- |
-| Total baris | 18,200 |
-| Total user | 350 |
+| Versi pipeline | v9-FINAL |
+| Total baris | 28,600 |
+| Total user | 550 |
 | Minggu per user | 52 |
-| Distribusi | Log-Normal AR(1) |
+| N_YEAR referensi | 2025 |
+| Ramadan minggu | 9–12 |
+| Distribusi | Log-Normal AR(1) log-space |
 | Kaggle sources | 4 dataset |
-| BPS sources | 4 dataset per provinsi |
-| Skillstack premium ratio | 2.52x |
+| BPS sources | 4 dataset, 9 provinsi diparse |
+| Skillstack premium ratio | 2.17x |
 | BPS Nasional Bebas | Rp 1,652,500/bulan |
 | BPS DKI Bebas | Rp 2,663,600/bulan |
+| Data leakage fix | Scaler fit hanya di minggu 1–36 |
+| Feature baru v9 | lag_8w, lag_12w, week_sin, week_cos |
 
 ## Proporsi Data
-
 | Kategori | Baris | Persentase |
 | --- | --- | --- |
-| Sintetis | 15,600 | 85.7% |
-| Survei (real) | 2,600 | 14.3% |
-| Total | 18,200 | 100.0% |
+| Sintetis | 26,000 | 90.9% |
+| Survei (real) | 2,600 | 9.1% |
+| Total | 28,600 | 100.0% |
 
-## Benchmark per Gig Type
+## Chronological Split (v9: + metadata musiman)
+| Set | Minggu | Baris | Persentase | Musim yang Tercakup |
+| --- | --- | --- | --- | --- |
+| Train | 1–36 | 19,800 | 69.2% | Low Season, Normal, Ramadan, Lebaran |
+| Validation | 37–44 | 4,400 | 15.4% | Normal |
+| Test | 45–52 | 4,400 | 15.4% | Harbolnas, Year-end |
 
-| Gig Type | Mean/Minggu | Sumber |
-| --- | --- | --- |
-| ojek_online | Rp 700rb | IDinsight 2025 net + Sakernas Jakarta transport |
-| kurir | Rp 730rb | IDinsight 2025 net + CELIOS 2024 |
-| freelancer_it | Rp 1.6jt | Sakernas Jakarta 2023 - sektor informasi & komunikasi |
-| freelancer_desain | Rp 1.2jt | Sakernas Jakarta 2023 - sektor jasa perusahaan |
-| content_creator | Rp 1.1jt | Estimasi - midpoint transport & skilled |
-| jualan_online | Rp 900rb | IDinsight 2025 casual + self-employed average |
+## Benchmark per Gig Type (BPS Dynamically Corrected)
+| Gig Type | Mean/Minggu | BPS Correction | Sumber |
+| --- | --- | --- | --- |
+| ojek_online | Rp 380rb | 0.619x | IDinsight 2025 net income ojek online Indonesia |
+| kurir | Rp 342rb | 0.619x | IDinsight 2025 kurir + CELIOS 2024 |
+| jualan_online | Rp 257rb | 0.619x | CELIOS 2024 pedagang online Indonesia |
+| freelancer_desain | Rp 456rb | 0.619x | Sakernas Jakarta 2023 + Fastwork.id rate card |
+| freelancer_it | Rp 599rb | 0.619x | Sakernas Jakarta 2023 IT freelancer + Glints 2024 |
+| content_creator | Rp 413rb | 0.619x | CELIOS 2024 + Creator Economy Indonesia 2024 |

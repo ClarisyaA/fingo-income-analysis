@@ -1,26 +1,34 @@
 {
-  "n_users": 300,
+  "version": "v9-FINAL",
+  "n_users": 500,
   "n_weeks": 52,
   "random_seed": 42,
+  "n_year": 2025,
+  "ramadan_weeks": [
+    9,
+    12
+  ],
+  "ar1_coefficient": 0.35,
+  "distribution": "log_normal_ar1_logspace",
   "gig_distribution": {
-    "ojek_online": 0.3,
-    "kurir": 0.2,
-    "jualan_online": 0.2,
-    "freelancer_it": 0.1,
-    "freelancer_desain": 0.1,
-    "content_creator": 0.1
+    "ojek_online": 0.25,
+    "kurir": 0.18,
+    "jualan_online": 0.17,
+    "freelancer_desain": 0.15,
+    "freelancer_it": 0.13,
+    "content_creator": 0.12
   },
   "experience_distribution": {
-    "junior": 0.35,
-    "mid": 0.45,
+    "junior": 0.4,
+    "mid": 0.4,
     "senior": 0.2
   },
   "volatility_map": {
-    "ojek_online": 0.65,
-    "kurir": 0.65,
-    "jualan_online": 0.35,
-    "freelancer_it": 0.5790549618969588,
-    "freelancer_desain": 0.6185075796845771,
+    "ojek_online": 0.6,
+    "kurir": 0.6,
+    "jualan_online": 0.45,
+    "freelancer_desain": 0.6,
+    "freelancer_it": 0.5915533205691843,
     "content_creator": 0.5682919653968834
   },
   "experience_multiplier": {
@@ -28,9 +36,28 @@
     "mid": 1.0,
     "senior": 1.45
   },
-  "ar1_coefficient": 0.45,
-  "distribution_type": "log_normal_ar1",
-  "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024 + BPS 2023-2025",
+  "bps_parsed": {
+    "indonesia": 1652500.0,
+    "dki": 2663600.0,
+    "jabar": 1520500.0,
+    "jateng": 1684200.0,
+    "jatim": 1535600.0,
+    "sumut": 1848100.0,
+    "sulsel": 1714200.0,
+    "bali": 2090400.0,
+    "kaltim": 2773200.0
+  },
+  "bps_ratio_nasional": 0.6193172257136764,
+  "bps_nasional_bebas": 1652500.0,
+  "bps_dki_bebas": 2663600.0,
+  "skillstack_premium_ratio": 2.1666666666666665,
+  "split_method": "chronological_by_week",
+  "train_weeks": "1\u201336",
+  "val_weeks": "37\u201344",
+  "test_weeks": "45\u201352",
+  "scaler_fit_weeks": "1\u201336 ONLY (no data leakage)",
+  "survey_rows_merged": 2600,
+  "benchmark_source": "IDinsight 2025 + Sakernas Jakarta 2023 + CELIOS 2024 + BPS 2023\u20132025",
   "kaggle_sources": [
     "Freelancer_Work_Patterns_Income_Prediction_Dataset.csv",
     "freelancer_earnings_bd.csv",
@@ -43,12 +70,54 @@
     "bps_informal_2025",
     "bps_informal_2023"
   ],
-  "skillstack_premium_ratio": 2.524982616240076,
-  "bps_nasional_bebas": 1652500.0,
-  "bps_dki_bebas": 2663600.0,
-  "split_method": "chronological_by_week",
-  "train_weeks": "1-36",
-  "val_weeks": "37-44",
-  "test_weeks": "45-52",
-  "survey_rows_merged": 2600
+  "bias_test_results": {
+    "test1_mean_benchmark": {
+      "n_pass": 0,
+      "n_total": 6,
+      "status": "PARTIAL"
+    },
+    "test2_distribution": {
+      "n_pass": 0,
+      "n_total": 6,
+      "status": "WARN"
+    },
+    "test3_seasonal": {
+      "n_pass": 29,
+      "n_total": 30,
+      "status": "PARTIAL"
+    },
+    "test4_experience": {
+      "n_pass": 6,
+      "n_total": 6,
+      "status": "PASS"
+    },
+    "test5_autocorr": {
+      "mean_ac": 0.2551,
+      "status": "PASS"
+    },
+    "test6_bps_range": {
+      "n_pass": 6,
+      "n_total": 6,
+      "status": "PASS"
+    },
+    "total_pass": 3,
+    "total_tests": 6
+  },
+  "feature_engineering_v9": [
+    "lag_1w",
+    "lag_2w",
+    "lag_4w",
+    "lag_8w",
+    "lag_12w",
+    "rolling_mean_4w",
+    "rolling_std_4w",
+    "rolling_cov_8w",
+    "income_volatility",
+    "income_vs_rolling",
+    "income_growth_1w",
+    "week_sin",
+    "week_cos",
+    "seasonal_income_pattern",
+    "is_payday_week"
+  ]
 }
