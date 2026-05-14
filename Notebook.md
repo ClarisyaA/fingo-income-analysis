@@ -1,6 +1,6 @@
 # Dokumentasi Menyeluruh — Fingo DS2: Income Predictor Data Pipeline
 **Tim:** CC26-PSU217 | **Role:** Data Scientist 2 — Clarisya Adeline  
-**Versi Notebook:** v8 (FIXED) | **Tujuan:** End-to-end Data Wrangling untuk Fitur 3 Fingo (Income Predictor)
+**Versi Notebook:**  | **Tujuan:** End-to-end Data Wrangling untuk Fitur 3 Fingo (Income Predictor)
 
 ---
 
