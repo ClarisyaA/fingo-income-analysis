@@ -1,6 +1,6 @@
 # Dokumentasi Notebook — Fingo DS2: Income Predictor Data Pipeline
 **Tim:** CC26-PSU217 | **Role:** Data Scientist 2 — Clarisya Adeline  
-**File Notebook:** `notebook__5_.ipynb`  
+**File Notebook:** `notebook.ipynb`  
 **Judul Notebook:** Fingo DS2 - Kaggle Calibration + Synthetic Income Generator (FIXED)
 
 ---
