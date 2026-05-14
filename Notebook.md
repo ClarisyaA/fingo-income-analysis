@@ -268,7 +268,7 @@ Untuk setiap user dibuat:
 - `personal_mu_factor` ~ LogNormal(0, 0.10) → variasi heterogeneitas antar user
 - `sigma_ln`, `mu_ln` → parameter distribusi Log-Normal dalam log-space
 
-### CELL 6.3 — Generate Time-Series (AR(1) di Log-Space) ⭐ Fix Kritis v8
+### CELL 6.3 — Generate Time-Series (AR(1) di Log-Space) 
 
 **Persamaan AR(1) proper dalam log-space:**
 ```
@@ -306,7 +306,7 @@ Fitur-fitur yang dibangun dari time-series income:
 
 ### CELL 8.1 — Mapping Survei
 
-Setiap kolom Google Form dimapping ke nilai numerik/kategori yang konsisten dengan data sintetis. Fix kritis v8:
+Setiap kolom Google Form dimapping ke nilai numerik/kategori yang konsisten dengan data sintetis.
 - Menggunakan **en-dash (U+2013)** bukan hyphen biasa untuk range income (sesuai output Google Forms)
 - Tambahan opsi gig_type: "Pekerja harian" → jualan_online, "Tutor" → freelancer_desain
 - Region tambahan: Jatinangor, Sumedang → jawa_barat_lainnya; Lampung → sumatera
