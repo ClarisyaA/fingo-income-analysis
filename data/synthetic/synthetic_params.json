@@ -44,8 +44,8 @@
     "bps_informal_2023"
   ],
   "skillstack_premium_ratio": 2.524982616240076,
-  "bps_nasional_bebas": 1940844.0,
-  "bps_dki_bebas": 4301411.0,
+  "bps_nasional_bebas": 1652500.0,
+  "bps_dki_bebas": 2663600.0,
   "split_method": "chronological_by_week",
   "train_weeks": "1-36",
   "val_weeks": "37-44",
