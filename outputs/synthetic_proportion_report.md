@@ -4,8 +4,8 @@
 
 | Informasi | Nilai |
 | --- | --- |
-| Total baris | 17,420 |
-| Total user | 335 |
+| Total baris | 18,200 |
+| Total user | 350 |
 | Minggu per user | 52 |
 | Distribusi | Log-Normal AR(1) |
 | Kaggle sources | 4 dataset |
@@ -18,9 +18,9 @@
 
 | Kategori | Baris | Persentase |
 | --- | --- | --- |
-| Sintetis | 15,600 | 89.6% |
-| Survei (real) | 1,820 | 10.4% |
-| Total | 17,420 | 100.0% |
+| Sintetis | 15,600 | 85.7% |
+| Survei (real) | 2,600 | 14.3% |
+| Total | 18,200 | 100.0% |
 
 ## Benchmark per Gig Type
 
