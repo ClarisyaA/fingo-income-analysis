@@ -61,14 +61,14 @@ Dataset BPS digunakan sebagai **ground truth benchmark nasional** untuk memvalid
 | Dataset | File | Fungsi |
 |---|---|---|
 | BPS Pekerja Bebas 2025 | `Rata-Rata Pendapatan Bersih Sebulan Pekerja Informal...2025.csv` | Benchmark terbaru nasional + per provinsi |
-| BPS Pekerja Bebas 2024 (CLEAN) | `bps_pekerja_bebas_2024_clean.csv` | Benchmark utama (format sudah dibersihkan di v8) |
+| BPS Pekerja Bebas 2024  | `Rata-Rata Pendapatan Bersih Sebulan Pekerja Bebas...2024.csv` | Benchmark utama  |
 | BPS Pekerja Informal 2025 | Sama dengan file 2025 | Validasi silang |
 | BPS Pekerja Informal 2023 | `...2023.csv` | Baseline historis |
 
 #### Data Survei Primer
 - `form_responses.csv` — hasil Google Form survei lapangan dari gig worker. Dimuat otomatis jika tersedia. Jika tidak ada, 100% data sintetis.
 
-### Utility Baru v8: `clean_bps_csv()`
+### Utility Baru: `clean_bps_csv()`
 Fungsi untuk membersihkan CSV BPS mentah (multi-row header, format ribuan rupiah) menjadi format bersih dengan kolom snake_case dan nilai dalam rupiah penuh. Disediakan sebagai alat bantu untuk penggunaan di masa depan.
 
 ---
@@ -146,7 +146,7 @@ Monthly Net IDR / 4.345 = Weekly Net IDR
 
 ### CELL 3.5 — Cleaning & Parsing Dataset BPS
 
-**Dua jalur eksekusi (v8):**
+**Dua jalur eksekusi:**
 
 **Fast Path** (CSV sudah bersih): Deteksi otomatis jika CSV punya kolom `provinsi` (snake_case) tanpa `Unnamed:N`. Langsung pilih kolom `jumlah_agustus` atau setara.
 
@@ -354,7 +354,7 @@ Apakah arah efek musiman benar? (Ramadan → kurir naik, bukan turun). Tidak men
 Rasio senior/junior aktual harus mendekati 1.45/0.65 = 2.23×. Toleransi 25% karena ada noise dari region multiplier dan personal_mu_factor.
 
 ### Test 5 — Autocorrelation AR(1) (target 0.20–0.60)
-Lag-1 autocorrelation income series harus dalam range 0.20–0.60. Ini membuktikan AR(1) berfungsi dengan benar dalam log-space. Fix kritis v8 (AR1_COEF = 0.45 + proper log-space).
+Lag-1 autocorrelation income series harus dalam range 0.20–0.60. Ini membuktikan AR(1) berfungsi dengan benar dalam log-space.(AR1_COEF = 0.45 + proper log-space).
 
 ### Test 6 — BPS Range Validation
 Monthly mean income per gig_type harus dalam range Rp 500rb – Rp 8jt/bulan. Range ini diambil dari threshold absolut BPS pekerja informal Indonesia (tidak tergantung hasil parsing BPS yang mungkin gagal).
