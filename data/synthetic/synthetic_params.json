@@ -20,7 +20,7 @@
     "kurir": 0.65,
     "jualan_online": 0.35,
     "freelancer_it": 0.5790549618969588,
-    "freelancer_desain": 0.618507579684577,
+    "freelancer_desain": 0.6185075796845771,
     "content_creator": 0.5682919653968834
   },
   "experience_multiplier": {
@@ -43,7 +43,7 @@
     "bps_informal_2025",
     "bps_informal_2023"
   ],
-  "skillstack_premium_ratio": 2.5249826162400755,
+  "skillstack_premium_ratio": 2.524982616240076,
   "bps_nasional_bebas": 1652500.0,
   "bps_dki_bebas": 2663600.0,
   "split_method": "chronological_by_week",
