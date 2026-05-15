@@ -215,18 +215,22 @@ Monthly Gross IDR × NET_GROSS_RATIO (2_668_261 / 4_564_083) = Monthly Net IDR
 Monthly Net IDR / 4.345 = Weekly Net IDR
 ```
 
-**Mapping platform India → Indonesia:**
+**Mapping platform India/global → Indonesia:**
 
-| Platform India | Platform Indonesia |
+| Platform India/Global | Platform Indonesia |
 |---|---|
 | Zomato | GoFood |
 | Swiggy | ShopeeFood |
 | DoorDash | GoFood |
-| Deliveroo, Grab | Grab |
-| Blinkit, Dunzo | GoSend |
-| Zepto | J&T |
-| Talabat | SiCepat |
-| (tidak ada mapping) | Gojek |
+| Deliveroo | GrabFood |
+| Grab | Grab |
+| Blinkit | GoSend |
+| Dunzo | GoSend |
+| Zepto | GrabExpress |
+| Talabat | GoFood |
+| Tidak ada mapping | Lainnya |
+
+Mapping dilakukan berdasarkan kemiripan jenis layanan, seperti food delivery, ride-hailing, quick commerce, dan instant courier. Mapping ini bukan padanan resmi antarperusahaan, melainkan pendekatan domain adaptation agar dataset luar negeri lebih sesuai dengan konteks gig worker Indonesia.
 
 **Klasifikasi gig_type:** Dari kolom `peak_hours` — nilai `yes/1/true` → `ojek_online`, lainnya → `kurir`.
 
