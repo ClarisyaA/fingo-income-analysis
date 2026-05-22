@@ -1,0 +1,72 @@
+{
+  "endpoint": "/predict/income",
+  "method": "POST",
+  "description": "Prediksi pendapatan mingguan gig worker berdasarkan riwayat 4 minggu",
+  "model_file": "income_predictor.joblib",
+  "scaler_file": "income_scaler.joblib",
+  "encoder_file": "income_label_encoder.joblib",
+  "uses_scaling": false,
+  "feature_order": [
+    "gig_type_encoded",
+    "age",
+    "is_main_income",
+    "tenure_months",
+    "days_per_week",
+    "hours_per_day",
+    "weekly_work_hours",
+    "lag_1w",
+    "lag_2w",
+    "lag_3w",
+    "lag_4w",
+    "rolling_mean_4w",
+    "rolling_std_4w",
+    "income_volatility",
+    "income_growth_1w",
+    "income_trend_slope",
+    "income_per_hour",
+    "is_payday_week",
+    "recent_vs_avg",
+    "peak_week"
+  ],
+  "request_example": {
+    "gig_type": "driver_online",
+    "age": 28,
+    "is_main_income": 2,
+    "tenure_months": 24,
+    "days_per_week": 6,
+    "hours_per_day": 9,
+    "income_week1": 650000,
+    "income_week2": 700000,
+    "income_week3": 750000,
+    "income_week4": 600000,
+    "peak_week": 4
+  },
+  "response_example": {
+    "predicted_income_next_week": 680000,
+    "model_used": "XGBoost (tuned)",
+    "confidence": "MAE±Rp XX.XXX",
+    "status": "success"
+  },
+  "gig_type_valid_values": [
+    "seller_online",
+    "freelance_creative",
+    "driver_online",
+    "kurir",
+    "pekerja_harian",
+    "freelance_it",
+    "tutor",
+    "content_creator"
+  ],
+  "model_limitations": [
+    "Prediksi berbasis 4 minggu historis — tidak menangkap perubahan mendadak",
+    "Akurasi lebih baik untuk gig worker dengan penghasilan stabil",
+    "Data sintetis augmented — validasi lebih lanjut disarankan saat data real bertambah",
+    "Proporsi sintetis: 320/618 (51.8%) — didokumentasikan di laporan teknis"
+  ],
+  "evaluation_summary": {
+    "MAE": 49219.08186051179,
+    "RMSE": 79554.22127611421,
+    "MAPE_%": 11119.237279488982,
+    "R2": 0.9635608446681022
+  }
+}

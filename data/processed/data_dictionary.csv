@@ -1,24 +1,29 @@
-kategori,kolom,tipe_data,contoh/range,deskripsi_teknis,penjelasan_sederhana,catatan
-Identitas Pengguna,user_id,string,"SYN_0001, SRV_0001","ID unik per pengguna. SYN_ = sintetis, SRV_ = survei.",Kode unik untuk membedakan setiap pengguna.,Tidak boleh duplikat untuk user yang sama.
-Identitas Pengguna,gig_type,string,"ojek_online, kurir, freelancer_it, freelancer_desain, content_creator, jualan_online",Jenis pekerjaan utama pengguna dalam kategori gig worker.,Menunjukkan jenis pekerjaan pengguna.,Dikalibrasi dari benchmark Indonesia.
-Identitas Pengguna,region,string,"jabodetabek, bandung, jawa_tengah, ...","Wilayah domisili, mempengaruhi income via REGION_MULTIPLIER.",Lokasi tempat pengguna bekerja.,jabodetabek memiliki multiplier 1.10x.
-Identitas Pengguna,experience_tier,string,"junior, mid, senior",Tingkat pengalaman pengguna dalam pekerjaan gig.,"Pemula, menengah, atau berpengalaman.","junior=0.65x, mid=1.0x, senior=1.45x."
-Identitas Pengguna,platform,string,"Gojek, Grab, Shopee, Fiverr, Upwork",Platform utama yang digunakan untuk memperoleh pendapatan.,Aplikasi tempat pengguna bekerja.,Disesuaikan dengan jenis pekerjaan.
-Informasi Waktu,week_number,int,1-52,Nomor minggu dalam satu tahun.,Minggu keberapa data ini berasal.,"train=1-36, val=37-44, test=45-52."
-Informasi Waktu,week_of_month,int,1-4,Minggu keberapa dalam bulan. Nilai 4 = minggu akhir bulan.,Dipakai untuk melihat efek payday.,Minggu ke-4 = payday week.
-Informasi Waktu,seasonal_label,string,"low_season, normal, ramadan, lebaran, harbolnas, yearend",Label musim yang memengaruhi pendapatan.,"Kondisi periode (misal Ramadan, akhir tahun).",Digunakan untuk menangkap pola musiman.
-Informasi Waktu,seasonal_income_pattern,int,1-6,Representasi numerik seasonal_label.,Versi angka dari label musim.,Mapping dari SEASONAL_INT_MAP.
-Informasi Waktu,is_payday_week,int,0 atau 1,Bernilai 1 jika data pada minggu ke-4 bulan.,Flag minggu gajian.,Efek gajian meningkatkan income gig worker.
-Pendapatan,income_amount,float,>= 0,Pendapatan bersih mingguan dalam Rupiah.,Kolom utama: penghasilan pengguna per minggu.,"Log-Normal AR(1), dibulatkan ke ribuan."
-Pendapatan,income_normalized,float,0.0-1.0,income_amount yang dinormalisasi MinMaxScaler per user.,Pendapatan dalam skala 0-1 per user.,Scaler disimpan di income_scalers.pkl.
-Pendapatan,income_growth_1w,float,-1.0 sampai 5.0,Persentase perubahan income vs minggu sebelumnya.,Income naik atau turun dari minggu lalu.,Dihitung dari income vs lag_1w.
-Pendapatan,income_vs_rolling,float,bisa negatif atau positif,Perbandingan income_amount terhadap rolling_mean_4w.,Income minggu ini lebih tinggi/rendah dari rata-rata 4 minggu terakhir.,Positif = lebih tinggi.
-Feature Engineering,rolling_mean_4w,float,>= 0,Rata-rata income 4 minggu terakhir per user.,Baseline income jangka pendek.,Fitur penting untuk LSTM.
-Feature Engineering,rolling_std_4w,float,>= 0,Standar deviasi income 4 minggu terakhir.,Seberapa fluktuatif income 4 minggu terakhir.,Volatilitas jangka pendek.
-Feature Engineering,rolling_cov_8w,float,>= 0,Coefficient of Variation rolling 8 minggu.,Ketidakstabilan income 8 minggu terakhir.,Volatilitas jangka menengah.
-Feature Engineering,income_volatility,float,>= 0,CoV global per user (std/mean seluruh 52 minggu).,Karakteristik volatilitas user selama setahun.,Konstan untuk user yang sama.
-Feature Engineering,lag_1w,float,>= 0,Income pengguna 1 minggu sebelumnya.,Penghasilan minggu lalu.,Input kunci LSTM untuk pola temporal.
-Feature Engineering,lag_2w,float,>= 0,Income pengguna 2 minggu sebelumnya.,Penghasilan 2 minggu lalu.,Pola jangka pendek.
-Feature Engineering,lag_4w,float,>= 0,Income pengguna 4 minggu sebelumnya.,Penghasilan 4 minggu lalu.,Membantu membaca pola bulanan.
-Target Model,target_next_week,float,>= 0,Income minggu berikutnya (shift -1 dari income_amount).,Nilai yang diprediksi model.,"Baris terakhir tiap user = NaN, harus di-drop sebelum training."
-Metadata,data_source,string,synthetic atau survey,Menunjukkan asal data.,Apakah data dari sintesis atau survei asli.,Berguna untuk validasi proporsi.
+Kolom,Tipe,Sumber,Deskripsi
+user_id,str,Derived,"ID unik per user (REAL_XXXX = survei, SYN_XXXX = sintetis)"
+data_source,str,Derived,"Asal data: ""survey"" atau ""synthetic"""
+age,int,Survei,Usia responden (tahun). Range: 17–52
+gig_type,str,Survei,"Jenis pekerjaan gig. Kategori: driver_online, freelance_it, seller_online, kurir, pekerja_harian, freelance_creative, tutor, content_creator"
+gig_type_encoded,int,Derived,Encoding numerik gig_type menggunakan LabelEncoder
+is_main_income,int,Survei,"Status penghasilan: 0=tambahan, 1=kadang utama, 2=utama"
+tenure_months,int,Survei,Lama menjalankan pekerjaan ini (bulan). Range: 2–72
+days_per_week,int,Survei,Hari kerja per minggu. Range: 1–7
+hours_per_day,int,Survei,Jam kerja per hari. Range: 1–10
+peak_week,int,Survei,"Minggu paling ramai dalam sebulan: 0=tidak ada pola, 1–4=minggu ke-N"
+income_week1,int,Survei,Pendapatan minggu lalu (IDR). Minggu paling baru.
+income_week2,int,Survei,Pendapatan dua minggu lalu (IDR)
+income_week3,int,Survei,Pendapatan tiga minggu lalu (IDR)
+income_week4,int,Survei,Pendapatan empat minggu lalu (IDR). Minggu paling lama.
+target_income,int,Derived,Target prediksi: income minggu ke-5 (IDR)
+rolling_mean_4w,float,Derived,Rata-rata income 4 minggu historis (IDR)
+rolling_std_4w,float,Derived,Std deviasi income 4 minggu historis (IDR)
+income_volatility,float,Derived,Volatilitas income = std / mean. Semakin tinggi = semakin tidak stabil
+income_growth_1w,float,Derived,Growth rate: (week1 - week2) / week2. Positif = naik.
+income_trend_slope,float,Derived,Kemiringan linear trend 4 minggu (OLS slope). Positif = tren naik.
+weekly_work_hours,int,Derived,Total jam kerja per minggu = days_per_week × hours_per_day
+income_per_hour,float,Derived,Efisiensi: rolling_mean_4w / weekly_work_hours (IDR/jam)
+is_payday_week,int,Derived,Flag: 1 jika peak_week adalah 1 (awal bulan) atau 4 (akhir bulan)
+recent_vs_avg,float,Derived,Rasio income_week1 terhadap rolling_mean_4w. >1 = minggu lalu di atas rata-rata
+lag_1w,int,Derived,Alias income_week1 (lag 1 minggu)
+lag_2w,int,Derived,Alias income_week2 (lag 2 minggu)
+lag_3w,int,Derived,Alias income_week3 (lag 3 minggu)
+lag_4w,int,Derived,Alias income_week4 (lag 4 minggu)
