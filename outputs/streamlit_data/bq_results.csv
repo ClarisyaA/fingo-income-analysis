@@ -1,0 +1,12 @@
+bq,dimension,metric,value,unit
+BQ1,freelancer_it,Mean Monthly Income,5493728.0,IDR
+BQ1,freelancer_desain,Mean Monthly Income,4934604.0,IDR
+BQ1,tutor,Mean Monthly Income,4665330.0,IDR
+BQ1,content_creator,Mean Monthly Income,3781665.0,IDR
+BQ1,jualan_online,Mean Monthly Income,3731365.0,IDR
+BQ1,kurir,Mean Monthly Income,3065812.0,IDR
+BQ1,ojek_online,Mean Monthly Income,3036911.0,IDR
+BQ1,pekerja_harian,Mean Monthly Income,2023554.0,IDR
+BQ2,ramadan,p-value t-test,0.0,p-value
+BQ2,harbolnas,p-value t-test,0.0,p-value
+BQ2,lebaran,p-value t-test,0.0,p-value

@@ -1,60 +1,40 @@
-Nama Fitur,Tipe Data,Deskripsi,Sumber,Range/Values,Skala
-usia,int,Usia responden (tahun),Survei GForm,18–60,Numerik
-income_utama,int,"0=tambahan, 1=kadang utama, 2=utama",Survei GForm,0/1/2,Ordinal
-lama_kerja_bulan,int,Lama menjalankan pekerjaan gig (bulan),Survei GForm,1–240,Numerik
-hari_kerja_per_minggu,int,Hari kerja per minggu,Survei GForm,1–7,Numerik
-jam_kerja_per_hari,int,Jam kerja per hari,Survei GForm,1–16,Numerik
-peak_week,int,"Minggu puncak income dalam bulan (0=no pattern, 1-4=minggu)",Survei GForm,0–4,Ordinal
-income_w1,int,Income minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
-income_w2,int,Income 2 minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
-income_w3,int,Income 3 minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
-income_w4,int,Income 4 minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
-avg_income_4w,int,Rata-rata income 4 minggu terakhir (IDR),Feature Eng.,0–~3jt,Numerik (IDR)
-income_std_4w,int,Standar deviasi income 4 minggu (volatilitas absolut),Feature Eng.,≥0,Numerik (IDR)
-income_cv,float,Coefficient of Variation = std/mean (volatilitas relatif),Feature Eng.,0.0–2.0,Rasio
-income_trend,int,"Tren income: w1 − w4 (positif=naik, negatif=turun)",Feature Eng.,any,Numerik (IDR)
-total_jam_seminggu,int,Total jam kerja per minggu = hari × jam,Feature Eng.,1–112,Numerik
-income_w1_vs_avg,float,Rasio income terbaru vs rata-rata 4 minggu (momentum),Feature Eng.,0.0–5.0,Rasio
-income_w5,int,TARGET: prediksi income minggu ke-5 (IDR),Synthetic (avg×noise),0–~3jt,Numerik (IDR)
-gig_ojek_online,int,Ojek online / driver aplikasi (0/1),OHE gig_type,0/1,Binary
-gig_kurir,int,Kurir / pengantar makanan (0/1),OHE gig_type,0/1,Binary
-gig_pekerja_harian,int,Pekerja harian / event / part-time (0/1),OHE gig_type,0/1,Binary
-gig_jualan_online,int,Jualan online / reseller / toko online (0/1),OHE gig_type,0/1,Binary
-gig_freelancer_desain,int,Freelance desain / editing / ilustrasi (0/1),OHE gig_type,0/1,Binary
-gig_freelancer_it,int,Freelance IT / programming / data (0/1),OHE gig_type,0/1,Binary
-gig_tutor,int,Tutor / guru les / pengajar lepas (0/1),OHE gig_type,0/1,Binary
-gig_content_creator,int,Content creator / admin media sosial (0/1),OHE gig_type,0/1,Binary
-domisili_jabodetabek,int,Jabodetabek (0/1),OHE domisili,0/1,Binary
-domisili_bandung,int,Bandung (0/1),OHE domisili,0/1,Binary
-domisili_jawa_barat_lainnya,int,Jawa Barat lainnya (0/1),OHE domisili,0/1,Binary
-domisili_jawa_tengah,int,Jawa Tengah/Yogyakarta (0/1),OHE domisili,0/1,Binary
-domisili_jawa_timur,int,Jawa Timur (0/1),OHE domisili,0/1,Binary
-domisili_sumatera,int,Sumatera (0/1),OHE domisili,0/1,Binary
-domisili_kalimantan,int,Kalimantan (0/1),OHE domisili,0/1,Binary
-domisili_sulawesi,int,Sulawesi (0/1),OHE domisili,0/1,Binary
-domisili_bali_nusa,int,Bali/Nusa Tenggara (0/1),OHE domisili,0/1,Binary
-sumber_gojek,int,Mendapat pekerjaan dari Gojek (0/1),Multi-select,0/1,Binary
-sumber_grab,int,Mendapat pekerjaan dari Grab (0/1),Multi-select,0/1,Binary
-sumber_maxim,int,Mendapat pekerjaan dari Maxim (0/1),Multi-select,0/1,Binary
-sumber_shopeefood,int,Mendapat pekerjaan dari ShopeeFood (0/1),Multi-select,0/1,Binary
-sumber_marketplace,int,Shopee/Tokopedia/TikTok Shop (0/1),Multi-select,0/1,Binary
-sumber_sosmed,int,Instagram/TikTok/YouTube (0/1),Multi-select,0/1,Binary
-sumber_wa_kenalan,int,WhatsApp/kenalan/pelanggan langsung (0/1),Multi-select,0/1,Binary
-sumber_fiverr,int,Website freelance Fiverr (0/1),Multi-select,0/1,Binary
-sumber_upwork,int,Upwork (0/1),Multi-select,0/1,Binary
-sumber_projectsid,int,Projects.co.id (0/1),Multi-select,0/1,Binary
-ramai_ramadan,int,Ramai saat Ramadan/Lebaran (0/1),Multi-select,0/1,Binary
-ramai_harbolnas,int,Ramai saat Harbolnas/flash sale (0/1),Multi-select,0/1,Binary
-ramai_awal_bulan,int,Ramai di awal bulan (0/1),Multi-select,0/1,Binary
-ramai_akhir_bulan,int,Ramai di akhir bulan/gajian (0/1),Multi-select,0/1,Binary
-ramai_akhir_pekan,int,Ramai di akhir pekan (0/1),Multi-select,0/1,Binary
-ramai_cuaca_bagus,int,Ramai saat cuaca bagus (0/1),Multi-select,0/1,Binary
-ramai_promo_app,int,Ramai saat ada promo aplikasi (0/1),Multi-select,0/1,Binary
-faktor_jumlah_pesanan,int,Faktor: jumlah pesanan/project (0/1),Multi-select,0/1,Binary
-faktor_jam_kerja,int,Faktor: jam bekerja (0/1),Multi-select,0/1,Binary
-faktor_weekend,int,Faktor: akhir pekan/libur (0/1),Multi-select,0/1,Binary
-faktor_cuaca,int,Faktor: cuaca (0/1),Multi-select,0/1,Binary
-faktor_promo,int,Faktor: promo aplikasi (0/1),Multi-select,0/1,Binary
-faktor_gajian,int,Faktor: tanggal gajian (0/1),Multi-select,0/1,Binary
-faktor_fisik,int,Faktor: kondisi fisik/capek (0/1),Multi-select,0/1,Binary
-faktor_rating,int,Faktor: rating/ulasan pelanggan (0/1),Multi-select,0/1,Binary
+Nama Fitur,Tipe Data,Deskripsi,Sumber,Range/Nilai,Jenis,Peran
+income_w1,float64,"Income minggu 1 (paling lama, bulan berjalan)",Generated,"100,000 – 10,000,000",Numerik,FITUR TRAINING
+income_w2,float64,Income minggu 2,Generated,"100,000 – 10,000,000",Numerik,FITUR TRAINING
+income_w3,float64,Income minggu 3,Generated,"100,000 – 10,000,000",Numerik,FITUR TRAINING
+income_w4,float64,Income minggu 4 (paling baru),Generated,"100,000 – 10,000,000",Numerik,FITUR TRAINING
+rolling_mean_4w,float64,Rata-rata income 4 minggu terakhir,Engineered,"50,000 – 5,000,000",Numerik,FITUR TRAINING
+rolling_std_4w,float64,Standar deviasi income 4 minggu,Engineered,"0 – 3,000,000",Numerik,FITUR TRAINING
+rolling_cov_4w,float64,Coefficient of Variation 4 minggu (std/mean),Engineered,0 – 2,Numerik,FITUR TRAINING
+income_trend_w4w1,float64,Selisih income W4 - W1 (tren naik/turun),Engineered,"-3,000,000 – 3,000,000",Numerik,FITUR TRAINING
+income_growth_pct,float64,Pertumbuhan income W4 vs W1 (%),Engineered,-100 – 500,Numerik,FITUR TRAINING
+usia,int64,Usia responden (tahun),Generated/Survei,18 – 60,Numerik,FITUR TRAINING
+lama_kerja_bulan,int64,Durasi menjalankan gig (bulan),Generated/Survei,1 – 240,Numerik,FITUR TRAINING
+hari_kerja_per_minggu,int64,Rata-rata hari kerja per minggu,Generated/Survei,1 – 7,Numerik,FITUR TRAINING
+jam_kerja_per_hari,int64,Rata-rata jam kerja per hari,Generated/Survei,2 – 14,Numerik,FITUR TRAINING
+income_utama,int64,"0=tambahan, 1=kadang utama, 2=utama",Generated/Survei,0/1/2,Ordinal,FITUR TRAINING
+total_jam_seminggu,float64,hari_kerja_per_minggu × jam_kerja_per_hari,Engineered,2 – 98,Numerik,FITUR TRAINING
+income_per_jam_est,float64,Estimasi income per jam (income_w4 / total_jam),Engineered,"500 – 200,000",Numerik,FITUR TRAINING
+income_ratio_w4w1,float64,Rasio income W4/W1 (momentum positif/negatif),Engineered,0 – 10,Numerik,FITUR TRAINING
+income_w3_vs_w4,float64,Rasio income W3/W4,Engineered,0 – 10,Numerik,FITUR TRAINING
+is_income_growing,int64,"1 jika W4 > W1 (tren positif), 0 jika sebaliknya",Engineered,0/1,Binary,FITUR TRAINING
+experience_months_log,float64,Log(1 + lama_kerja_bulan) — untuk normalisasi skewed,Engineered,0 – 6,Numerik,FITUR TRAINING
+seasonal_enc,int64,"0=normal, 1=ramadan, 2=harbolnas, 3=lebaran, 4=yearend",Engineered,0–4,Ordinal,FITUR TRAINING
+is_payday_week,int64,"1 = minggu gajian (ke-4), 0 = lainnya",Engineered,0/1,Binary,FITUR TRAINING
+prev_monthly_income,float64,Total pendapatan bulan sebelumnya (lag fitur),Engineered,"100,000 – 30,000,000",Numerik,FITUR TRAINING
+gig_type_ojek_online,int64,OHE: 1 jika gig driver ojek,OHE,0/1,Binary,FITUR TRAINING
+gig_type_kurir,int64,OHE: 1 jika kurir/pengiriman,OHE,0/1,Binary,FITUR TRAINING
+gig_type_jualan_online,int64,OHE: 1 jika jualan online,OHE,0/1,Binary,FITUR TRAINING
+gig_type_freelancer_it,int64,OHE: 1 jika freelancer IT/developer,OHE,0/1,Binary,FITUR TRAINING
+gig_type_freelancer_desain,int64,OHE: 1 jika freelancer desain/kreatif,OHE,0/1,Binary,FITUR TRAINING
+gig_type_content_creator,int64,OHE: 1 jika content creator,OHE,0/1,Binary,FITUR TRAINING
+gig_type_pekerja_harian,int64,OHE: 1 jika pekerja harian lepas,OHE,0/1,Binary,FITUR TRAINING
+gig_type_tutor,int64,OHE: 1 jika tutor/guru les,OHE,0/1,Binary,FITUR TRAINING
+region_jabodetabek,int64,OHE: 1 jika Jabodetabek,OHE,0/1,Binary,FITUR TRAINING
+region_bandung,int64,OHE: 1 jika Bandung/Jabar,OHE,0/1,Binary,FITUR TRAINING
+region_jawa_tengah,int64,OHE: 1 jika Jawa Tengah/DIY,OHE,0/1,Binary,FITUR TRAINING
+region_jawa_timur,int64,OHE: 1 jika Jawa Timur,OHE,0/1,Binary,FITUR TRAINING
+experience_tier_junior,int64,OHE: 1 jika junior (<12 bulan),OHE,0/1,Binary,FITUR TRAINING
+experience_tier_mid,int64,OHE: 1 jika mid (12-36 bulan),OHE,0/1,Binary,FITUR TRAINING
+experience_tier_senior,int64,OHE: 1 jika senior (>36 bulan),OHE,0/1,Binary,FITUR TRAINING
+monthly_income,float64,TARGET: total income 4 minggu = W1+W2+W3+W4 (rupiah),Generated/Survei,"400,000 – 25,000,000",Numerik,⚠️ TARGET (jangan masukkan ke fitur)

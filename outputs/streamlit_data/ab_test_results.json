@@ -1,0 +1,22 @@
+{
+  "group_A": {
+    "name": "Random Forest Baseline",
+    "mean_error": 2103.9811123985974,
+    "median_error": 995.0400000000373,
+    "std_error": 4305.229128205732
+  },
+  "group_B": {
+    "name": "XGBoost Tuned",
+    "mean_error": 10066.420408458864,
+    "median_error": 5155.5,
+    "std_error": 15788.900700077453
+  },
+  "test": {
+    "method": "Mann-Whitney U Test",
+    "u_stat": 124364.5,
+    "p_value": 1.0,
+    "significant": false,
+    "cohens_d": -0.6880754701456454,
+    "winner": "A"
+  }
+}
