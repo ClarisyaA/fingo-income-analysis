@@ -61,12 +61,12 @@
     "Prediksi berbasis 4 minggu historis — tidak menangkap perubahan mendadak",
     "Akurasi lebih baik untuk gig worker dengan penghasilan stabil",
     "Data sintetis augmented — validasi lebih lanjut disarankan saat data real bertambah",
-    "Proporsi sintetis: 320/618 (51.8%) — didokumentasikan di laporan teknis"
+    "Proporsi sintetis: 320/855 (37.4%) — didokumentasikan di laporan teknis"
   ],
   "evaluation_summary": {
-    "MAE": 49219.08186051179,
-    "RMSE": 79554.22127611421,
-    "MAPE_%": 11119.237279488982,
-    "R2": 0.9635608446681022
+    "MAE": 51475.07368106713,
+    "RMSE": 88218.49233601148,
+    "MAPE_%": 4.361533253620966,
+    "R2": 0.9702653469877625
   }
 }
