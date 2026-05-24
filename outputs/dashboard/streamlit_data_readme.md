@@ -1,28 +1,37 @@
 # Streamlit Dashboard Data README
-*Fingo Weekly Income Forecasting — v10-FINAL*
+*Fingo Weekly Income Forecasting — v11-FINAL*
+
+## ⚠️ Peringatan Dataset
+- **Data real 4w** = dasar validitas utama (535 responden nyata)
+- **Data sintetis 52w** = simulasi longitudinal untuk dashboard & AI Engineer
+- Jangan klaim performa synthetic sebagai performa dunia nyata
 
 ## File Dashboard (outputs/dashboard/)
-| File | Deskripsi |
-|------|-----------|
-| kpi_summary.csv | KPI utama proyek |
-| gig_type_income_summary.csv | Income per jenis pekerjaan |
-| domisili_income_summary.csv | Income per domisili + BPS gap |
-| weekly_trend_summary.csv | Tren W4→W1 |
-| direction_distribution_summary.csv | Distribusi Up/Stable/Down |
-| factor_fluctuation_summary.csv | Faktor fluktuasi |
-| work_pattern_summary.csv | Pola kerja per gig_type |
-| model_performance_summary.csv | Perbandingan semua model |
-| weekly_performance_dashboard.csv | Performa per target_week |
-| ab_testing_summary.csv | Hasil A/B test |
-| calendar_income_summary.csv | Income per calendar context |
-| seasonal_event_summary.csv | Income per seasonal preference |
-| payday_vs_normal_summary.csv | Payday vs Normal comparison |
-| data_dictionary.csv | Dokumentasi semua kolom |
+| File | Deskripsi | Sumber |
+|------|-----------|--------|
+| gig_type_distribution.csv | Distribusi 8 jenis pekerjaan | Real |
+| real_4w_income_summary.csv | Income summary per gig_type | Real |
+| synthetic_52w_income_summary.csv | Income summary synthetic | Synthetic |
+| synthetic_monthly_trend_summary.csv | Tren income per bulan | Synthetic |
+| synthetic_seasonal_event_summary.csv | Income per seasonal event | Synthetic |
+| synthetic_gig_type_monthly_summary.csv | Income per gig per bulan | Synthetic |
+| synthetic_weekly_forecasting_summary.csv | Forecasting summary | Synthetic |
+| dataset_comparison_summary.csv | Perbandingan real vs synthetic | Mixed |
+| model_performance_summary.csv | Semua model | Mixed |
+| weekly_performance_dashboard.csv | Performa per target_week | Real |
+| ab_testing_summary.csv | A/B test summary | Real |
+| seasonal_event_income_summary.csv | Seasonal preferences | Real |
+| data_dictionary.csv | Dokumentasi kolom | - |
 
-## Contoh Penggunaan
+## Contoh Penggunaan Streamlit
 ```python
 import streamlit as st
 import pandas as pd
-kpi = pd.read_csv("outputs/dashboard/kpi_summary.csv").iloc[0]
-st.metric("Total Responden", kpi["total_respondents"])
+
+real = pd.read_csv("outputs/dashboard/real_4w_income_summary.csv")
+synth = pd.read_csv("outputs/dashboard/synthetic_52w_income_summary.csv")
+
+st.header("Fingo — Income Forecasting Dashboard")
+st.warning("Data sintetis adalah simulasi, bukan data penghasilan nyata.")
+st.dataframe(real)
 ```

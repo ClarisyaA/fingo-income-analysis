@@ -1,5 +1,5 @@
 {
-  "total_features": 70,
+  "total_features": 78,
   "feature_order": [
     "current_income",
     "lag_1_income",
@@ -70,7 +70,15 @@
     "pref_payday",
     "pref_promo_aplikasi",
     "pref_ramadan_lebaran",
-    "pref_weekend"
+    "pref_weekend",
+    "gig_jualan_online",
+    "gig_pekerja_harian",
+    "gig_freelance_desain",
+    "gig_ojek_online",
+    "gig_kurir",
+    "gig_freelance_it",
+    "gig_tutor",
+    "gig_content_creator"
   ],
   "lag_rolling_trend_features": [
     "current_income",
@@ -118,36 +126,23 @@
     "target_is_christmas_year_end",
     "target_is_new_year"
   ],
-  "multihot_features": [
-    "src_fiverr",
-    "src_gojek",
-    "src_grab",
-    "src_instagram",
-    "src_langsung",
-    "src_shopee",
-    "src_tiktok",
-    "src_tokopedia",
-    "src_upwork",
-    "src_whatsapp",
-    "ramai_akhir_bulan_gajian",
-    "ramai_akhir_pekan",
-    "ramai_awal_bulan",
-    "ramai_harbolnas_flashsale",
-    "ramai_promo_aplikasi",
-    "ramai_ramadan_lebaran",
-    "fluk_akhir_pekan_hari_libur",
-    "fluk_cuaca",
-    "fluk_jam_kerja",
-    "fluk_jumlah_pesanan_project",
-    "fluk_kondisi_fisik",
-    "fluk_promo_aplikasi",
-    "fluk_rating_ulasan",
-    "fluk_tanggal_gajian_akhir_bulan",
+  "gig_type_ohe_features": [
+    "gig_jualan_online",
+    "gig_pekerja_harian",
+    "gig_freelance_desain",
+    "gig_ojek_online",
+    "gig_kurir",
+    "gig_freelance_it",
+    "gig_tutor",
+    "gig_content_creator"
+  ],
+  "multihot_pref_features": [
     "pref_awal_bulan",
     "pref_harbolnas",
     "pref_payday",
     "pref_promo_aplikasi",
     "pref_ramadan_lebaran",
     "pref_weekend"
-  ]
+  ],
+  "notes": "8 gig_type OHE wajib dipertahankan. Jangan gabung ke lainnya."
 }
