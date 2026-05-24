@@ -1,77 +1,116 @@
 {
-  "model_name": "Random Forest",
-  "mae": 420517.02803738316,
-  "mape": 28.17,
-  "r2": 0.7015,
-  "rmse": 566096.9960551739,
+  "model_name": "Random Forest (Tuned)",
+  "mae": 625962.5668780901,
+  "mape": 66.37,
+  "r2": 0.4187,
+  "rmse": 753343.7272389485,
+  "mae_normalized": 0.12273,
+  "within_30": 51.4,
+  "within_20": 35.5,
   "all_results": [
     {
-      "Model": "Random Forest",
-      "MAE": 420517.02803738316,
-      "RMSE": 566096.9960551739,
-      "MAPE (%)": 28.17,
-      "R\u00b2": 0.7015
-    },
-    {
       "Model": "Random Forest (Tuned)",
-      "MAE": 421401.2408735125,
-      "RMSE": 569490.2860156464,
-      "MAPE (%)": 28.27,
-      "R\u00b2": 0.6979
+      "MAE": 625962.5668780901,
+      "RMSE": 753343.7272389485,
+      "MAPE (%)": 66.37,
+      "R\u00b2": 0.4187,
+      "Within30%": 51.4,
+      "Within20%": 35.5,
+      "MAE_norm": 0.12273
     },
     {
-      "Model": "XGBoost (Tuned)",
-      "MAE": 427699.78125,
-      "RMSE": 575801.6511820715,
-      "MAPE (%)": 29.56,
-      "R\u00b2": 0.6911
+      "Model": "Random Forest",
+      "MAE": 632002.0934579439,
+      "RMSE": 765494.0822027313,
+      "MAPE (%)": 64.24,
+      "R\u00b2": 0.3998,
+      "Within30%": 48.6,
+      "Within20%": 35.5,
+      "MAE_norm": 0.12391
     },
     {
       "Model": "XGBoost",
-      "MAE": 446110.46875,
-      "RMSE": 597792.560997542,
-      "MAPE (%)": 32.23,
-      "R\u00b2": 0.6671
+      "MAE": 634819.0,
+      "RMSE": 776588.6901880557,
+      "MAPE (%)": 63.52,
+      "R\u00b2": 0.3822,
+      "Within30%": 48.6,
+      "Within20%": 33.6,
+      "MAE_norm": 0.12446
     },
     {
-      "Model": "Lasso (\u03b1=100)",
-      "MAE": 459552.68248342973,
-      "RMSE": 611675.7440813965,
-      "MAPE (%)": 32.16,
-      "R\u00b2": 0.6515
+      "Model": "XGBoost (Tuned)",
+      "MAE": 636420.625,
+      "RMSE": 751972.4495378804,
+      "MAPE (%)": 66.29,
+      "R\u00b2": 0.4208,
+      "Within30%": 49.5,
+      "Within20%": 29.9,
+      "MAE_norm": 0.12478
+    },
+    {
+      "Model": "LightGBM",
+      "MAE": 637314.2878656901,
+      "RMSE": 774304.0829324917,
+      "MAPE (%)": 62.17,
+      "R\u00b2": 0.3859,
+      "Within30%": 47.7,
+      "Within20%": 33.6,
+      "MAE_norm": 0.12495
     },
     {
       "Model": "Ridge (\u03b1=1.0)",
-      "MAE": 467202.9183300055,
-      "RMSE": 616848.3543169854,
-      "MAPE (%)": 33.15,
-      "R\u00b2": 0.6455
+      "MAE": 646692.8561037808,
+      "RMSE": 803584.4751735155,
+      "MAPE (%)": 66.9,
+      "R\u00b2": 0.3385,
+      "Within30%": 49.5,
+      "Within20%": 32.7,
+      "MAE_norm": 0.12679
+    },
+    {
+      "Model": "Lasso (\u03b1=100)",
+      "MAE": 647350.0595846595,
+      "RMSE": 800391.2646930031,
+      "MAPE (%)": 65.99,
+      "R\u00b2": 0.3438,
+      "Within30%": 50.5,
+      "Within20%": 35.5,
+      "MAE_norm": 0.12692
     },
     {
       "Model": "Baseline: Median",
-      "MAE": 820769.1588785046,
-      "RMSE": 1039645.8028677655,
-      "MAPE (%)": 63.33,
-      "R\u00b2": -0.0069
+      "MAE": 834591.5887850467,
+      "RMSE": 991868.0155546775,
+      "MAPE (%)": 91.03,
+      "R\u00b2": -0.0078,
+      "Within30%": 31.8,
+      "Within20%": 22.4,
+      "MAE_norm": 0.16363
     },
     {
       "Model": "Baseline: Mean",
-      "MAE": 839764.503450083,
-      "RMSE": 1036508.5512690543,
-      "MAPE (%)": 68.33,
-      "R\u00b2": -0.0008
+      "MAE": 845619.4078085423,
+      "RMSE": 990671.9160733952,
+      "MAPE (%)": 99.64,
+      "R\u00b2": -0.0053,
+      "Within30%": 40.2,
+      "Within20%": 20.6,
+      "MAE_norm": 0.16579
     }
   ],
   "features_used": [
     "usia",
-    "lama_kerja_bulan",
     "experience_months_log",
+    "exp_score",
     "hari_kerja_per_minggu",
     "jam_kerja_per_hari",
     "total_jam_seminggu",
-    "income_per_jam_est",
+    "kapasitas_jam_bulanan",
+    "intensitas_kerja_rel",
     "status_income",
     "peak_week",
+    "bps_jasa_regional",
     "src_gojek",
     "src_grab",
     "src_instagram___tiktok___youtube",
@@ -122,5 +161,22 @@
   "n_train": 428,
   "n_test": 107,
   "n_total": 535,
-  "catatan": "Model = income estimator berbasis profil gig worker (cross-sectional). Bukan prediksi time-series. income_w1\u2013w4 tidak digunakan sebagai fitur (anti-leakage). Data survei 535 responden, self-reported, recall 4 minggu terakhir."
+  "target_metrics": {
+    "normalized_mae_target": "< 0.02 (skala [0,1])",
+    "mape_target": "<= 25%",
+    "r2_target": ">= 0.60",
+    "within30_target": ">= 65%",
+    "accuracy_target": "> 85% (klasifikasi kategori income)"
+  },
+  "fixes_applied": [
+    "FIX1: income_per_jam_est dihapus dari fitur (soft leakage)",
+    "FIX2: bps_informal_2025 dicap tahun 2025",
+    "FIX3: BPS 2025 rata-ratakan Februari+Agustus",
+    "FIX4: stratified split + within-30% metric",
+    "FIX5: lama_kerja_bulan dihapus (redundan dengan log version)",
+    "IMP1: bps_jasa_regional sebagai fitur independen",
+    "IMP2: kapasitas_jam_bulanan, intensitas_kerja_rel, exp_score",
+    "IMP3: LightGBM + perluas grid search"
+  ],
+  "catatan": "v9-FINAL: Model income estimator berbasis profil gig worker (cross-sectional). Bukan prediksi time-series. income_w1-w4 dan income_per_jam_est tidak digunakan (anti-leakage). Normalized MAE <0.02 = MAE pada target dinormalisasi [0,1], bukan rupiah. Akurasi >85% = task klasifikasi Low/Medium/High income, bukan prediksi nominal."
 }
