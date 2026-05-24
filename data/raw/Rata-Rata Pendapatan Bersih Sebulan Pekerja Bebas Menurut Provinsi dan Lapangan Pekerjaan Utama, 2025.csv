@@ -1,8 +1,4 @@
-﻿38 Provinsi,,,,,,,,,,,,
-,Rata-Rata Pendapatan Bersih Sebulan Pekerja Bebas Menurut Provinsi dan Lapangan Pekerjaan Utama (Ribu Rupiah),,,,,,,,,,,
-,Pertanian,,,Industri,,,Jasa,,,Jumlah,,
-,2025,,,2025,,,2025,,,2025,,
-,Februari,Agustus,Tahunan,Februari,Agustus,Tahunan,Februari,Agustus,Tahunan,Februari,Agustus,Tahunan
+Provinsi,Pertanian_Februari_2025,Pertanian_Agustus_2025,Pertanian_Tahunan_2025,Industri_Februari_2025,Industri_Agustus_2025,Industri_Tahunan_2025,Jasa_Februari_2025,Jasa_Agustus_2025,Jasa_Tahunan_2025,Jumlah_Februari_2025,Jumlah_Agustus_2025,Jumlah_Tahunan_2025
 ACEH,1749.7,1464.5,-,2124,2019.6,-,1815.1,1835.3,-,1830.7,1699.7,-
 SUMATERA UTARA,1646,1738.8,-,1919.1,2168.6,-,1843.5,1803.4,-,1780.6,1824.7,-
 SUMATERA BARAT,1581.3,1536,-,2257.6,2065.4,-,1924.8,1853,-,1796.1,1708.9,-
