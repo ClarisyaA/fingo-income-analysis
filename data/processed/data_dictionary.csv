@@ -1,29 +1,60 @@
-Kolom,Tipe,Sumber,Deskripsi
-user_id,str,Derived,"ID unik per user (REAL_XXXX = survei, SYN_XXXX = sintetis)"
-data_source,str,Derived,"Asal data: ""survey"" atau ""synthetic"""
-age,int,Survei,Usia responden (tahun). Range: 17–52
-gig_type,str,Survei,"Jenis pekerjaan gig. Kategori: driver_online, freelance_it, seller_online, kurir, pekerja_harian, freelance_creative, tutor, content_creator"
-gig_type_encoded,int,Derived,Encoding numerik gig_type menggunakan LabelEncoder
-is_main_income,int,Survei,"Status penghasilan: 0=tambahan, 1=kadang utama, 2=utama"
-tenure_months,int,Survei,Lama menjalankan pekerjaan ini (bulan). Range: 2–72
-days_per_week,int,Survei,Hari kerja per minggu. Range: 1–7
-hours_per_day,int,Survei,Jam kerja per hari. Range: 1–10
-peak_week,int,Survei,"Minggu paling ramai dalam sebulan: 0=tidak ada pola, 1–4=minggu ke-N"
-income_week1,int,Survei,Pendapatan minggu lalu (IDR). Minggu paling baru.
-income_week2,int,Survei,Pendapatan dua minggu lalu (IDR)
-income_week3,int,Survei,Pendapatan tiga minggu lalu (IDR)
-income_week4,int,Survei,Pendapatan empat minggu lalu (IDR). Minggu paling lama.
-target_income,int,Derived,Target prediksi: income minggu ke-5 (IDR)
-rolling_mean_4w,float,Derived,Rata-rata income 4 minggu historis (IDR)
-rolling_std_4w,float,Derived,Std deviasi income 4 minggu historis (IDR)
-income_volatility,float,Derived,Volatilitas income = std / mean. Semakin tinggi = semakin tidak stabil
-income_growth_1w,float,Derived,Growth rate: (week1 - week2) / week2. Positif = naik.
-income_trend_slope,float,Derived,Kemiringan linear trend 4 minggu (OLS slope). Positif = tren naik.
-weekly_work_hours,int,Derived,Total jam kerja per minggu = days_per_week × hours_per_day
-income_per_hour,float,Derived,Efisiensi: rolling_mean_4w / weekly_work_hours (IDR/jam)
-is_payday_week,int,Derived,Flag: 1 jika peak_week adalah 1 (awal bulan) atau 4 (akhir bulan)
-recent_vs_avg,float,Derived,Rasio income_week1 terhadap rolling_mean_4w. >1 = minggu lalu di atas rata-rata
-lag_1w,int,Derived,Alias income_week1 (lag 1 minggu)
-lag_2w,int,Derived,Alias income_week2 (lag 2 minggu)
-lag_3w,int,Derived,Alias income_week3 (lag 3 minggu)
-lag_4w,int,Derived,Alias income_week4 (lag 4 minggu)
+Nama Fitur,Tipe Data,Deskripsi,Sumber,Range/Values,Skala
+usia,int,Usia responden (tahun),Survei GForm,18–60,Numerik
+income_utama,int,"0=tambahan, 1=kadang utama, 2=utama",Survei GForm,0/1/2,Ordinal
+lama_kerja_bulan,int,Lama menjalankan pekerjaan gig (bulan),Survei GForm,1–240,Numerik
+hari_kerja_per_minggu,int,Hari kerja per minggu,Survei GForm,1–7,Numerik
+jam_kerja_per_hari,int,Jam kerja per hari,Survei GForm,1–16,Numerik
+peak_week,int,"Minggu puncak income dalam bulan (0=no pattern, 1-4=minggu)",Survei GForm,0–4,Ordinal
+income_w1,int,Income minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
+income_w2,int,Income 2 minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
+income_w3,int,Income 3 minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
+income_w4,int,Income 4 minggu lalu (IDR),Survei GForm,0–~3jt,Numerik (IDR)
+avg_income_4w,int,Rata-rata income 4 minggu terakhir (IDR),Feature Eng.,0–~3jt,Numerik (IDR)
+income_std_4w,int,Standar deviasi income 4 minggu (volatilitas absolut),Feature Eng.,≥0,Numerik (IDR)
+income_cv,float,Coefficient of Variation = std/mean (volatilitas relatif),Feature Eng.,0.0–2.0,Rasio
+income_trend,int,"Tren income: w1 − w4 (positif=naik, negatif=turun)",Feature Eng.,any,Numerik (IDR)
+total_jam_seminggu,int,Total jam kerja per minggu = hari × jam,Feature Eng.,1–112,Numerik
+income_w1_vs_avg,float,Rasio income terbaru vs rata-rata 4 minggu (momentum),Feature Eng.,0.0–5.0,Rasio
+income_w5,int,TARGET: prediksi income minggu ke-5 (IDR),Synthetic (avg×noise),0–~3jt,Numerik (IDR)
+gig_ojek_online,int,Ojek online / driver aplikasi (0/1),OHE gig_type,0/1,Binary
+gig_kurir,int,Kurir / pengantar makanan (0/1),OHE gig_type,0/1,Binary
+gig_pekerja_harian,int,Pekerja harian / event / part-time (0/1),OHE gig_type,0/1,Binary
+gig_jualan_online,int,Jualan online / reseller / toko online (0/1),OHE gig_type,0/1,Binary
+gig_freelancer_desain,int,Freelance desain / editing / ilustrasi (0/1),OHE gig_type,0/1,Binary
+gig_freelancer_it,int,Freelance IT / programming / data (0/1),OHE gig_type,0/1,Binary
+gig_tutor,int,Tutor / guru les / pengajar lepas (0/1),OHE gig_type,0/1,Binary
+gig_content_creator,int,Content creator / admin media sosial (0/1),OHE gig_type,0/1,Binary
+domisili_jabodetabek,int,Jabodetabek (0/1),OHE domisili,0/1,Binary
+domisili_bandung,int,Bandung (0/1),OHE domisili,0/1,Binary
+domisili_jawa_barat_lainnya,int,Jawa Barat lainnya (0/1),OHE domisili,0/1,Binary
+domisili_jawa_tengah,int,Jawa Tengah/Yogyakarta (0/1),OHE domisili,0/1,Binary
+domisili_jawa_timur,int,Jawa Timur (0/1),OHE domisili,0/1,Binary
+domisili_sumatera,int,Sumatera (0/1),OHE domisili,0/1,Binary
+domisili_kalimantan,int,Kalimantan (0/1),OHE domisili,0/1,Binary
+domisili_sulawesi,int,Sulawesi (0/1),OHE domisili,0/1,Binary
+domisili_bali_nusa,int,Bali/Nusa Tenggara (0/1),OHE domisili,0/1,Binary
+sumber_gojek,int,Mendapat pekerjaan dari Gojek (0/1),Multi-select,0/1,Binary
+sumber_grab,int,Mendapat pekerjaan dari Grab (0/1),Multi-select,0/1,Binary
+sumber_maxim,int,Mendapat pekerjaan dari Maxim (0/1),Multi-select,0/1,Binary
+sumber_shopeefood,int,Mendapat pekerjaan dari ShopeeFood (0/1),Multi-select,0/1,Binary
+sumber_marketplace,int,Shopee/Tokopedia/TikTok Shop (0/1),Multi-select,0/1,Binary
+sumber_sosmed,int,Instagram/TikTok/YouTube (0/1),Multi-select,0/1,Binary
+sumber_wa_kenalan,int,WhatsApp/kenalan/pelanggan langsung (0/1),Multi-select,0/1,Binary
+sumber_fiverr,int,Website freelance Fiverr (0/1),Multi-select,0/1,Binary
+sumber_upwork,int,Upwork (0/1),Multi-select,0/1,Binary
+sumber_projectsid,int,Projects.co.id (0/1),Multi-select,0/1,Binary
+ramai_ramadan,int,Ramai saat Ramadan/Lebaran (0/1),Multi-select,0/1,Binary
+ramai_harbolnas,int,Ramai saat Harbolnas/flash sale (0/1),Multi-select,0/1,Binary
+ramai_awal_bulan,int,Ramai di awal bulan (0/1),Multi-select,0/1,Binary
+ramai_akhir_bulan,int,Ramai di akhir bulan/gajian (0/1),Multi-select,0/1,Binary
+ramai_akhir_pekan,int,Ramai di akhir pekan (0/1),Multi-select,0/1,Binary
+ramai_cuaca_bagus,int,Ramai saat cuaca bagus (0/1),Multi-select,0/1,Binary
+ramai_promo_app,int,Ramai saat ada promo aplikasi (0/1),Multi-select,0/1,Binary
+faktor_jumlah_pesanan,int,Faktor: jumlah pesanan/project (0/1),Multi-select,0/1,Binary
+faktor_jam_kerja,int,Faktor: jam bekerja (0/1),Multi-select,0/1,Binary
+faktor_weekend,int,Faktor: akhir pekan/libur (0/1),Multi-select,0/1,Binary
+faktor_cuaca,int,Faktor: cuaca (0/1),Multi-select,0/1,Binary
+faktor_promo,int,Faktor: promo aplikasi (0/1),Multi-select,0/1,Binary
+faktor_gajian,int,Faktor: tanggal gajian (0/1),Multi-select,0/1,Binary
+faktor_fisik,int,Faktor: kondisi fisik/capek (0/1),Multi-select,0/1,Binary
+faktor_rating,int,Faktor: rating/ulasan pelanggan (0/1),Multi-select,0/1,Binary
