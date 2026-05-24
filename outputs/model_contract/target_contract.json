@@ -1,0 +1,19 @@
+{
+  "regression_target": "next_week_income_norm",
+  "regression_target_raw": "next_week_income",
+  "classification_target": "next_week_direction",
+  "direction_classes": [
+    "Down",
+    "Stable",
+    "Up"
+  ],
+  "direction_encoding": {
+    "Down": 0,
+    "Stable": 1,
+    "Up": 2
+  },
+  "regression_metric_requirement": "MAE <= 0.02 on normalized target scale [0,1]",
+  "classification_metric_requirement": "Accuracy >= 85% on Up/Stable/Down direction classification",
+  "scaler_file": "outputs/preprocessors/weekly_target_scaler.pkl",
+  "notes": "MAE <= 0.02 dimaknai sebagai MAE pada skala normalized target, bukan error rupiah mentah."
+}

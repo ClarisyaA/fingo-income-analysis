@@ -1,0 +1,4 @@
+Model,Accuracy,Macro_F1,Precision,Recall
+Baseline Majority,40.5,19.22,13.5,33.33
+Random Forest,57.01,43.2,46.92,47.53
+XGBoost,58.88,49.0,54.45,50.71

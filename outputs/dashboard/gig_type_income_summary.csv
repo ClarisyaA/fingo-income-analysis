@@ -1,0 +1,4 @@
+gig_type,n_respondents,avg_weekly_income,median_weekly_income,avg_monthly_income,income_std,income_cv,dominant_direction
+lainnya,367,447483.11,405850.0,1789932.43,131127.06,0.33,Down
+ojek_online,77,760428.57,781550.0,3041714.29,195863.17,0.28,Down
+pekerja_harian,91,421137.36,388750.0,1684549.45,132430.05,0.34,Down

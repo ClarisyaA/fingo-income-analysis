@@ -1,0 +1,2 @@
+control_n,treatment_n,control_mean,treatment_mean,uplift_pct,t_statistic,p_value,significant
+154,167,59.75542604944575,60.985265527093134,2.058121845921954,0.990904444273134,0.32248347578755454,False

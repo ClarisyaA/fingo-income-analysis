@@ -1,0 +1,16 @@
+Issue,Column,Problem,Action,Status
+PII Column,Kontak Hadiah GoPay [col 19],Data pribadi sensitif (nomor telepon/GoPay),DROP kolom,Planned
+PII Column,Consent [col 1],"Semua nilai Ya, tidak informatif",DROP kolom,Planned
+Calendar Source,Timestamp [col 0],"Digunakan untuk calendar features, JANGAN langsung drop","Gunakan untuk calendar features, lalu drop",Planned
+Multi-Select,Sumber pekerjaan [col 5],String multi-pilihan dipisah koma,Multi-hot encoding,Planned
+Multi-Select,Kapan ramai [col 15],String multi-pilihan dipisah koma,Multi-hot encoding,Planned
+Multi-Select,Faktor fluktuasi [col 16],String multi-pilihan dipisah koma,Multi-hot encoding,Planned
+Multi-Select,Fitur dibutuhkan [col 18],Product insight — bukan fitur model,Multi-hot encoding (EDA only),Planned
+Income Zero,income_w1–w4,Beberapa responden melaporkan income 0 di satu minggu,Biarkan 0 (legitimate — minggu tidak kerja),Planned
+Outlier Income,income_w1–w4,Nilai ekstrem > 5 juta,Winsorize P2–P98,Planned
+Unrealistic Age,usia [col 2],"Usia di luar [17, 65]","Clip [17, 65]",Planned
+Unrealistic Hours,hari_kerja [col 8],Hari kerja > 7 tidak mungkin,"Clip [1, 7]",Planned
+Unrealistic Hours,jam_kerja [col 9],Jam kerja > 16 per hari tidak realistis,"Clip [1, 16]",Planned
+Category Map,pekerjaan [col 4],Label panjang perlu distandarisasi ke kode pendek,Map ke GIG_MAP,Planned
+Category Map,domisili [col 3],Label panjang perlu distandarisasi,Map ke DOMISILI_MAP,Planned
+BPS Unit,BPS Bebas 2025,Nilai dalam ribuan rupiah (bukan rupiah penuh),Kalikan 1000,Planned

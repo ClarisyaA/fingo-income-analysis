@@ -1,0 +1,32 @@
+model_type,model_name,metric,value
+regression,Baseline Mean,MAE,243953.4957
+regression,Baseline Mean,MAPE (%),159.7406
+regression,Baseline Mean,R²,-0.0
+regression,Baseline Mean,Normalized_MAE,0.3388
+regression,Baseline Mean,Within30%,34.891
+regression,Baseline Last Week,MAE,169040.4984
+regression,Baseline Last Week,MAPE (%),106.2051
+regression,Baseline Last Week,R²,0.2907
+regression,Baseline Last Week,Normalized_MAE,0.1822
+regression,Baseline Last Week,Within30%,61.0592
+regression,Ridge Regression,MAE,154766.7979
+regression,Ridge Regression,MAPE (%),98.5678
+regression,Ridge Regression,R²,0.4938
+regression,Ridge Regression,Normalized_MAE,0.1631
+regression,Ridge Regression,Within30%,58.2555
+regression,Random Forest,MAE,154323.5833
+regression,Random Forest,MAPE (%),105.8444
+regression,Random Forest,R²,0.5052
+regression,Random Forest,Normalized_MAE,0.1656
+regression,Random Forest,Within30%,57.9439
+regression,XGBoost,MAE,169842.1721
+regression,XGBoost,MAPE (%),107.2074
+regression,XGBoost,R²,0.4263
+regression,XGBoost,Normalized_MAE,0.1871
+regression,XGBoost,Within30%,52.0249
+classification,Baseline Majority,Accuracy,40.5
+classification,Baseline Majority,Macro_F1,19.22
+classification,Random Forest,Accuracy,57.01
+classification,Random Forest,Macro_F1,43.2
+classification,XGBoost,Accuracy,58.88
+classification,XGBoost,Macro_F1,49.0

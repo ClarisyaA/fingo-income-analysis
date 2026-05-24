@@ -1,0 +1,23 @@
+column_name,data_type,description,source,example_value,used_for_eda,used_for_modeling,leakage_risk,notes
+respondent_id,string,ID unik responden,Generated,R0000–R0534,Yes,No,Low,Internal ID
+usia,int64,Usia responden (tahun),Survei col 2,17–65,Yes,Yes,Low,"Clipped [17,65]"
+gig_type,string,Jenis pekerjaan gig,Survei col 4,ojek_online...,Yes,Yes,Low,Map GIG_MAP
+domisili_code,string,Domisili,Survei col 3,jabodetabek...,Yes,Yes,Low,Map DOMISILI_MAP
+status_income,int64,"0=tambahan, 1=kadang utama, 2=utama",Survei col 6,0/1/2,Yes,Yes,Low,
+income_w1,float64,Pendapatan minggu lalu,Survei col 10,0–2jt,Yes,Lag source,High,Jangan langsung masuk X
+income_w2,float64,Pendapatan 2 minggu lalu,Survei col 11,0–2jt,Yes,Lag source,High,Jangan langsung masuk X
+income_w3,float64,Pendapatan 3 minggu lalu,Survei col 12,0–2jt,Yes,Lag source,High,Jangan langsung masuk X
+income_w4,float64,Pendapatan 4 minggu lalu,Survei col 13,0–2jt,Yes,Lag source,High,Jangan langsung masuk X
+monthly_income,float64,Total income W1–W4 (EDA only),Engineered,0–8jt,Yes,No,High,JANGAN masuk training
+next_week_income,float64,TARGET: pendapatan minggu depan,Engineered,0–2jt,No,Target only,High,JANGAN masuk X
+next_week_income_norm,float64,TARGET: normalized,Engineered,0–1,No,Target only,High,JANGAN masuk X
+next_week_direction,string,TARGET: Up/Stable/Down,Engineered,Up/Stable/Down,No,Target only,High,JANGAN masuk X
+current_income,float64,Income terbaru sebelum target,Engineered,0–2jt,No,Yes,Medium,Lag fitur aman
+rolling_mean_income,float64,Rata-rata dari lag weeks,Engineered,0–2jt,No,Yes,Low,
+bps_jasa_weekly,float64,Benchmark BPS jasa per minggu,BPS,200rb–800rb,Yes,Yes,Low,Bulanan/4
+pref_payday,int,Seasonal pref: payday,Form,0/1,Yes,Yes,Low,Dari jawaban form
+pref_weekend,int,Seasonal pref: weekend,Form,0/1,Yes,Yes,Low,Dari jawaban form
+pref_ramadan_lebaran,int,Seasonal pref: Ramadan/Lebaran,Form,0/1,Yes,Yes,Low,Dari jawaban form
+target_is_christmas_year_end,int,Calendar-based Natal/Tahun Baru,Calendar,0/1,No,Yes,Low,BUKAN dari form
+target_is_new_year,int,Calendar-based Tahun Baru,Calendar,0/1,No,Yes,Low,BUKAN dari form
+timestamp,datetime,Waktu submit form,Survei col 0,2026-05-10,No,No,Low,Calendar source only

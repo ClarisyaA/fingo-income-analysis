@@ -1,0 +1,2 @@
+total_respondents,total_weekly_rows,avg_weekly_income,median_weekly_income,avg_monthly_income,most_common_gig_type,most_common_direction,best_regression_model,best_regression_mae,best_regression_mape,best_regression_normalized_mae,best_classification_model,best_classification_accuracy,best_classification_macro_f1
+535,1605,488042.61682242993,451250.0,1952170.4672897197,lainnya,Down,Random Forest,154323.5833,105.8444,0.1656,XGBoost,58.88,49.0
