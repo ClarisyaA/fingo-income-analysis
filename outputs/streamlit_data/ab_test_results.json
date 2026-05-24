@@ -1,22 +1,24 @@
 {
   "group_A": {
-    "name": "Random Forest Baseline",
-    "mean_error": 2103.9811123985974,
-    "median_error": 995.0400000000373,
-    "std_error": 4305.229128205732
+    "name": "Stabil (CV \u2264 0.15)",
+    "n": 174,
+    "mean_score": 3.6839080459770117,
+    "median_score": 4.0,
+    "std_score": 1.1386999608061203
   },
   "group_B": {
-    "name": "XGBoost Tuned",
-    "mean_error": 10066.420408458864,
-    "median_error": 5155.5,
-    "std_error": 15788.900700077453
+    "name": "Volatil (CV > 0.35)",
+    "n": 197,
+    "mean_score": 3.8071065989847717,
+    "median_score": 4.0,
+    "std_score": 1.019281250599889
   },
   "test": {
     "method": "Mann-Whitney U Test",
-    "u_stat": 124364.5,
-    "p_value": 1.0,
+    "u_stat": 17913.0,
+    "p_value": 0.21714845587906367,
     "significant": false,
-    "cohens_d": -0.6880754701456454,
-    "winner": "A"
+    "effect_size_rr": -0.045160161036233104,
+    "conclusion": "H\u2080 tidak ditolak: Tidak ada perbedaan signifikan"
   }
 }
