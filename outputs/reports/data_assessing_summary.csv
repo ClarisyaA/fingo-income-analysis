@@ -2,16 +2,19 @@ Issue,Column,Problem,Action,Status
 PII Column,kontak_gopay [col 19],Data pribadi sensitif,DROP kolom,Planned
 PII Column,consent [col 1],"Semua nilai Ya, tidak informatif",DROP kolom,Planned
 Calendar Source,timestamp [col 0],Digunakan untuk calendar features,Gunakan lalu drop,Planned
-Multi-Select,sumber_pekerjaan,String multi-pilihan,Multi-hot encoding,Planned
-Multi-Select,waktu_ramai,String multi-pilihan,Multi-hot encoding,Planned
-Multi-Select,faktor_fluktuasi,String multi-pilihan,Multi-hot encoding,Planned
-Multi-Select,fitur_dibutuhkan,Product insight — EDA only,Multi-hot encoding,Planned
-Income Zero,income_w1–w4,Income 0 di satu minggu,Biarkan 0 (legitimate),Planned
-Outlier Income,income_w1–w4,Nilai ekstrem,Winsorize P2–P98,Planned
-Unrealistic Age,usia,"Usia di luar [17, 65]","Clip [17, 65]",Planned
-Unrealistic Hours,hari_kerja_per_minggu,> 7 tidak mungkin,"Clip [1, 7]",Planned
-Unrealistic Hours,jam_kerja_per_hari,> 16 tidak realistis,"Clip [1, 16]",Planned
-Lama Kerja,lama_kerja_bulan,< 1 tidak logis,Clip min=1,Planned
-Category Map,pekerjaan,"Label panjang, 8 kategori",Map ke GIG_MAP (8 kategori),Planned
-Category Map,domisili,Label panjang,Map ke DOMISILI_MAP,Planned
+Multi-Select,sumber_pekerjaan [col 5],String multi-pilihan (8 opsi form),Multi-hot encoding (8 kolom src_*),Planned
+Multi-Select,waktu_ramai [col 15],String multi-pilihan (8 opsi form),Multi-hot encoding (8 kolom ramai_*),Planned
+Multi-Select,faktor_fluktuasi [col 16],String multi-pilihan (9 opsi form),Multi-hot encoding (9 kolom fluk_*),Planned
+Multi-Select,fitur_dibutuhkan [col 18],Product insight — EDA only (6 opsi form),Multi-hot encoding (6 kolom fitur_*),Planned
+Income Zero,income_w1–w4 [col 10-13],Income 0 di satu minggu,Biarkan 0 (legitimate),Planned
+Outlier Income,income_w1–w4 [col 10-13],Nilai ekstrem,Winsorize P2–P98,Planned
+Unrealistic Age,usia [col 2],"Usia di luar [17, 65]","Clip [17, 65]",Planned
+Unrealistic Hours,hari_kerja_per_minggu [col 8],> 7 tidak mungkin,"Clip [1, 7]",Planned
+Unrealistic Hours,jam_kerja_per_hari [col 9],> 16 tidak realistis,"Clip [1, 16]",Planned
+Lama Kerja,lama_kerja_bulan [col 7],< 1 tidak logis,Clip min=1,Planned
+Category Map,pekerjaan [col 4],"Label panjang, 8 kategori form",Map ke GIG_MAP (8 kategori),Planned
+Category Map,domisili [col 3],"Label panjang, 9 kategori form",Map ke DOMISILI_MAP (9 kode),Planned
+Scale,status_income [col 6],Scale 0–2,Tetap numerik,Planned
+Scale,peak_week [col 14],Scale 0–4,Tetap numerik,Planned
+Scale,app_helpful_score [col 17],Scale 1–5,Tetap numerik,Planned
 BPS Unit,BPS Bebas 2025,Nilai dalam ribuan rupiah,Kalikan 1000,Planned

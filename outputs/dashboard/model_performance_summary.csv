@@ -1,19 +1,19 @@
 Model,MAE,RMSE,MAPE (%),R2,Within20%,Within30%,Normalized_MAE,dataset,task,Accuracy,Macro_F1,Precision,Recall
 Baseline Last Week,212263.8889,337232.8675,44.7773,0.4499,32.7778,43.8889,0.1447,real_4w,regression,,,,
 Baseline Rolling Mean,193467.5926,311992.4953,37.0546,0.5292,35.0,45.0,0.1122,real_4w,regression,,,,
-Ridge Regression,210095.7322,297998.6035,75.6755,0.5705,25.5556,33.8889,0.1117,real_4w,regression,,,,
-Random Forest,182390.2324,277199.648,41.1991,0.6283,35.0,48.8889,0.0936,real_4w,regression,,,,
-XGBoost,207817.4219,308656.3834,46.7453,0.5392,32.2222,44.4444,0.0976,real_4w,regression,,,,
+Ridge Regression,210046.6879,297128.5988,76.8604,0.573,24.4444,35.5556,0.1184,real_4w,regression,,,,
+Random Forest,181228.133,275177.6482,41.1442,0.6337,36.1111,48.3333,0.0935,real_4w,regression,,,,
+XGBoost,217086.3496,325349.9833,47.1155,0.488,26.1111,38.3333,0.0984,real_4w,regression,,,,
 Baseline Majority,,,,,,,,real_4w,classification,45.0,20.69,15.0,33.33
 Rule-based Momentum,,,,,,,,real_4w,classification,21.67,21.27,21.48,28.03
-Random Forest,,,,,,,,real_4w,classification,55.0,40.72,37.72,46.01
-XGBoost,,,,,,,,real_4w,classification,60.56,48.08,49.11,51.06
+Random Forest,,,,,,,,real_4w,classification,55.56,41.04,38.13,46.42
+XGBoost,,,,,,,,real_4w,classification,60.0,46.27,46.02,49.98
 Baseline Last Week,18555.6021,31403.5589,4.2546,0.9923,99.6528,100.0,0.0096,synthetic_52w,regression,,,,
 Baseline Rolling Mean,21247.461,36704.4331,4.7781,0.9895,99.2014,99.8958,0.0107,synthetic_52w,regression,,,,
-Ridge,18346.4197,30436.3834,5.2889,0.9928,97.1528,99.3056,0.0119,synthetic_52w,regression,,,,
-Random Forest,18823.5173,31960.414,4.3207,0.9921,99.5139,100.0,0.0097,synthetic_52w,regression,,,,
-XGBoost,18583.8827,31856.6527,4.2248,0.9921,99.5486,100.0,0.0095,synthetic_52w,regression,,,,
+Ridge,18348.7747,30437.2905,5.2921,0.9928,97.1181,99.3056,0.0119,synthetic_52w,regression,,,,
+Random Forest,18780.2056,31873.4813,4.3125,0.9921,99.5139,100.0,0.0096,synthetic_52w,regression,,,,
+XGBoost,18457.9198,31771.078,4.2093,0.9922,99.5833,100.0,0.0094,synthetic_52w,regression,,,,
 Baseline Majority,,,,,,,,synthetic_52w,classification,92.22,31.98,30.74,33.33
 Rule-based Momentum,,,,,,,,synthetic_52w,classification,86.04,33.33,33.31,33.36
-Random Forest,,,,,,,,synthetic_52w,classification,92.22,31.98,30.74,33.33
-XGBoost,,,,,,,,synthetic_52w,classification,92.15,32.46,47.42,33.54
+Random Forest,,,,,,,,synthetic_52w,classification,92.29,32.98,64.1,33.83
+XGBoost,,,,,,,,synthetic_52w,classification,92.15,33.39,45.06,34.02
