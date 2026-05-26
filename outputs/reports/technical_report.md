@@ -1,25 +1,38 @@
-# Technical Report — Fingo v12-REFACTORED
-**Tim:** CC26-PSU217 | **Versi:** v12-REFACTORED | **Tanggal:** 2026
+# Technical Report — Fingo v13-FINAL
+**Tim:** CC26-PSU217 | **Versi:** v13-FINAL | **Tanggal:** Mei 2026
 
-## Key Changes from v11
-1. Direction threshold: 10% (was 5%) — more robust to noise
-2. Synthetic generation: Autoregressive AR(1) with formula: income_t = 0.65*income_(t-1) + 0.30*expected + 0.05*trend + noise
-3. Target normalization: log1p + MinMaxScaler (was RobustScaler + clip)
-4. Enhanced features: 8 new lag/volatility/momentum features
-5. Evaluation: Separated real/synthetic, segment-level analysis by gig_type, month, week_of_month
-6. Baselines: Added Rolling Mean (regression) and Rule-based Momentum (classification)
+## Narasi Dataset
+Dataset survei asli sebanyak **384 responden** digunakan sebagai empirical baseline untuk
+membentuk distribusi karakteristik pekerja gig — seperti jenis pekerjaan, domisili, pola
+pendapatan, jam kerja, dan preferensi musiman. Karena data survei hanya mencakup empat
+minggu historis, dataset tersebut tidak dijadikan sumber utama pelatihan forecasting.
+Sebagai gantinya, dibangun synthetic longitudinal dataset sebanyak **3,000 pengguna**
+dengan riwayat pendapatan selama **52 minggu** (156,000 rows raw synthetic).
+Model difokuskan untuk memprediksi pendapatan minggu berikutnya (next_week_income),
+sedangkan estimasi bulanan diperoleh melalui agregasi prediksi mingguan.
+
+## Key Design Decisions
+1. **Urutan income**: income_w4 (terlama) → income_w1 (terbaru) — sesuai pertanyaan form
+2. **Winsorize global DIHAPUS** — clip lower=0 saja untuk real; cap per gig_type untuk synthetic
+3. **Direction threshold**: >= 10% = Up, <= -10% = Down (fix dari > / <)
+4. **3.000 synthetic users** di-sample dari distribusi survey 384 responden
+5. **Noise/shock per gig_type**: content_creator & freelance punya "zero-income week" 6%
+6. **Split by user_id** — bukan random rows — mencegah leakage
+7. **Survey = distribusi acuan**, bukan training utama
 
 ## Data Sources
-- Survey: 384 respondents (Mei 2026)
+- Survey real: 384 responden (Google Form Mei 2026)
 - BPS 2023-2025: regional income benchmarks
-- Synthetic: 384 users x 52 weeks (AR1)
+- Synthetic: 3,000 users x 52 weeks (AR1 + noise)
 
-## Best Model (Real 4w)
-- Regression: Random Forest (MAE=105287, Norm_MAE=0.0711)
-- Classification: Random Forest (Accuracy=44.2%, F1=44.0%)
+## Best Model (Synthetic 52w — Dataset Utama)
+- Regression: Ridge (MAE=55218, MAPE=88.3%)
+- Classification: Random Forest (Accuracy=79.0%, F1=63.2%)
 
-## Autocorrelation Check
-Mean lag-1 autocorrelation in synthetic data: 0.6838 (expected ~0.65)
+## Synthetic Data Quality
+- Mean autocorrelation lag-1: 0.5844
+- Total synthetic rows: 156,000
 
 ## Disclaimer
-Real 4w data is the primary validation basis. Synthetic 52w is for simulation only.
+Real 4-week dataset (384 resp) digunakan sebagai sanity check saja.
+Synthetic 52w adalah dataset training utama.
