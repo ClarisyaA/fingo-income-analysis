@@ -1,3 +1,0 @@
-dataset,n_respondents,n_rows,avg_income,type,role
-survey_real_384,384,384,476047.09201388893,real,distribusi_acuan
-synthetic_3000_users,3000,144000,401177.9685576923,synthetic,training_utama
