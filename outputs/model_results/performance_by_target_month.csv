@@ -1,0 +1,3 @@
+dataset,segment_type,segment_value,n_test,mae,rmse,mape,r2,within20,within30,normalized_mae,accuracy,macro_f1
+real_4w,target_month,4,66,211137.9392,311296.4902,49.7396,0.5536,21.2121,36.3636,0.0538,57.5758,42.735
+real_4w,target_month,5,114,224437.634,326304.052,50.8035,0.4627,24.5614,34.2105,0.1265,60.5263,50.9454

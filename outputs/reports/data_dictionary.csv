@@ -1,0 +1,43 @@
+column_name,data_type,description,source,example_value,used_for_eda,used_for_modeling,leakage_risk,notes
+respondent_id,string,ID unik responden,Generated,R0000,Yes,Yes,Low,Internal ID
+dataset_type,string,real_4w atau synthetic_52w,Generated,real_4w,Yes,Yes,Low,Wajib ada di semua dataset
+usia,int64,Usia responden,Survei col 2,17–65,Yes,Yes,Low,"Clipped [17,65]"
+gig_type,string,8 kategori jenis pekerjaan gig,Survei col 4,ojek_online...,Yes,Yes,Low,8 kategori dari GIG_MAP
+domisili_code,string,Kode domisili,Survei col 3,jabodetabek...,Yes,Yes,Low,Map DOMISILI_MAP
+status_income,int64,"0=tambahan, 1=kadang utama, 2=utama",Survei col 6,0/1/2,Yes,Yes,Low,
+income_w1,float64,Pendapatan minggu lalu,Survei col 10,0–2jt,Yes,Lag source only,High,Jangan langsung masuk X
+income_w2,float64,Pendapatan 2 minggu lalu,Survei col 11,0–2jt,Yes,Lag source only,High,Jangan langsung masuk X
+income_w3,float64,Pendapatan 3 minggu lalu,Survei col 12,0–2jt,Yes,Lag source only,High,Jangan langsung masuk X
+income_w4,float64,Pendapatan 4 minggu lalu,Survei col 13,0–2jt,Yes,Lag source only,High,Jangan langsung masuk X
+monthly_income,float64,Total income W1–W4 (EDA only),Engineered,0–8jt,Yes,No,High,JANGAN masuk training
+avg_weekly_income,float64,Rata-rata income 4 minggu,Engineered,0–2jt,Yes,No,High,EDA only
+next_week_income,float64,TARGET: pendapatan minggu depan,Engineered,0–2jt,No,Target only,High,JANGAN masuk X
+next_week_income_norm,float64,"TARGET normalized [0,1]",Engineered,0–1,No,Target only,High,JANGAN masuk X
+next_week_direction,string,TARGET: Up/Stable/Down,Engineered,Up/Stable/Down,No,Target only,High,JANGAN masuk X
+current_income,float64,Income terbaru sebelum target,Engineered,0–2jt,No,Yes,Medium,Lag fitur aman
+lag_1_income,float64,Income lag 1 minggu,Engineered,0–2jt,No,Yes,Low,Fitur utama
+lag_2_income,float64,Income lag 2 minggu,Engineered,0–2jt,No,Yes,Low,
+lag_3_income,float64,Income lag 3 minggu,Engineered,0–2jt,No,Yes,Low,
+rolling_mean_income,float64,Rata-rata lag weeks,Engineered,0–2jt,No,Yes,Low,
+rolling_std_income,float64,Std lag weeks,Engineered,0–2jt,No,Yes,Low,
+income_trend_abs,float64,Tren absolut (last-prev),Engineered,varies,No,Yes,Low,
+income_trend_pct,float64,Tren persentase,Engineered,-1 to 1,No,Yes,Low,
+previous_direction_enc,int,Arah sebelumnya encoded,Engineered,0/1/2,No,Yes,Low,
+bps_jasa_weekly,float64,Benchmark BPS jasa per minggu,BPS,200rb–800rb,Yes,Yes,Low,Bulanan/4
+pref_payday,int,Seasonal pref: payday (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
+pref_weekend,int,Seasonal pref: weekend (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
+pref_ramadan_lebaran,int,Seasonal pref: Ramadan/Lebaran (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
+pref_harbolnas,int,Seasonal pref: Harbolnas (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
+target_is_christmas_year_end,int,Calendar: Natal/Tahun Baru,Calendar,0/1,No,Yes,Low,"BUKAN dari form, bernilai 0 untuk Mei 2026"
+target_is_new_year,int,Calendar: Tahun Baru,Calendar,0/1,No,Yes,Low,BUKAN dari form
+gig_jualan_online,int,OHE: Jualan online,Engineered,0/1,No,Yes,Low,Salah satu dari 8 OHE gig_type
+gig_ojek_online,int,OHE: Ojek online,Engineered,0/1,No,Yes,Low,
+gig_kurir,int,OHE: Kurir,Engineered,0/1,No,Yes,Low,
+gig_freelance_it,int,OHE: Freelance IT,Engineered,0/1,No,Yes,Low,
+gig_freelance_desain,int,OHE: Freelance desain,Engineered,0/1,No,Yes,Low,
+gig_tutor,int,OHE: Tutor,Engineered,0/1,No,Yes,Low,
+gig_content_creator,int,OHE: Content creator,Engineered,0/1,No,Yes,Low,
+gig_pekerja_harian,int,OHE: Pekerja harian,Engineered,0/1,No,Yes,Low,
+synthetic_weekly_income,float64,Observed income untuk data sintetis,Synthetic,0–2jt,No,Lag source/target (synth),High,Hanya untuk dataset synthetic_52w
+is_synthetic,int,"1 jika synthetic, 0 jika real",Generated,0/1,Yes,No,Low,
+timestamp,datetime,Waktu submit form (Mei 2026),Survei col 0,2026-05-10,No,No,Low,"Calendar source only, sudah di-drop"

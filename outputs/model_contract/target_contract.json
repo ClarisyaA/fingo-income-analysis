@@ -1,0 +1,14 @@
+{
+  "regression_target": "next_week_income_norm",
+  "regression_target_raw": "next_week_income",
+  "classification_target": "next_week_direction",
+  "direction_classes": [
+    "Down",
+    "Stable",
+    "Up"
+  ],
+  "direction_threshold": "10% (DIRECTION_THRESHOLD = 0.10)",
+  "normalization": "log1p -> MinMaxScaler (fit on train only)",
+  "scaler_file": "outputs/preprocessors/weekly_target_scaler.pkl",
+  "evaluation_data": "Real_4w test set only. Synthetic is simulation."
+}
