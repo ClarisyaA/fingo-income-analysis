@@ -24,12 +24,13 @@ income_trend_abs,float64,Tren absolut (last-prev),Engineered,varies,No,Yes,Low,
 income_trend_pct,float64,Tren persentase,Engineered,-1 to 1,No,Yes,Low,
 previous_direction_enc,int,Arah sebelumnya encoded,Engineered,0/1/2,No,Yes,Low,
 bps_jasa_weekly,float64,Benchmark BPS jasa per minggu,BPS,200rb–800rb,Yes,Yes,Low,Bulanan/4
-pref_payday,int,Seasonal pref: payday (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
-pref_weekend,int,Seasonal pref: weekend (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
-pref_ramadan_lebaran,int,Seasonal pref: Ramadan/Lebaran (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
-pref_harbolnas,int,Seasonal pref: Harbolnas (dari form),Form,0/1,Yes,Yes,Low,BUKAN calendar-based
-target_is_christmas_year_end,int,Calendar: Natal/Tahun Baru,Calendar,0/1,No,Yes,Low,"BUKAN dari form, bernilai 0 untuk Mei 2026"
-target_is_new_year,int,Calendar: Tahun Baru,Calendar,0/1,No,Yes,Low,BUKAN dari form
+pref_payday,int,Seasonal pref: payday (dari form),Form,0/1,Yes,Yes,Low,Preferensi dari jawaban form
+pref_weekend,int,Seasonal pref: weekend (dari form),Form,0/1,Yes,Yes,Low,Preferensi dari jawaban form
+pref_ramadan_lebaran,int,Seasonal pref: Ramadan/Lebaran (dari form),Form,0/1,Yes,Yes,Low,Preferensi dari jawaban form
+pref_harbolnas,int,Seasonal pref: Harbolnas (dari form),Form,0/1,Yes,Yes,Low,Preferensi dari jawaban form
+pref_natal_tahun_baru,int,Seasonal pref: Natal/Tahun Baru (dari form),Form,0/1,Yes,Yes,Low,"Preferensi dari jawaban form, bukan calendar-based"
+target_is_christmas_year_end,int,Calendar: periode Natal/Tahun Baru (Des 20+),Calendar,0/1,No,Yes,Low,"Calendar-based, terpisah dari pref_natal_tahun_baru (form)"
+target_is_new_year,int,Calendar: periode Tahun Baru (Jan 1-7),Calendar,0/1,No,Yes,Low,"Calendar-based, terpisah dari pref_natal_tahun_baru (form)"
 gig_jualan_online,int,OHE: Jualan online,Engineered,0/1,No,Yes,Low,Salah satu dari 8 OHE gig_type
 gig_ojek_online,int,OHE: Ojek online,Engineered,0/1,No,Yes,Low,
 gig_kurir,int,OHE: Kurir,Engineered,0/1,No,Yes,Low,

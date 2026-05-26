@@ -9,14 +9,14 @@ Formula: income_t = 0.65 * income_(t-1) + 0.30 * expected_income_t + 0.05 * tren
 
 ## Quality Metrics
 metric       real  synthetic
-  Mean  470113.55  413086.40
-Median  390000.00  342341.50
-   Std  308008.96  265611.07
+  Mean  470113.55  412454.95
+Median  390000.00  343918.00
+   Std  308008.96  265350.13
     CV       0.66       0.64
-   Min   60000.00   56598.00
+   Min   60000.00   60016.00
    Max 1382000.00 1382000.00
 
 ## Autocorrelation
-Mean lag-1: 0.6794
+Mean lag-1: 0.6838
 
 ## Users: 384, Rows: 19968

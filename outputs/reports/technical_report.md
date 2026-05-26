@@ -15,11 +15,11 @@
 - Synthetic: 384 users x 52 weeks (AR1)
 
 ## Best Model (Real 4w)
-- Regression: Random Forest (MAE=105895, Norm_MAE=0.0712)
-- Classification: Random Forest (Accuracy=43.7%, F1=43.5%)
+- Regression: Random Forest (MAE=105287, Norm_MAE=0.0711)
+- Classification: Random Forest (Accuracy=44.2%, F1=44.0%)
 
 ## Autocorrelation Check
-Mean lag-1 autocorrelation in synthetic data: 0.6794 (expected ~0.65)
+Mean lag-1 autocorrelation in synthetic data: 0.6838 (expected ~0.65)
 
 ## Disclaimer
 Real 4w data is the primary validation basis. Synthetic 52w is for simulation only.

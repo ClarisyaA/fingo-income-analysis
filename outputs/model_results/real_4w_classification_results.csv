@@ -1,5 +1,5 @@
 Model,Accuracy,Macro_F1,Precision,Recall
 Baseline Majority,30.74,15.67,10.25,33.33
 Rule-based Momentum,24.68,21.46,20.86,26.18
-Random Forest,43.72,43.55,45.36,43.15
+Random Forest,44.16,43.98,45.44,43.83
 XGBoost,41.56,40.56,41.2,40.63

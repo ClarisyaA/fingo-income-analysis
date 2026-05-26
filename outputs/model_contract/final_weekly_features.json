@@ -1,7 +1,7 @@
 {
   "version": "v12-REFACTORED",
-  "total_features_real": 87,
-  "total_features_synthetic": 58,
+  "total_features_real": 88,
+  "total_features_synthetic": 59,
   "feature_order_real": [
     "current_income",
     "lag_1_income",
@@ -78,6 +78,7 @@
     "fluk_tanggal_gajian_akhir_bulan",
     "pref_awal_bulan",
     "pref_harbolnas",
+    "pref_natal_tahun_baru",
     "pref_payday",
     "pref_promo_aplikasi",
     "pref_ramadan_lebaran",
@@ -140,6 +141,7 @@
     "pref_payday",
     "pref_weekend",
     "pref_ramadan_lebaran",
+    "pref_natal_tahun_baru",
     "pref_harbolnas",
     "pref_promo_aplikasi",
     "gig_jualan_online",
