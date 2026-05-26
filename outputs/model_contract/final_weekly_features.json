@@ -1,6 +1,6 @@
 {
   "version": "v12-REFACTORED",
-  "total_features_real": 86,
+  "total_features_real": 88,
   "total_features_synthetic": 58,
   "feature_order_real": [
     "current_income",
@@ -64,7 +64,9 @@
     "ramai_akhir_bulan_gajian",
     "ramai_akhir_pekan",
     "ramai_awal_bulan",
-    "ramai_harbolnas_flashsale",
+    "ramai_cuaca_bagus",
+    "ramai_harbolnas_flashsale_tanggal_kembar",
+    "ramai_natal_tahun_baru",
     "ramai_promo_aplikasi",
     "ramai_ramadan_lebaran",
     "fluk_akhir_pekan_hari_libur",

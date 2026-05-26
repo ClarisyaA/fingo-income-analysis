@@ -15,8 +15,8 @@
 - Synthetic: 298 users x 52 weeks (AR1)
 
 ## Best Model (Real 4w)
-- Regression: Random Forest (MAE=182808, Norm_MAE=0.0936)
-- Classification: XGBoost (Accuracy=59.4%, F1=48.3%)
+- Regression: Random Forest (MAE=182390, Norm_MAE=0.0936)
+- Classification: XGBoost (Accuracy=60.6%, F1=48.1%)
 
 ## Autocorrelation Check
 Mean lag-1 autocorrelation in synthetic data: 0.6520 (expected ~0.65)
