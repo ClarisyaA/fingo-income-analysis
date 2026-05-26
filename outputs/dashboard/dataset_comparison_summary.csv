@@ -1,3 +1,3 @@
 dataset,n_respondents,n_rows,avg_income,type
-real_4w,535,1605,488042.61682242993,real
-synthetic_52w,535,25680,432798.24471603165,synthetic
+real_4w,298,894,375708.8926174497,real
+synthetic_52w,298,14304,364634.15636293235,synthetic

@@ -1,19 +1,19 @@
 Model,MAE,RMSE,MAPE (%),R2,Within20%,Within30%,Normalized_MAE,dataset,task,Accuracy,Macro_F1,Precision,Recall
-Baseline Last Week,169040.4984,259523.2307,106.2051,0.2907,50.4673,61.0592,0.0916,real_4w,regression,,,,
-Baseline Rolling Mean,157891.0696,237839.8658,93.6295,0.4043,48.9097,62.3053,0.0804,real_4w,regression,,,,
-Ridge Regression,156869.5405,220904.496,103.0249,0.4861,43.6137,59.5016,0.0788,real_4w,regression,,,,
-Random Forest,154214.1878,217494.1701,107.0063,0.5019,43.6137,59.19,0.0762,real_4w,regression,,,,
-XGBoost,167536.5122,231842.8952,101.9827,0.434,37.6947,55.7632,0.0814,real_4w,regression,,,,
-Baseline Majority,,,,,,,,real_4w,classification,34.89,17.24,11.63,33.33
-Rule-based Momentum,,,,,,,,real_4w,classification,25.86,22.81,21.7,27.13
-Random Forest,,,,,,,,real_4w,classification,51.71,49.63,49.8,50.81
-XGBoost,,,,,,,,real_4w,classification,49.53,47.41,47.55,48.63
-Baseline Last Week,19224.1758,28628.8959,4.7677,0.9848,98.4229,99.7858,0.0118,synthetic_52w,regression,,,,
-Baseline Rolling Mean,21998.3441,33252.1146,5.4572,0.9796,97.352,99.338,0.0134,synthetic_52w,regression,,,,
-Ridge,18517.9577,27566.0118,4.6942,0.986,98.2087,99.6495,0.0115,synthetic_52w,regression,,,,
-Random Forest,19146.9141,28719.3308,4.7811,0.9848,98.2282,99.6301,0.0117,synthetic_52w,regression,,,,
-XGBoost,18268.868,27439.1013,4.655,0.9861,97.9556,99.5327,0.0114,synthetic_52w,regression,,,,
-Baseline Majority,,,,,,,,synthetic_52w,classification,88.01,31.21,29.34,33.33
-Rule-based Momentum,,,,,,,,synthetic_52w,classification,81.56,38.38,38.38,38.37
-Random Forest,,,,,,,,synthetic_52w,classification,88.03,34.74,46.13,35.16
-XGBoost,,,,,,,,synthetic_52w,classification,87.79,35.53,44.42,35.62
+Baseline Last Week,212263.8889,337232.8675,44.7773,0.4499,32.7778,43.8889,0.1447,real_4w,regression,,,,
+Baseline Rolling Mean,193467.5926,311992.4953,37.0546,0.5292,35.0,45.0,0.1122,real_4w,regression,,,,
+Ridge Regression,207417.9094,297211.1037,69.8393,0.5727,26.1111,36.6667,0.0993,real_4w,regression,,,,
+Random Forest,182807.5366,277497.5483,41.1692,0.6275,35.0,50.0,0.0936,real_4w,regression,,,,
+XGBoost,219561.0792,320882.7878,50.3908,0.502,23.3333,35.0,0.0998,real_4w,regression,,,,
+Baseline Majority,,,,,,,,real_4w,classification,45.0,20.69,15.0,33.33
+Rule-based Momentum,,,,,,,,real_4w,classification,21.67,21.27,21.48,28.03
+Random Forest,,,,,,,,real_4w,classification,53.89,39.88,37.19,45.19
+XGBoost,,,,,,,,real_4w,classification,59.44,48.33,51.72,50.6
+Baseline Last Week,18555.6021,31403.5589,4.2546,0.9923,99.6528,100.0,0.0096,synthetic_52w,regression,,,,
+Baseline Rolling Mean,21247.461,36704.4331,4.7781,0.9895,99.2014,99.8958,0.0107,synthetic_52w,regression,,,,
+Ridge,18348.7747,30437.2905,5.2921,0.9928,97.1181,99.3056,0.0119,synthetic_52w,regression,,,,
+Random Forest,18780.2056,31873.4813,4.3125,0.9921,99.5139,100.0,0.0096,synthetic_52w,regression,,,,
+XGBoost,18457.9198,31771.078,4.2093,0.9922,99.5833,100.0,0.0094,synthetic_52w,regression,,,,
+Baseline Majority,,,,,,,,synthetic_52w,classification,92.22,31.98,30.74,33.33
+Rule-based Momentum,,,,,,,,synthetic_52w,classification,86.04,33.33,33.31,33.36
+Random Forest,,,,,,,,synthetic_52w,classification,92.29,32.98,64.1,33.83
+XGBoost,,,,,,,,synthetic_52w,classification,92.15,33.39,45.06,34.02

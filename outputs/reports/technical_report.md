@@ -10,16 +10,16 @@
 6. Baselines: Added Rolling Mean (regression) and Rule-based Momentum (classification)
 
 ## Data Sources
-- Survey: 535 respondents (Mei 2026)
+- Survey: 298 respondents (Mei 2026)
 - BPS 2023-2025: regional income benchmarks
-- Synthetic: 535 users x 52 weeks (AR1)
+- Synthetic: 298 users x 52 weeks (AR1)
 
 ## Best Model (Real 4w)
-- Regression: Random Forest (MAE=154214, Norm_MAE=0.0762)
-- Classification: Random Forest (Accuracy=51.7%, F1=49.6%)
+- Regression: Random Forest (MAE=182808, Norm_MAE=0.0936)
+- Classification: XGBoost (Accuracy=59.4%, F1=48.3%)
 
 ## Autocorrelation Check
-Mean lag-1 autocorrelation in synthetic data: 0.6535 (expected ~0.65)
+Mean lag-1 autocorrelation in synthetic data: 0.6520 (expected ~0.65)
 
 ## Disclaimer
 Real 4w data is the primary validation basis. Synthetic 52w is for simulation only.
