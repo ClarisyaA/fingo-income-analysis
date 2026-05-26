@@ -4,7 +4,7 @@
     "clean": "timestamp"
   },
   "1": {
-    "original": "Apakah Anda bersedia mengisi survei ini?\r\n\r\nCuman sedikit kok pertanyaanya!",
+    "original": "Apakah Anda bersedia mengisi survei ini?\n\nCuman sedikit kok pertanyaanya!",
     "clean": "consent"
   },
   "2": {
@@ -16,7 +16,7 @@
     "clean": "domisili"
   },
   "4": {
-    "original": "Pekerjaan utama Anda saat ini? \r\n\r\nKalau punya lebih dari satu, pilih yang PALING UTAMA.",
+    "original": "Pekerjaan utama Anda saat ini?\n\nKalau punya lebih dari satu, pilih yang PALING UTAMA.",
     "clean": "pekerjaan"
   },
   "5": {
@@ -24,11 +24,11 @@
     "clean": "sumber_pekerjaan"
   },
   "6": {
-    "original": "Apakah pekerjaan ini menjadi sumber penghasilan utama Anda?\r\n\r\n0 — Tidak, hanya tambahan \r\n1 — Kadang utama, kadang tambahan\r\n2 — Ya, penghasilan utama",
+    "original": "Apakah pekerjaan ini menjadi sumber penghasilan utama Anda?\n\n0 — Tidak, hanya tambahan\n1 — Kadang utama, kadang tambahan\n2 — Ya, penghasilan utama",
     "clean": "status_income"
   },
   "7": {
-    "original": " Sudah berapa lama Anda menjalankan pekerjaan ini? (tulis dalam bulan, contoh: 8)",
+    "original": "Sudah berapa lama Anda menjalankan pekerjaan ini? (tulis dalam bulan, contoh: 8)",
     "clean": "lama_kerja_bulan"
   },
   "8": {
@@ -56,7 +56,7 @@
     "clean": "income_w4"
   },
   "14": {
-    "original": "Dalam sebulan, di minggu mana penghasilan Anda biasanya paling tinggi?\r\n\r\n1 — Minggu pertama \r\n2 — Minggu kedua \r\n3 — Minggu ketiga \r\n4 — Minggu keempat \r\n0 — Tidak ada pola, tiap bulan beda",
+    "original": "Dalam sebulan, di minggu mana penghasilan Anda biasanya paling tinggi?\n\n1 — Minggu pertama\n2 — Minggu kedua\n3 — Minggu ketiga\n4 — Minggu keempat\n0 — Tidak ada pola, tiap bulan beda",
     "clean": "peak_week"
   },
   "15": {
@@ -64,7 +64,7 @@
     "clean": "waktu_ramai"
   },
   "16": {
-    "original": " Apa yang paling sering membuat penghasilan Anda naik atau turun? (pilih maksimal 3)",
+    "original": "Apa yang paling sering membuat penghasilan Anda naik atau turun? (pilih maksimal 3)",
     "clean": "faktor_fluktuasi"
   },
   "17": {
@@ -72,11 +72,11 @@
     "clean": "app_helpful_score"
   },
   "18": {
-    "original": "Fitur apa yang paling Anda butuhkan?\r\n\r\nPilih maksimal 3.",
+    "original": "Fitur apa yang paling Anda butuhkan?\n\nPilih maksimal 3.",
     "clean": "fitur_dibutuhkan"
   },
   "19": {
-    "original": " Kontak Hadiah GoPay  ",
+    "original": "Kontak Hadiah GoPay",
     "clean": "kontak_gopay"
   }
 }
