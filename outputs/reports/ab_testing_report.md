@@ -8,15 +8,15 @@ A/B Testing ini adalah **simulasi offline** karena aplikasi Fingo belum live.
 - Treatment (B): Dengan insight prediksi income dan direction
 
 ## Hasil
-- Control mean: 54.79
-- Treatment mean: 59.27
-- Uplift: 8.18%
-- p-value: 0.029177
-- Signifikan: Ya (α = 0.05)
-- T-statistic: 2.1998
+- Control mean: 59.76
+- Treatment mean: 60.99
+- Uplift: 2.06%
+- p-value: 0.322483
+- Signifikan: Tidak (α = 0.05)
+- T-statistic: 0.9909
 
 ## Interpretasi
-Treatment group menunjukkan readiness score signifikan lebih tinggi.
+Belum signifikan secara statistik — perlu lebih banyak data.
 
 ## Catatan
 Rancangan ini dapat diterapkan setelah aplikasi Fingo memiliki pengguna aktif >= 200.
