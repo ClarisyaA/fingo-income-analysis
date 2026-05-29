@@ -37,7 +37,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ## Detail per Notebook
 
 ### 01_Data_Preparation.ipynb
-**Input:** `data/raw/form_responses.csv`, BPS files  
+**Input:** `data/raw/form_responses.csv`, BPS files
 **Proses:**
 - Clone/pull repo GitHub
 - Setup environment + install library
@@ -56,7 +56,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ---
 
 ### 02_Temporal_Mapping.ipynb
-**Input:** `data/processed/survey_clean.csv`  
+**Input:** `data/processed/survey_clean.csv`
 **Proses:**
 - Mapping `income_w1–income_w4` ke periode kalender berdasarkan timestamp
 - `income_w1`: H-7 s/d H-1 dari timestamp responden (terbaru)
@@ -73,7 +73,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ---
 
 ### 03_EDA_Survey.ipynb
-**Input:** survey_temporal_mapped.csv + survey_weekly_income_long.csv  
+**Input:** survey_temporal_mapped.csv + survey_weekly_income_long.csv
 **Proses:**
 - Analisis distribusi income per gig_type, domisili, relative_week
 - Analisis calendar_month dan week_of_month dari temporal mapping
@@ -84,7 +84,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ---
 
 ### 04_Synthetic_Data_Generation.ipynb
-**Input:** `data/processed/survey_temporal_mapped.csv`  
+**Input:** `data/processed/survey_temporal_mapped.csv`
 **Proses:**
 - Generate 3.000 synthetic users dari distribusi survey
 - AR(1) income generation dengan noise/shock per gig_type
@@ -97,7 +97,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ---
 
 ### 05_Feature_Engineering.ipynb
-**Input:** `data/synthetic/synthetic_52week_user_income.csv`  
+**Input:** `data/synthetic/synthetic_52week_user_income.csv`
 **Proses:**
 - Sliding window 4 lag dari 52-week history
 - Rolling mean, std, min, max (4w, 2w, 8w)
@@ -111,7 +111,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ---
 
 ### 06_Model_Dataset_Split.ipynb
-**Input:** `data/processed/income_features.csv`  
+**Input:** `data/processed/income_features.csv`
 **Proses:**
 - Kronologis split by synthetic_user_id: 70/15/15
 - Fit scaler (log1p → MinMaxScaler) on train only
@@ -122,7 +122,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ---
 
 ### 07_Bias_Validation.ipynb
-**Input:** income_features.csv + survey_temporal_mapped.csv + synthetic_52week_user_income.csv  
+**Input:** income_features.csv + survey_temporal_mapped.csv + synthetic_52week_user_income.csv
 **Proses:**
 - Mean vs BPS benchmark
 - Distribution test (KS)
@@ -136,7 +136,7 @@ mendorong hasilnya ke GitHub di akhir (git push).
 ---
 
 ### 08_Documentation_Export.ipynb
-**Input:** semua output notebook sebelumnya  
+**Input:** semua output notebook sebelumnya
 **Output:** `README.md`, `notebook.md`, `data_dictionary.md`
 
 ---

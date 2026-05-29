@@ -1,5 +1,5 @@
 # Fingo — Weekly Income Forecasting for Gig Workers
-**Tim:** CC26-PSU217 | **Role:** Data Scientist 2 — Clarisya Adeline  
+**Tim:** CC26-PSU217 | **Role:** Data Scientist 2 — Clarisya Adeline
 **Branch:** feat/income-predictor-final
 
 ---
@@ -21,7 +21,7 @@ income_w1–w4 dalam survey **bukan** minggu 1–4 bulan kalender. Mereka adalah
 **Urutan kronologis model:** `income_w4 → income_w3 → income_w2 → income_w1`
 
 ## Cara Menjalankan
-Jalankan notebook secara berurutan dari 01 sampai 08.  
+Jalankan notebook secara berurutan dari 01 sampai 08.
 Setiap notebook auto-pull dari GitHub di awal dan push ke GitHub di akhir.
 
 ```
