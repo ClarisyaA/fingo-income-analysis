@@ -6,16 +6,16 @@
   "val_rows": 21600,
   "test_rows": 21600,
   "regression_test_metrics": {
-    "mae": 64556.68496179651,
-    "rmse": 125159.15280896325,
-    "mape": 113.80937841970655,
-    "r2": 0.8278999050497985
+    "mae": 64439.54412706163,
+    "rmse": 124800.69309927698,
+    "mape": 112.16941148529772,
+    "r2": 0.82888429342715
   },
   "classification_test_metrics": {
-    "accuracy": 0.7691666666666667,
-    "macro_precision": 0.6649920799719498,
-    "macro_recall": 0.6371297565852038,
-    "macro_f1": 0.6477843961820321
+    "accuracy": 0.7692592592592593,
+    "macro_precision": 0.6645740614242426,
+    "macro_recall": 0.637177457405658,
+    "macro_f1": 0.6477212145969816
   },
   "target_regression": "next_week_income",
   "target_classification": "next_week_direction",
