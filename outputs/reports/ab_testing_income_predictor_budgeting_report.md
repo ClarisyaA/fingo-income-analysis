@@ -52,18 +52,18 @@ membuat budget manual berdasarkan rata-rata income historis.
 | Metrik | Control | Treatment |
 |--------|---------|-----------|
 | N | 1,502 | 1,498 |
-| Mean Budget Error | Rp 56rb | Rp 15rb |
-| Median Budget Error | Rp 41rb | Rp 10rb |
-| Std Dev Budget Error | Rp 45rb | Rp 20rb |
-| Absolute Diff (T-C) | — | Rp -40rb |
-| Relative Change | — | -72.43% |
+| Mean Budget Error | Rp 47rb | Rp 14rb |
+| Median Budget Error | Rp 36rb | Rp 10rb |
+| Std Dev Budget Error | Rp 36rb | Rp 13rb |
+| Absolute Diff (T-C) | — | Rp -33rb |
+| Relative Change | — | -70.14% |
 
 ## 5. Secondary Metric: budget_adherence_rate
 
 | Metrik | Control | Treatment | Diff |
 |--------|---------|-----------|------|
-| Budget Adherence Rate | 44.91% | 42.21% | -2.70pp |
-| Over-Budget Rate | 55.09% | 57.79% | — |
+| Budget Adherence Rate | 46.17% | 43.19% | -2.98pp |
+| Over-Budget Rate | 53.83% | 56.81% | — |
 
 > **Interpretasi**: Jika budget adherence Treatment lebih rendah dari Control, hal ini tidak
 > berarti Income Predictor gagal. Akurasi budget (mean_budget_error) tidak otomatis mengubah
@@ -74,9 +74,9 @@ membuat budget manual berdasarkan rata-rata income historis.
 
 | Uji | Statistic | p-value | Hasil |
 |-----|-----------|---------|-------|
-| Shapiro-Wilk (Control) | 0.8173 | 0.000000 | Tidak Normal |
-| Shapiro-Wilk (Treatment) | 0.4756 | 0.000000 | Tidak Normal |
-| Levene | 415.8148 | 0.000000 | Tidak Homogen |
+| Shapiro-Wilk (Control) | 0.8603 | 0.000000 | Tidak Normal |
+| Shapiro-Wilk (Treatment) | 0.6782 | 0.000000 | Tidak Normal |
+| Levene | 538.1740 | 0.000000 | Tidak Homogen |
 
 > Uji utama yang dipilih: **Mann-Whitney U** (berdasarkan hasil uji asumsi di atas)
 
@@ -84,15 +84,15 @@ membuat budget manual berdasarkan rata-rata income historis.
 
 | Uji | Statistic | p-value | Keputusan | Peran |
 |-----|-----------|---------|-----------|-------|
-| Mann-Whitney U (alternative=less) | 229456 | 0.000000 | Tolak H0 | **Utama** |
-| Welch t-test (one-tailed: T < C) | -31.6231 | 0.000000 | Tolak H0 | Pendukung |
+| Mann-Whitney U (alternative=less) | 288517 | 0.000000 | Tolak H0 | **Utama** |
+| Welch t-test (one-tailed: T < C) | -33.3843 | 0.000000 | Tolak H0 | Pendukung |
 
 ## 8. Effect Size & Confidence Interval
 
-- **Cohen's d** = -1.1546 → Efek Besar (Treatment lebih baik (d negatif = budget error lebih rendah))
-- **Absolute Difference** (T-C) = Rp -40rb
-- **Relative Change** = -72.43%
-- **95% CI (Welch)**: [Rp -43rb, Rp -38rb]
+- **Cohen's d** = -1.2188 → Efek Besar (Treatment lebih baik (d negatif = budget error lebih rendah))
+- **Absolute Difference** (T-C) = Rp -33rb
+- **Relative Change** = -70.14%
+- **95% CI (Welch)**: [Rp -35rb, Rp -31rb]
 - **CI Interpretation**: Seluruh CI negatif → Treatment secara statistik memiliki budget error lebih rendah.
 
 ## 9. Power Analysis
@@ -105,18 +105,18 @@ membuat budget manual berdasarkan rata-rata income historis.
 
 | Gig Type | n_ctrl | n_treat | BE Control | BE Treatment | Rel Reduction | MW p | Indikasi |
 |----------|--------|---------|------------|--------------|---------------|------|----------|
-| content_creator | 139 | 138 | Rp 54rb | Rp 13rb | -76.7% | 0.0000 | positif |
-| freelance_desain | 230 | 229 | Rp 81rb | Rp 21rb | -73.4% | 0.0000 | positif |
-| freelance_it | 180 | 180 | Rp 108rb | Rp 28rb | -74.4% | 0.0000 | positif |
-| jualan_online | 248 | 248 | Rp 36rb | Rp 10rb | -72.1% | 0.0000 | positif |
-| kurir | 113 | 112 | Rp 36rb | Rp 11rb | -68.3% | 0.0000 | positif |
-| ojek_online | 115 | 114 | Rp 37rb | Rp 11rb | -69.2% | 0.0000 | positif |
-| pekerja_harian | 249 | 249 | Rp 44rb | Rp 13rb | -70.3% | 0.0000 | positif |
-| tutor | 228 | 228 | Rp 45rb | Rp 14rb | -69.2% | 0.0000 | positif |
+| content_creator | 139 | 138 | Rp 42rb | Rp 10rb | -75.3% | 0.0000 | positif |
+| freelance_desain | 230 | 229 | Rp 64rb | Rp 19rb | -71.0% | 0.0000 | positif |
+| freelance_it | 180 | 180 | Rp 84rb | Rp 23rb | -72.0% | 0.0000 | positif |
+| jualan_online | 248 | 248 | Rp 33rb | Rp 10rb | -70.1% | 0.0000 | positif |
+| kurir | 113 | 112 | Rp 32rb | Rp 11rb | -66.0% | 0.0000 | positif |
+| ojek_online | 115 | 114 | Rp 33rb | Rp 11rb | -66.5% | 0.0000 | positif |
+| pekerja_harian | 249 | 249 | Rp 40rb | Rp 13rb | -68.5% | 0.0000 | positif |
+| tutor | 228 | 228 | Rp 40rb | Rp 13rb | -67.5% | 0.0000 | positif |
 
 ## 11. Kesimpulan
 
-Simulasi A/B Testing menunjukkan bahwa penggunaan Income Predictor sebagai dasar Budget Planner adaptif dapat menurunkan budget error dibandingkan budgeting manual. Hal ini menunjukkan bahwa Income Predictor membantu menghasilkan rencana budget yang lebih akurat terhadap kondisi income aktual. Uji Mann-Whitney U menghasilkan p-value = 0.000000 (< alpha=0.05), sehingga H0 ditolak. Relative reduction budget error sebesar -72.43% mengindikasikan efek yang bermakna (Cohen's d = -1.1546, Besar).
+Simulasi A/B Testing menunjukkan bahwa penggunaan Income Predictor sebagai dasar Budget Planner adaptif dapat menurunkan budget error dibandingkan budgeting manual. Hal ini menunjukkan bahwa Income Predictor membantu menghasilkan rencana budget yang lebih akurat terhadap kondisi income aktual. Uji Mann-Whitney U menghasilkan p-value = 0.000000 (< alpha=0.05), sehingga H0 ditolak. Relative reduction budget error sebesar -70.14% mengindikasikan efek yang bermakna (Cohen's d = -1.2188, Besar).
 
 Namun, peningkatan akurasi budget belum otomatis menurunkan over-budget rate atau meningkatkan budget adherence, karena perilaku pengeluaran pengguna tetap dipengaruhi oleh kepatuhan terhadap rekomendasi. Dampak terhadap budget adherence dan over-budget rate perlu divalidasi lebih lanjut melalui eksperimen live.
 
