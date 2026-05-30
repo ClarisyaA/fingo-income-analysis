@@ -31,11 +31,11 @@ Anti-leakage check: **PASSED**
 
 | Model | Val MAE | Val RMSE | Val MAPE | Val R2 |
 |---|---|---|---|---|
-| XGBRegressor | Rp 63.020 | Rp 120.887 | 121.06% | 0.8257 |
-| GradientBoostingRegressor | Rp 64.180 | Rp 121.182 | 126.79% | 0.8248 |
-| RandomForestRegressor | Rp 65.064 | Rp 124.284 | 110.68% | 0.8158 |
-| Ridge | Rp 108.053 | Rp 200.575 | 125.81% | 0.5202 |
-| LinearRegression | Rp 108.053 | Rp 200.576 | 125.81% | 0.5202 |
+| XGBRegressor | Rp 42.702 | Rp 90.524 | 11.92% | 0.9011 |
+| GradientBoostingRegressor | Rp 43.702 | Rp 90.929 | 12.17% | 0.9002 |
+| RandomForestRegressor | Rp 44.026 | Rp 91.918 | 12.24% | 0.8980 |
+| Ridge | Rp 99.119 | Rp 195.555 | 25.75% | 0.5383 |
+| LinearRegression | Rp 99.121 | Rp 195.565 | 25.75% | 0.5382 |
 
 ---
 
@@ -49,10 +49,10 @@ Anti-leakage check: **PASSED**
 
 | Metric | Value |
 |---|---|
-| MAE | Rp 64.440 |
-| RMSE | Rp 124.801 |
-| MAPE | 112.17% |
-| R2 | 0.8289 |
+| MAE | Rp 42.931 |
+| RMSE | Rp 90.468 |
+| MAPE | 11.96% |
+| R2 | 0.9091 |
 
 ---
 
@@ -60,10 +60,10 @@ Anti-leakage check: **PASSED**
 
 | Model | Val Accuracy | Val Prec | Val Recall | Val F1 |
 |---|---|---|---|---|
-| RandomForestClassifier | 0.7709 | 0.6675 | 0.6380 | 0.6491 |
-| XGBClassifier | 0.8029 | 0.7703 | 0.6108 | 0.6418 |
-| GradientBoostingClassifier | 0.7994 | 0.7616 | 0.6063 | 0.6360 |
-| LogisticRegression | 0.7100 | 0.6186 | 0.6346 | 0.6198 |
+| RandomForestClassifier | 0.7469 | 0.6208 | 0.6172 | 0.6181 |
+| XGBClassifier | 0.7955 | 0.7535 | 0.5751 | 0.6153 |
+| GradientBoostingClassifier | 0.7917 | 0.7452 | 0.5690 | 0.6080 |
+| LogisticRegression | 0.6891 | 0.5729 | 0.6139 | 0.5859 |
 
 ---
 
@@ -77,10 +77,10 @@ Anti-leakage check: **PASSED**
 
 | Metric | Value |
 |---|---|
-| Accuracy | 0.7693 |
-| Macro Precision | 0.6646 |
-| Macro Recall | 0.6372 |
-| Macro F1 | 0.6477 |
+| Accuracy | 0.7489 |
+| Macro Precision | 0.6250 |
+| Macro Recall | 0.6207 |
+| Macro F1 | 0.6221 |
 
 ---
 
@@ -88,26 +88,26 @@ Anti-leakage check: **PASSED**
 
 | Feature | Importance |
 |---|---|
-| lag_1_income | 0.434965 |
-| rolling_mean_4w | 0.176070 |
-| rolling_mean_2w | 0.094050 |
-| rolling_mean_8w | 0.089255 |
-| rolling_max_4w | 0.026297 |
-| gig_content_creator | 0.008012 |
-| gig_pekerja_harian | 0.007272 |
-| rolling_median_4w | 0.007262 |
-| rolling_std_4w | 0.006799 |
-| rolling_std_8w | 0.006660 |
+| lag_1_income | 0.609652 |
+| rolling_mean_2w | 0.239554 |
+| rolling_mean_8w | 0.060533 |
+| rolling_mean_4w | 0.020814 |
+| rolling_max_4w | 0.017025 |
+| rolling_median_4w | 0.010551 |
+| rolling_range_4w | 0.002842 |
+| gig_kurir | 0.002247 |
+| rolling_std_4w | 0.001973 |
+| rolling_std_8w | 0.001737 |
 
 ---
 
 ## 11. Interpretasi
 
-- **MAE** model terbaik di test set adalah **Rp 64.440**.
-- **MAPE** sebesar **112.17%** menunjukkan rata-rata error relatif terhadap income aktual.
-- Model baseline sudah cukup baik sebagai acuan awal (R2 = 0.8289).
+- **MAE** model terbaik di test set adalah **Rp 42.931**.
+- **MAPE** sebesar **11.96%** menunjukkan rata-rata error relatif terhadap income aktual.
+- Model baseline sudah cukup baik sebagai acuan awal (R2 = 0.9091).
 - Model sequence seperti **LSTM sangat layak dicoba** karena data income bersifat temporal dan berurutan per user.
-- Fitur lag/rolling yang penting: lag_1_income, rolling_mean_4w, rolling_mean_2w, rolling_mean_8w, rolling_max_4w
+- Fitur lag/rolling yang penting: lag_1_income, rolling_mean_2w, rolling_mean_8w, rolling_mean_4w, rolling_max_4w
 - Split sudah dilakukan by user — tidak ada data leakage antar split.
 - Anti-leakage check sudah diverifikasi sebelum training.
 
