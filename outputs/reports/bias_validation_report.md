@@ -1,10 +1,11 @@
 # Bias Validation Report — Fingo Income Predictor
 
 ## Test Results
-1. **Mean vs BPS**: ratio synthetic/BPS = 3.06 (FAIL)
-2. **Distribution (KS)**: stat=0.1334, p=0.0000 (toleransi: synthetic 52w vs real 4w snapshot)
+0. **Income Floor Sanity Check**: min=75,000, rows<50k=0 (PASS),
+1. **Mean vs BPS**: ratio synthetic/BPS = 3.20 (FAIL)
+2. **Distribution (KS)**: stat=0.1028, p=0.0000 (toleransi: synthetic 52w vs real 4w snapshot)
 3. **Seasonal direction**: Ramadan > Normal = PASS
-4. **Autocorrelation lag-1**: 0.5844 (PASS, expected 0.30-0.90)
+4. **Autocorrelation lag-1**: 0.5796 (PASS, expected 0.30-0.90)
 5. **BPS range per domisili**: lihat `outputs/reports/bps_range_validation.csv`
 6. **Income per gig_type**: lihat `outputs/reports/gig_type_income_validation.csv`
 
