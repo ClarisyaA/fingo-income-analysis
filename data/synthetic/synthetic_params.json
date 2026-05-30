@@ -1,8 +1,19 @@
 {
-  "version": "v13",
+  "version": "v14-floor-fix",
   "n_synthetic_users": 3000,
   "n_weeks": 52,
   "simulation_year": 2026,
+  "income_floor_global": 50000,
+  "income_floor_per_gig": {
+    "ojek_online": 100000,
+    "kurir": 136650.0,
+    "jualan_online": 75000,
+    "freelance_desain": 100000,
+    "freelance_it": 150000,
+    "content_creator": 75000,
+    "tutor": 75000,
+    "pekerja_harian": 100000
+  },
   "income_profile_per_gig": {
     "ojek_online": {
       "n": 29,
@@ -119,7 +130,10 @@
     "expected_weight": 0.3,
     "trend_weight": 0.05,
     "shock_prob": 0.05,
+    "bad_week_multiplier_range": "0.35–0.65",
     "high_demand_prob": 0.04,
-    "low_income_freelance_prob": 0.06
+    "freelance_dip_prob": 0.06,
+    "freelance_dip_range": "0.35–0.60",
+    "floor_enforcement": "clip_income_reasonable() applied to ALL weeks"
   }
 }
