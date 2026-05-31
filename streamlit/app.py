@@ -1156,10 +1156,13 @@ elif module == "Income Predictor":
                 <p>Memperkirakan pendapatan <strong style="color:#E8EDE9">4 minggu ke depan</strong>
                 berdasarkan riwayat <strong style="color:#E8EDE9">12 minggu terakhir</strong>.
                 Output digunakan sebagai dasar Budget Planner 50/30/20.<br><br>
-                <strong style="color:var(--fg-warn)">Model:</strong> GradientBoosting (fingo_deploy.pkl)
-                via API <code>https://mes1205-fingo.hf.space/predict/income</code>.<br><br>
+                <strong style="color:var(--fg-warn)">Model Final:</strong> Ens(DL=0.15 + GradientBoosting) untuk regresi pendapatan
+                dan Ens_cls(DL=0.50) untuk klasifikasi arah tren, disimpan dalam <code>fingo_deploy.pkl</code>
+                dan digunakan melalui API <code>https://mes1205-fingo.hf.space/predict/income</code>.<br><br>
                 <strong style="color:var(--fg-warn)">Catatan:</strong>
-                Project Plan awal: LSTM TensorFlow. Implementasi final: GradientBoosting dengan 12 minggu input.</p>
+                Project Plan awal menggunakan LSTM TensorFlow. Implementasi final menggunakan ensemble
+                Deep Learning + GradientBoosting karena memberikan performa test set terbaik dan lebih stabil
+                untuk dataset tabular time-series.
             </div>""", unsafe_allow_html=True)
         with col_r:
             st.markdown('<div class="section-header">Pipeline Data Science (10 Notebook)</div>', unsafe_allow_html=True)
@@ -1282,56 +1285,115 @@ elif module == "Income Predictor":
                 r2_t = 1 - ss_res / ss_tot if ss_tot > 0 else None
 
         if mae_t is not None:
+            mae_norm_t = bundle.get("final_reg_test_mae_norm") if bundle is not None else None
+            rmse_norm_t = bundle.get("final_reg_test_rmse_norm") if bundle is not None else None
+            target_mae = bundle.get("target_mae", 0.02) if bundle is not None else 0.02
+            mae_gap = mae_norm_t - target_mae if mae_norm_t is not None else None
+
             st.markdown(
-                f'<div class="section-header">Metrik Regresi — Test Set ({n_tr:,} baris)</div>',
+                '<div class="section-header">Final Model Deployment — Test Set</div>',
                 unsafe_allow_html=True
             )
 
+            st.markdown("""
+            <div class="panel">
+                <p>
+                Metrik berikut diambil dari <strong style="color:#E8EDE9">fingo_deploy.pkl</strong>,
+                yaitu model final yang digunakan untuk deployment/API. Validation set digunakan untuk memilih kandidat model,
+                sedangkan test set hanya digunakan untuk evaluasi akhir.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
             c1, c2, c3, c4 = st.columns(4)
-            c1.metric("MAE", fmt_idr_full(mae_t))
-            c2.metric("RMSE", fmt_idr_full(rmse_t) if rmse_t is not None else "N/A")
-            c3.metric("R2", f"{r2_t:.4f}" if r2_t is not None else "N/A")
-            c4.metric("Tolerance <5%", f"{tol_5:.2f}%" if tol_5 is not None else "N/A")
+            c1.metric(
+                "MAE Normalized",
+                f"{mae_norm_t:.4f}" if mae_norm_t is not None else "N/A",
+                delta=f"gap {mae_gap:+.4f} dari target 0.0200" if mae_gap is not None else None
+            )
+            c2.metric(
+                "RMSE Normalized",
+                f"{rmse_norm_t:.4f}" if rmse_norm_t is not None else "N/A"
+            )
+            c3.metric("R² Score", f"{r2_t:.4f}" if r2_t is not None else "N/A")
+            c4.metric("MAE Rupiah", fmt_idr_full(mae_t))
+
+            c5, c6, c7 = st.columns(3)
+            c5.metric("Tolerance <2%", f"{tol_2:.1f}%" if tol_2 is not None else "N/A")
+            c6.metric("Tolerance <5%", f"{tol_5:.1f}%" if tol_5 is not None else "N/A")
+            c7.metric("Tolerance <10%", f"{tol_10:.1f}%" if tol_10 is not None else "N/A")
 
             st.markdown(
-                '<div class="section-header">Metrik Klasifikasi Arah — Test Set</div>',
+                '<div class="section-header">Final Direction Classification — Test Set</div>',
                 unsafe_allow_html=True
             )
 
             k1, k2 = st.columns(2)
-            k1.metric("Direction Accuracy", f"{acc_t * 100:.2f}%" if acc_t is not None else "N/A")
+            k1.metric(
+                "Accuracy",
+                f"{acc_t * 100:.2f}%" if acc_t is not None else "N/A",
+                delta="below target" if acc_t is not None and acc_t < 0.85 else "target achieved"
+            )
             k2.metric("Macro F1", f"{f1_t:.4f}" if f1_t is not None else "N/A")
 
-            st.markdown(
-                '<div class="section-header">Tolerance Accuracy</div>',
-                unsafe_allow_html=True
+            st.warning(
+                "Regression model hampir mencapai target MAE normalized ≤ 0.02 dengan gap kecil. "
+                "Namun, classification direction masih below target karena accuracy test 79.09% dan Macro F1 0.6105."
             )
-
-            t1, t2, t3 = st.columns(3)
-            t1.metric("Tolerance <2%", f"{tol_2:.2f}%" if tol_2 is not None else "N/A")
-            t2.metric("Tolerance <5%", f"{tol_5:.2f}%" if tol_5 is not None else "N/A")
-            t3.metric("Tolerance <10%", f"{tol_10:.2f}%" if tol_10 is not None else "N/A")
-        else:
-            no_data("Actual metrics tidak ditemukan di fingo_deploy.pkl atau predictions_test.csv.")
         df_reg_m = load_regression_metrics()
         df_cls_m = load_classification_metrics()
         if df_reg_m is not None:
-            st.markdown("<hr>", unsafe_allow_html=True)
-            st.markdown('<div class="section-header">Perbandingan Model Regresi (Validation Set)</div>', unsafe_allow_html=True)
-            disp = df_reg_m.copy()
-            for col in ["val_mae","val_rmse"]:
-                if col in disp.columns: disp[col] = disp[col].apply(fmt_idr_full)
-            if "val_mape" in disp.columns: disp["val_mape"] = disp["val_mape"].apply(lambda v:f"{v:.2f}%")
-            if "val_r2"   in disp.columns: disp["val_r2"]   = disp["val_r2"].apply(lambda v:f"{v:.4f}")
-            disp.columns = [c.replace("val_","").upper() for c in disp.columns]
-            st.dataframe(disp, use_container_width=True, hide_index=True)
+           st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown(
+            '<div class="section-header">Final Model Comparison — AI Engineer Evaluation</div>',
+            unsafe_allow_html=True
+        )
+
+        model_comparison = pd.DataFrame([
+            {"Model": "LinearRegression", "Val MAE": 0.0490, "Test MAE": 0.0475},
+            {"Model": "Ridge", "Val MAE": 0.0490, "Test MAE": 0.0475},
+            {"Model": "LightGBM", "Val MAE": 0.0230, "Test MAE": 0.0230},
+            {"Model": "GradientBoosting", "Val MAE": 0.0214, "Test MAE": 0.0214},
+            {"Model": "XGBoost", "Val MAE": 0.0229, "Test MAE": 0.0230},
+            {"Model": "RandomForest", "Val MAE": 0.0235, "Test MAE": 0.0235},
+            {"Model": "DL", "Val MAE": 0.0236, "Test MAE": 0.0237},
+            {"Model": "Ens(DL=0.15+GradientBoosting) — FINAL", "Val MAE": 0.0213, "Test MAE": 0.0214},
+        ])
+
+        st.dataframe(
+            model_comparison,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.caption(
+            "Val MAE digunakan untuk membandingkan kandidat model. "
+            "Test MAE digunakan untuk evaluasi akhir. Model final dipilih berdasarkan performa terbaik dan stabilitas deployment."
+        )
         if df_cls_m is not None:
-            st.markdown('<div class="section-header">Perbandingan Model Klasifikasi (Validation Set)</div>', unsafe_allow_html=True)
-            disp2 = df_cls_m.copy()
-            for col in ["val_accuracy","val_macro_precision","val_macro_recall","val_macro_f1"]:
-                if col in disp2.columns: disp2[col] = disp2[col].apply(lambda v:f"{v:.4f}")
-            disp2.columns = [c.replace("val_","").upper() for c in disp2.columns]
-            st.dataframe(disp2, use_container_width=True, hide_index=True)
+            st.markdown(
+                '<div class="section-header">Classification Report — Test Set</div>',
+                unsafe_allow_html=True
+            )
+
+            classification_report_df = pd.DataFrame([
+                {"Class": "Down", "Precision": 0.67, "Recall": 0.21, "F1-score": 0.32, "Support": 2558},
+                {"Class": "Stable", "Precision": 0.80, "Recall": 0.95, "F1-score": 0.87, "Support": 15006},
+                {"Class": "Up", "Precision": 0.77, "Recall": 0.55, "F1-score": 0.64, "Support": 4036},
+                {"Class": "Macro Avg", "Precision": 0.75, "Recall": 0.57, "F1-score": 0.61, "Support": 21600},
+                {"Class": "Weighted Avg", "Precision": 0.78, "Recall": 0.79, "F1-score": 0.76, "Support": 21600},
+            ])
+
+            st.dataframe(
+                classification_report_df,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            st.caption(
+                "Kelas Stable mendominasi performa model, sementara kelas Down masih memiliki recall rendah. "
+                "Ini menjelaskan mengapa accuracy cukup tinggi tetapi Macro F1 masih 0.6105."
+            )
 
     with tabs[2]:
         st.markdown("""
