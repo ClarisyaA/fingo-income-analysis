@@ -1,0 +1,56 @@
+| Kolom                  | Deskripsi                                                  |
+| ---------------------- | ---------------------------------------------------------- |
+| dataset_id             | Identitas dataset sumber transaksi                         |
+| timestamp              | Waktu transaksi terjadi                                    |
+| tahun                  | Tahun transaksi                                            |
+| bulan                  | Bulan transaksi                                            |
+| tahun_bulan            | Gabungan tahun dan bulan transaksi                         |
+| tipe_transaksi         | Jenis transaksi yang dilakukan                             |
+| category               | Kategori transaksi/pembelian                               |
+| amount                 | Nominal transaksi                                          |
+| metode_pembayaran      | Metode pembayaran yang digunakan                           |
+| status_transaksi       | Status transaksi                                           |
+| sumber_file            | Nama file asal data                                        |
+| source                 | Sumber dataset                                             |
+| hour                   | Jam transaksi                                              |
+| day_of_week            | Hari transaksi dalam format angka                          |
+| day_name               | Nama hari transaksi                                        |
+| day_of_month           | Tanggal transaksi dalam bulan                              |
+| month                  | Periode bulan transaksi                                    |
+| date_only              | Tanggal transaksi tanpa waktu                              |
+| is_weekend             | Indikator transaksi terjadi di akhir pekan                 |
+| week_period            | Minggu keberapa dalam tahun                                |
+| hour_sin               | Transformasi sinus dari jam transaksi                      |
+| hour_cos               | Transformasi cosinus dari jam transaksi                    |
+| is_night               | Indikator transaksi malam hari                             |
+| is_late_night          | Indikator transaksi larut malam                            |
+| night_score            | Skor intensitas transaksi malam                            |
+| time_segment           | Segmentasi waktu transaksi                                 |
+| category_score         | Skor kategori berdasarkan tingkat impulsivitas             |
+| category_type          | Jenis kategori transaksi                                   |
+| is_hedonic_category    | Indikator kategori bersifat hedonik                        |
+| amount_log             | Transformasi logaritmik nominal transaksi                  |
+| amount_z               | Skor z nominal transaksi                                   |
+| amount_score           | Skor nominal transaksi                                     |
+| amount_percentile      | Persentil nominal transaksi                                |
+| is_high_amount         | Indikator transaksi bernilai tinggi                        |
+| user_proxy             | Identitas pengguna hasil proxy                             |
+| transactions_same_day  | Jumlah transaksi pengguna pada hari yang sama              |
+| daily_amount_total     | Total pengeluaran harian pengguna                          |
+| share_of_daily_spend   | Proporsi transaksi terhadap total pengeluaran harian       |
+| amount_vs_weekly_avg   | Perbandingan nominal transaksi terhadap rata-rata mingguan |
+| budget_limit           | Estimasi batas anggaran pengguna                           |
+| spent_so_far           | Total pengeluaran sementara pengguna                       |
+| budget_remaining_ratio | Rasio sisa anggaran pengguna                               |
+| weekend_score          | Skor transaksi akhir pekan                                 |
+| fingo_impulse_signal   | Skor impulsivitas transaksi                                |
+| signal_band            | Kategori level sinyal impulsivitas                         |
+| impulsive_score        | Nilai akhir skor impulsif                                  |
+| label                  | Label klasifikasi transaksi                                |
+| is_impulsive           | Indikator transaksi impulsif                               |
+| driver_night           | Faktor pendorong impulsif dari waktu malam                 |
+| driver_hedonic         | Faktor pendorong impulsif dari kategori hedonik            |
+| driver_high_amount     | Faktor pendorong impulsif dari nominal tinggi              |
+| driver_weekend         | Faktor pendorong impulsif dari akhir pekan                 |
+| driver_count           | Jumlah faktor pendorong impulsif                           |
+| main_driver            | Faktor utama penyebab impulsivitas transaksi               |
