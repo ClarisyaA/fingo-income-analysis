@@ -1,5 +1,10 @@
-streamlit
 pandas
 numpy
+matplotlib
+seaborn
+scikit-learn
+jupyter
+streamlit
 plotly
-
+faker
+openpyxl

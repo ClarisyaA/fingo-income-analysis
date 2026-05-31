@@ -1,1742 +1,2140 @@
 """
-Fingo Income Analysis Dashboard
-================================
-Dashboard interaktif untuk pipeline DS2 Income Predictor Fingo.
-Capstone Coding Camp 2026 x DBS Foundation - Tim CC26-PSU217.
-
-Versi: 4.3 (Final - Calculation Fixed + Expander Button Style Fixed)
-- FIX: Tombol Filter Lanjutan - warna tetap hijau background putih font di semua state
-- FIX: Perhitungan sesuai notebook (seasonal multiplier, experience ratio, quick summary)
-- FIX: Lebaran bukan spike - di notebook multiplier 0.60-0.80 (lebih rendah dari normal)
-- FIX: Ramadan yang naik untuk delivery, kurir, jualan online
-- FIX: Harbolnas naik untuk kurir, jualan_online, content creator
-- FIX: experience target ratio pakai 1.45/0.65 = 2.23x (bukan 2.2x hard-coded)
-- Semua fix visual dari v4.2 tetap dipertahankan
-
-Run:
-    streamlit run app.py
-
-Author: Clarisya Adeline (Data Scientist 2)
+Fingo Dashboard — CC26-PSU217
+Financial Intelligence Platform
+Insight & Kesimpulan | Income Predictor | Impulsive Detector
 """
 
-from __future__ import annotations
-
-import json
+import os, json, pickle, warnings, datetime
+from textwrap import dedent
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
+import requests
 import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# =============================================================================
-# CONFIG
-# =============================================================================
+warnings.filterwarnings("ignore")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# PATH SETUP
+# ─────────────────────────────────────────────────────────────────────────────
+BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
+
+DATA_DIR    = ROOT_DIR / "data"
+OUTPUTS_DIR = ROOT_DIR / "outputs"
+MODELS_DIR  = BASE_DIR / "models"
+
+INCOME_PROC_DIR  = DATA_DIR / "processed"
+INCOME_RAW_DIR   = DATA_DIR / "raw"
+INCOME_SYNTH_DIR = DATA_DIR / "synthetic"
+
+INCOME_CONTRACT_DIR = OUTPUTS_DIR / "model_contract"
+INCOME_RESULTS_DIR  = OUTPUTS_DIR / "model_results"
+INCOME_REPORTS_DIR  = OUTPUTS_DIR / "reports"
+INCOME_CHARTS_DIR   = OUTPUTS_DIR / "charts" / "income"
+
+IMP_FINAL_DIR = BASE_DIR / "data" / "impulsive"
+IMP_SPLIT_DIR = BASE_DIR / "data" / "impulsive" / "split"
+
+INCOME_STREAMLIT_DIR = BASE_DIR / "data" / "income"
+INCOME_TEST_PATH     = INCOME_STREAMLIT_DIR / "income_test.csv"
+INCOME_VAL_PATH      = INCOME_STREAMLIT_DIR / "income_val.csv"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAGE CONFIG
+# ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Fingo Income Analysis",
+    page_title="Fingo — Financial Intelligence Platform",
+    page_icon="F",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-PALETTE = {
-    "primary_dark":   "#1A4632",
-    "primary":        "#1B985E",
-    "primary_soft":   "#4A7A5E",
-    "bg":             "#F3F1F2",
-    "surface":        "#FFFFFF",
-    "text":           "#0F2A1F",
-    "text_muted":     "#5C6F65",
-    "border":         "#E5E7E5",
-    "danger":         "#B23A3A",
-    "warning":        "#C77B0F",
-    "success":        "#1B985E",
-    "threshold_line": "#2563EB",
+# ─────────────────────────────────────────────────────────────────────────────
+# GLOBAL STYLES
+# ─────────────────────────────────────────────────────────────────────────────
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
+:root{
+    --fg:#00C471;--fg-acc:#00E882;--fg-warn:#F5A623;
+    --fg-red:#E8504A;--fg-blue:#4A9EE8;--fg-muted:#6B7E74;
+    --bg:#0B0F0E;--bg-surf:#111714;--bg-card:#161D1A;
+    --border:#1E2B25;--text:#E8EDE9;
+}
+html,body,[class*="css"]{font-family:'DM Sans',sans-serif;color:var(--text);}
+.stApp{background:var(--bg);}
+.block-container{padding:2rem 2.5rem 3rem;max-width:1400px;}
+[data-testid="stSidebar"]{background:var(--bg-surf);border-right:1px solid var(--border);}
+[data-testid="stSidebar"] *{color:var(--text) !important;}
+[data-testid="stSidebarContent"]{padding:1.5rem 1.2rem;}
+.stRadio > label{display:none;}
+.stRadio div[role="radiogroup"]{display:flex;flex-direction:column;gap:4px;}
+.stRadio div[role="radiogroup"] label{
+    display:flex !important;align-items:center;padding:10px 14px;
+    border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:500;
+    border:1px solid transparent;transition:background .15s;
+}
+.stRadio div[role="radiogroup"] label:hover{background:var(--border);}
+.stRadio label:has(input:checked){
+    background:rgba(0,196,113,.12) !important;
+    border-color:rgba(0,196,113,.3) !important;color:var(--fg-acc) !important;
+}
+.page-header{border-bottom:1px solid var(--border);padding-bottom:1.2rem;margin-bottom:2rem;}
+.page-header h1{font-family:'DM Serif Display',serif;font-size:2.2rem;font-weight:400;
+    color:var(--text);margin:0 0 4px;line-height:1.2;}
+.page-header p{color:var(--fg-muted);font-size:.9rem;margin:0;}
+.section-header{font-size:.7rem;font-weight:600;color:var(--fg-muted);
+    text-transform:uppercase;letter-spacing:.12em;margin:1.8rem 0 .8rem;}
+.panel{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;
+    padding:1.4rem 1.6rem;margin-bottom:1rem;}
+.panel h3{font-family:'DM Serif Display',serif;font-size:1.2rem;font-weight:400;
+    margin:0 0 .5rem;color:var(--text);}
+.panel p{color:var(--fg-muted);font-size:.88rem;line-height:1.6;margin:0;}
+.badge{display:inline-block;padding:3px 10px;border-radius:100px;
+    font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.badge-green{background:rgba(0,196,113,.15);color:var(--fg);border:1px solid rgba(0,196,113,.3);}
+.badge-yellow{background:rgba(245,166,35,.12);color:var(--fg-warn);border:1px solid rgba(245,166,35,.3);}
+.badge-red{background:rgba(232,80,74,.12);color:var(--fg-red);border:1px solid rgba(232,80,74,.3);}
+.stButton button{border-radius:8px !important;font-weight:500 !important;}
+.stButton button[kind="primary"]{background:var(--fg) !important;border:none !important;color:#000 !important;}
+/* Metric cards — prevent truncation */
+[data-testid="metric-container"]{
+    background:var(--bg-card);border:1px solid var(--border);
+    border-radius:10px;padding:1rem 1rem !important;overflow:visible;}
+[data-testid="metric-container"] label{
+    color:#DDE7E1 !important;font-size:.72rem !important;font-weight:600 !important;
+    text-transform:uppercase;letter-spacing:.06em;white-space:normal !important;
+    word-break:break-word;line-height:1.3;}
+[data-testid="metric-container"] [data-testid="stMetricValue"]{
+    color:#FFFFFF !important;font-size:1.5rem !important;font-weight:700 !important;
+    white-space:normal !important;overflow:visible !important;word-break:break-word;}
+[data-testid="stMetricDelta"]{
+    color:#00E882 !important;font-size:.78rem !important;font-weight:600 !important;}
+[data-testid="stMetricDelta"][data-direction="decrease"]{color:#E8504A !important;}
+.stTabs [data-baseweb="tab-list"]{gap:0;background:var(--bg-card);border:1px solid var(--border);
+    border-radius:8px;padding:3px;width:fit-content;}
+.stTabs [data-baseweb="tab"]{border-radius:6px;padding:6px 16px;font-size:.82rem;
+    font-weight:500;color:var(--fg-muted) !important;background:transparent;}
+.stTabs [aria-selected="true"]{background:var(--border) !important;color:var(--text) !important;}
+.stTabs [data-baseweb="tab-panel"]{padding-top:1.5rem;}
+hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0;}
+.stImage img{border-radius:8px;border:1px solid var(--border);}
+.result-card{background:linear-gradient(135deg,rgba(0,196,113,.08),rgba(0,196,113,.03));
+    border:1px solid rgba(0,196,113,.25);border-radius:12px;padding:1.6rem 2rem;margin:1.5rem 0;}
+.result-card .result-label{font-size:.75rem;font-weight:600;text-transform:uppercase;
+    letter-spacing:.1em;color:var(--fg);margin-bottom:.5rem;}
+.result-card .result-value{font-family:'DM Serif Display',serif;font-size:2.6rem;
+    color:var(--text);line-height:1;margin-bottom:.4rem;}
+.result-card .result-sub{font-size:.85rem;color:var(--fg-muted);}
+.budget-bar-wrap{margin:.6rem 0;}
+.budget-bar-label{display:flex;justify-content:space-between;font-size:.83rem;margin-bottom:4px;color:var(--text);}
+.budget-bar-track{height:8px;background:var(--border);border-radius:100px;overflow:hidden;}
+.budget-bar-fill{height:100%;border-radius:100px;}
+.sidebar-brand{display:flex;align-items:center;gap:10px;padding:0 0 1.2rem;
+    border-bottom:1px solid var(--border);margin-bottom:1.2rem;}
+.brand-icon{width:36px;height:36px;background:var(--fg);border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.1rem;font-weight:700;color:#000;flex-shrink:0;}
+.brand-name{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text);line-height:1;}
+.brand-sub{font-size:.7rem;color:var(--fg-muted);margin-top:2px;}
+.kv-row{display:flex;justify-content:space-between;align-items:center;
+    padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;}
+.kv-row:last-child{border-bottom:none;}
+.kv-key{color:var(--fg-muted);}
+.kv-val{color:var(--text);font-weight:500;font-family:monospace;font-size:.8rem;}
+.rq-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;
+    padding:1.2rem 1.5rem;margin-bottom:1rem;}
+.rq-card .rq-num{font-size:.7rem;font-weight:600;color:var(--fg);text-transform:uppercase;
+    letter-spacing:.1em;margin-bottom:.4rem;}
+.rq-card .rq-q{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.6rem;}
+.rq-card .rq-a{font-size:.85rem;color:var(--fg-muted);line-height:1.6;}
+.rq-card .rq-highlight{color:var(--text);font-weight:500;}
+.chat-bubble-user{background:rgba(0,196,113,.1);border:1px solid rgba(0,196,113,.2);
+    border-radius:12px 12px 4px 12px;padding:.8rem 1rem;margin:.5rem 0;font-size:.88rem;}
+.chat-bubble-ai{background:var(--bg-card);border:1px solid var(--border);
+    border-radius:12px 12px 12px 4px;padding:.8rem 1rem;margin:.5rem 0;font-size:.88rem;line-height:1.6;}
+.model-info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    min-height: 105px;
+    overflow: visible;
 }
 
-CHART_COLORS = [
-    "#1B985E", "#1A4632", "#4A7A5E", "#7AB89A",
-    "#2C6B4A", "#A6CFB8", "#0F2A1F",
-]
+.model-info-label {
+    color: #DDE7E1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.55rem;
+}
 
+.model-info-value {
+    color: #FFFFFF;
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+            
+.ab-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(170px, 1fr));
+    gap: 14px;
+    margin: 1.4rem 0 1.6rem;
+}
+
+.ab-metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    min-height: 120px;
+    overflow: visible;
+}
+
+.ab-metric-label {
+    color: #DDE7E1;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+    margin-bottom: 0.65rem;
+    white-space: normal;
+}
+
+.ab-metric-value {
+    color: #FFFFFF;
+    font-size: 1.85rem;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: normal;
+}
+
+.ab-metric-delta {
+    display: inline-block;
+    margin-top: 0.55rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.ab-delta-positive {
+    background: rgba(0, 196, 113, 0.18);
+    color: #00E882;
+}
+
+.ab-delta-negative {
+    background: rgba(232, 80, 74, 0.18);
+    color: #FFFFFF;
+}
+
+@media (max-width: 1100px) {
+    .ab-metric-grid {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .ab-metric-grid {
+        grid-template-columns: 1fr;
+    }
+}
+            
+</style>
+""", unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MATPLOTLIB DARK THEME
+# ─────────────────────────────────────────────────────────────────────────────
+plt.rcParams.update({
+    "figure.facecolor":"#161D1A","axes.facecolor":"#161D1A",
+    "axes.edgecolor":"#2A3F35","axes.labelcolor":"#E8EDE9",
+    "xtick.color":"#E8EDE9","ytick.color":"#E8EDE9","text.color":"#E8EDE9",
+    "grid.color":"#2A3F35","grid.alpha":1.0,"axes.grid":True,"grid.linewidth":0.6,
+    "figure.dpi":120,"axes.spines.top":False,"axes.spines.right":False,
+    "axes.titlepad":12,"axes.titlesize":12,"axes.titleweight":"bold",
+    "axes.titlecolor":"#FFFFFF","axes.labelsize":10,
+    "xtick.labelsize":9,"ytick.labelsize":9,"font.family":"sans-serif",
+    "savefig.facecolor":"#161D1A","savefig.edgecolor":"none",
+    "legend.facecolor":"#161D1A","legend.edgecolor":"#2A3F35","legend.labelcolor":"#E8EDE9",
+})
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONSTANTS
+# ─────────────────────────────────────────────────────────────────────────────
+FG="#00C471"; FG_ACC="#00E882"; FG_WARN="#F5A623"
+FG_RED="#E8504A"; FG_BLUE="#4A9EE8"; FG_MUTED="#6B7E74"
+
+INCOME_API_URL = "https://mes1205-fingo.hf.space/predict/income"
+CHAT_API_URL   = "https://mes1205-fingo.hf.space/chat"
+
+GIG_TYPES = ["ojek_online","kurir","jualan_online","freelance_desain",
+             "freelance_it","content_creator","tutor","pekerja_harian"]
 GIG_LABELS = {
-    "ojek_online":       "Ojek Online",
-    "kurir":             "Kurir / Delivery",
-    "jualan_online":     "Jualan Online",
-    "freelancer_it":     "Freelancer IT",
-    "freelancer_desain": "Freelancer Desain",
-    "content_creator":   "Content Creator",
+    "ojek_online":"Ojek Online","kurir":"Kurir","jualan_online":"Jualan Online",
+    "freelance_desain":"Freelance Desain","freelance_it":"Freelance IT",
+    "content_creator":"Content Creator","tutor":"Tutor","pekerja_harian":"Pekerja Harian"
 }
 
-EXP_LABELS = {
-    "junior": "Pemula",
-    "mid":    "Menengah",
-    "senior": "Berpengalaman",
+HEDONIC_CATS = {"Hiburan","Belanja"}
+CATEGORY_TYPES = {
+    "Makanan":"utilitarian","Transportasi":"utilitarian","Pendidikan":"utilitarian",
+    "Kesehatan":"utilitarian","Tagihan":"utilitarian",
+    "Hiburan":"hedonic","Belanja":"hedonic","Lainnya":"neutral"
 }
 
-SEASONAL_LABELS = {
-    "low_season": "Awal Tahun (Jan-Feb)",
-    "normal":     "Hari Biasa",
-    "ramadan":    "Ramadan",
-    "lebaran":    "Lebaran",
-    "harbolnas":  "Harbolnas",
-    "yearend":    "Akhir Tahun",
-}
-
-SEASONAL_EVENTS = [
-    {"name": "Awal Tahun",  "x0": 1,  "x1": 6,    "color": "#9CB7C9"},
-    {"name": "Ramadan",     "x0": 10, "x1": 13,   "color": "#7AB89A"},
-    {"name": "Lebaran",     "x0": 14, "x1": 15,   "color": "#1B985E"},
-    {"name": "Harbolnas",   "x0": 45, "x1": 46,   "color": "#C77B0F"},
-    {"name": "Akhir Tahun", "x0": 49, "x1": 52,   "color": "#7C5BA8"},
+# Exact features the model was trained on (verified from feature_names_in_)
+IMP_MODEL_FEATURES = [
+    "amount","amount_log","amount_z","amount_score","impulsive_score",
+    "hour","day_of_week","driver_count",
+    "category","metode_pembayaran","source","time_segment",
+    "category_type","is_hedonic_category","is_night","is_weekend","signal_band"
 ]
 
-# Experience multiplier dari notebook (CELL 4.3)
-EXPERIENCE_MULTIPLIER = {
-    "junior": 0.65,
-    "mid":    1.00,
-    "senior": 1.45,
-}
-# Target ratio senior/junior = 1.45/0.65 = 2.230769...
-EXP_TARGET_RATIO = EXPERIENCE_MULTIPLIER["senior"] / EXPERIENCE_MULTIPLIER["junior"]
+METODE_OPTIONS = [
+    "Cash","Credit Card","Debit Card","Online Payment","SPayLater",
+    "COD (Bayar di Tempat)","Kartu Kredit/Debit","Saldo ShopeePay",
+    "Indomaret/i.Saku","BCA OneKlik"
+]
 
-# =============================================================================
-# CSS
-# =============================================================================
+# ─────────────────────────────────────────────────────────────────────────────
+# HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+def fmt_idr(v):
+    """Full IDR format without rb/jt abbreviation."""
+    if v is None or (isinstance(v, float) and np.isnan(v)):
+        return "N/A"
+    return f"Rp {float(v):,.0f}"
 
-def inject_css() -> None:
+def fmt_idr_full(v):
+    """Full IDR format without rb/jt abbreviation."""
+    if v is None or (isinstance(v, float) and np.isnan(v)):
+        return "N/A"
+    return f"Rp {float(v):,.0f}"
+
+def no_data(msg):
     st.markdown(
-        f"""
-        <style>
-        #MainMenu, footer, header[data-testid="stHeader"] {{
-            visibility: hidden; height: 0;
-        }}
-        .block-container {{
-            padding-top: 1.5rem; padding-bottom: 3rem; max-width: 1400px;
-        }}
-        .stApp {{
-            background-color: {PALETTE["bg"]}; color: {PALETTE["text"]};
-        }}
+        f'<div style="background:var(--bg-card);border:1px dashed var(--border);'
+        f'border-radius:10px;padding:2rem;text-align:center;color:var(--fg-muted);'
+        f'font-size:.88rem;">{msg}</div>', unsafe_allow_html=True)
 
-        /* Sidebar */
-        [data-testid="stSidebar"] > div:first-child {{
-            background: linear-gradient(180deg, {PALETTE["primary_dark"]} 0%, #143928 100%);
-        }}
-        [data-testid="stSidebar"] * {{ color: {PALETTE["surface"]} !important; }}
-        [data-testid="stSidebar"] .stMultiSelect [data-baseweb="tag"] {{
-            background-color: {PALETTE["primary"]} !important;
-        }}
-        [data-testid="stSidebar"] [data-baseweb="select"] > div,
-        [data-testid="stSidebar"] [data-baseweb="input"] > div {{
-            background-color: rgba(255,255,255,0.08) !important;
-            border: 1px solid rgba(255,255,255,0.15) !important;
-        }}
+def _try_paths(*paths):
+    for p in paths:
+        p = Path(p)
+        if p.exists(): return p
+    return None
 
-        /* ------------------------------------------------------------------ */
-        /* FIX EXPANDER BUTTON: background hijau, font putih di SEMUA state   */
-        /* hover, open, closed — tidak berubah sama sekali                     */
-        /* ------------------------------------------------------------------ */
-        [data-testid="stSidebar"] details {{
-            background: {PALETTE["primary"]} !important;
-            border: 1px solid {PALETTE["primary_dark"]} !important;
-            border-radius: 8px !important;
-            margin-top: 6px !important;
-        }}
-        [data-testid="stSidebar"] details > summary,
-        [data-testid="stSidebar"] details > summary p,
-        [data-testid="stSidebar"] details > summary span,
-        [data-testid="stSidebar"] details[open] > summary,
-        [data-testid="stSidebar"] details[open] > summary p,
-        [data-testid="stSidebar"] details[open] > summary span,
-        [data-testid="stSidebar"] details > summary:hover,
-        [data-testid="stSidebar"] details > summary:hover p,
-        [data-testid="stSidebar"] details > summary:hover span {{
-            color: {PALETTE["surface"]} !important;
-            font-weight: 600 !important;
-            border-radius: 8px !important;
-            padding: 8px 12px !important;
-            background: transparent !important;
-        }}
-        /* Arrow icon — selalu putih */
-        [data-testid="stSidebar"] details > summary svg,
-        [data-testid="stSidebar"] details > summary:hover svg,
-        [data-testid="stSidebar"] details[open] > summary svg {{
-            stroke: {PALETTE["surface"]} !important;
-        }}
-        /* Isi ekspander - tetap gelap agar terbaca */
-        [data-testid="stSidebar"] details > div {{
-            background: rgba(0,0,0,0.15) !important;
-            border-radius: 0 0 8px 8px !important;
-            padding: 8px 4px 4px 4px !important;
-        }}
+# ─────────────────────────────────────────────────────────────────────────────
+# IMPULSIVE FEATURE DERIVATION
+# Used both for Coba Deteksi (manual input) and to patch test set missing cols
+# ─────────────────────────────────────────────────────────────────────────────
+def compute_impulsive_score_and_drivers(row_series, amt_mean=150000, amt_std=200000, amt_med=150000):
+    """
+    Given a pandas Series (one row of a DataFrame), compute:
+      - impulsive_score  (0–10 float)
+      - driver_count     (int 0–4)
+    Uses available columns: amount_z, is_night, is_weekend, category (via category_score col or lookup),
+    night_score, category_score, weekend_score if present.
+    """
+    # --- amount_z
+    amount_z = row_series.get("amount_z", 0.0)
+    if pd.isna(amount_z): amount_z = 0.0
 
-        /* Brand header */
-        .brand-header {{
-            background: {PALETTE["surface"]}; border-radius: 16px;
-            padding: 28px 32px; margin-bottom: 22px;
-            border: 1px solid {PALETTE["border"]};
-            box-shadow: 0 1px 4px rgba(26,70,50,0.05);
-        }}
-        .brand-header h1 {{
-            color: {PALETTE["primary_dark"]}; font-size: 28px; font-weight: 700;
-            margin: 0 0 4px 0; line-height: 1.2;
-        }}
-        .brand-header .subtitle {{
-            color: {PALETTE["text_muted"]}; font-size: 14px;
-            margin-bottom: 14px; line-height: 1.5;
-        }}
-        .brand-tags {{ display: flex; gap: 8px; flex-wrap: wrap; }}
-        .brand-tag {{
-            background: {PALETTE["bg"]}; color: {PALETTE["primary_dark"]};
-            padding: 4px 12px; border-radius: 999px; font-size: 12px;
-            font-weight: 500; border: 1px solid {PALETTE["border"]};
-        }}
-        .brand-tag.accent {{
-            background: {PALETTE["primary"]}; color: {PALETTE["surface"]};
-            border-color: {PALETTE["primary"]};
-        }}
+    # --- is_night / is_weekend
+    is_night   = bool(row_series.get("is_night", False))
+    is_weekend = bool(row_series.get("is_weekend", False))
 
-        /* Status banner */
-        .status-banner {{
-            display: flex; align-items: center; gap: 14px;
-            padding: 14px 20px; border-radius: 12px; margin-bottom: 18px;
-            border: 1px solid {PALETTE["border"]}; background: {PALETTE["surface"]};
-        }}
-        .status-banner.green  {{ border-left: 5px solid {PALETTE["success"]}; }}
-        .status-banner.yellow {{ border-left: 5px solid {PALETTE["warning"]}; }}
-        .status-banner.red    {{ border-left: 5px solid {PALETTE["danger"]};  }}
-        .status-dot {{ width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }}
-        .status-dot.green  {{ background: {PALETTE["success"]}; box-shadow: 0 0 0 4px rgba(27,152,94,0.18); }}
-        .status-dot.yellow {{ background: {PALETTE["warning"]}; box-shadow: 0 0 0 4px rgba(199,123,15,0.18); }}
-        .status-dot.red    {{ background: {PALETTE["danger"]};  box-shadow: 0 0 0 4px rgba(178,58,58,0.18); }}
-        .status-text strong {{ color: {PALETTE["primary_dark"]}; font-size: 14px; }}
-        .status-text span   {{ color: {PALETTE["text_muted"]};   font-size: 13px; }}
+    # --- category_score: prefer existing column, else derive
+    if "category_score" in row_series.index and not pd.isna(row_series["category_score"]):
+        cat_score = float(row_series["category_score"])
+    else:
+        cat_map = {"Hiburan":2.0,"Belanja":1.5,"Makanan":0.5,
+                   "Transportasi":0.3,"Pendidikan":0.0,"Kesehatan":0.0,
+                   "Tagihan":0.0,"Lainnya":0.5}
+        cat_score = cat_map.get(str(row_series.get("category","Lainnya")), 0.5)
 
-        /* Quick summary */
-        .quick-summary {{
-            background: linear-gradient(135deg, #F0F9F4 0%, #E8F4ED 100%);
-            border-radius: 12px; padding: 16px 20px; margin-bottom: 18px;
-            border: 1px solid #C8E6D3;
-        }}
-        .quick-summary-title {{
-            font-size: 12px; font-weight: 700; color: {PALETTE["primary_dark"]};
-            text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 8px 0;
-        }}
-        .quick-summary ul {{
-            margin: 0; padding-left: 20px; color: {PALETTE["text"]};
-            font-size: 14px; line-height: 1.7;
-        }}
-        .quick-summary li {{ margin-bottom: 2px; }}
+    # --- night_score: prefer existing column
+    if "night_score" in row_series.index and not pd.isna(row_series["night_score"]):
+        night_score = float(row_series["night_score"])
+    else:
+        hour = int(row_series.get("hour", 12))
+        night_score = 1.5 if is_night else (0.5 if hour >= 20 else 0.0)
 
-        /* KPI row */
-        .kpi-row {{
-            display: flex; gap: 12px; align-items: stretch;
-            margin-bottom: 18px; flex-wrap: nowrap;
-        }}
-        .kpi-col {{ flex: 1 1 0; min-width: 0; }}
-        .kpi-card {{
-            background: {PALETTE["surface"]}; border-radius: 14px;
-            padding: 16px 18px; height: 118px; box-sizing: border-box;
-            display: flex; flex-direction: column; justify-content: space-between;
-            border: 1px solid {PALETTE["border"]}; border-left: 5px solid {PALETTE["border"]};
-            box-shadow: 0 1px 3px rgba(26,70,50,0.05);
-            overflow: hidden;
-            cursor: default;
-            transition: box-shadow 0.2s;
-        }}
-        .kpi-card.success {{ border-left-color: {PALETTE["primary"]}; }}
-        .kpi-card.warning {{ border-left-color: {PALETTE["warning"]}; }}
-        .kpi-card.danger  {{ border-left-color: {PALETTE["danger"]};  }}
-        .kpi-card.accent {{
-            background: linear-gradient(135deg, {PALETTE["primary"]} 0%, {PALETTE["primary_dark"]} 100%);
-            border-color: {PALETTE["primary"]}; border-left-color: {PALETTE["primary"]};
-        }}
-        .kpi-card:hover {{
-            overflow: visible !important;
-            position: relative !important;
-            z-index: 100 !important;
-            box-shadow: 0 6px 24px rgba(26,70,50,0.18) !important;
-        }}
-        .kpi-card:hover .kpi-value {{
-            white-space: normal !important;
-            overflow: visible !important;
-            word-break: break-word !important;
-        }}
-        .kpi-card:hover .kpi-label {{
-            white-space: normal !important;
-            overflow: visible !important;
-        }}
-        .kpi-card:hover .kpi-delta {{
-            white-space: normal !important;
-            overflow: visible !important;
-        }}
-        .kpi-label {{
-            font-size: 10px; font-weight: 700; color: {PALETTE["text_muted"]};
-            text-transform: uppercase; letter-spacing: 0.7px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }}
-        .kpi-card.accent .kpi-label {{ color: rgba(255,255,255,0.80); }}
-        .kpi-value {{
-            font-size: 20px; font-weight: 700; color: {PALETTE["text"]};
-            line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }}
-        .kpi-card.accent .kpi-value {{ color: {PALETTE["surface"]}; }}
-        .kpi-delta {{
-            font-size: 11px; color: {PALETTE["primary"]}; font-weight: 500;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }}
-        .kpi-card.accent .kpi-delta {{ color: rgba(255,255,255,0.85); }}
+    # --- weekend_score: prefer existing column
+    if "weekend_score" in row_series.index and not pd.isna(row_series["weekend_score"]):
+        weekend_score = float(row_series["weekend_score"])
+    else:
+        weekend_score = 0.5 if is_weekend else 0.0
 
-        /* Section header/body */
-        .section-header {{
-            background: {PALETTE["surface"]}; border-radius: 14px 14px 0 0;
-            padding: 20px 24px 12px 24px; margin-top: 8px;
-            border: 1px solid {PALETTE["border"]}; border-bottom: none;
-        }}
-        .section-header h3 {{
-            font-size: 16px; font-weight: 600; color: {PALETTE["primary_dark"]};
-            margin: 0 0 4px 0;
-        }}
-        .section-header p {{
-            font-size: 13px; color: {PALETTE["text_muted"]}; margin: 0; line-height: 1.5;
-        }}
-        .section-body {{
-            background: {PALETTE["surface"]}; border-radius: 0 0 14px 14px;
-            padding: 0 24px 18px 24px; margin-bottom: 18px;
-            border: 1px solid {PALETTE["border"]}; border-top: none;
-            box-shadow: 0 1px 3px rgba(26,70,50,0.04);
-        }}
+    amt_component = min(float(amount_z) * 0.5, 2.0) if float(amount_z) > 0 else 0.0
 
-        /* Insight cards */
-        .insight-row {{
-            display: flex; gap: 16px; align-items: stretch; margin-bottom: 16px;
-        }}
-        .insight-col {{ flex: 1 1 0; min-width: 0; }}
-        .insight-card {{
-            background: {PALETTE["surface"]}; border-radius: 14px;
-            padding: 22px 24px; border: 1px solid {PALETTE["border"]};
-            border-left: 4px solid {PALETTE["primary"]}; height: 100%;
-            box-sizing: border-box; box-shadow: 0 1px 3px rgba(26,70,50,0.04);
-        }}
-        .insight-card h4 {{
-            color: {PALETTE["primary_dark"]}; font-size: 11px; font-weight: 700;
-            margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        }}
-        .insight-card .question {{
-            color: {PALETTE["text"]}; font-size: 16px; font-weight: 600;
-            margin: 0 0 12px 0; line-height: 1.3;
-        }}
-        .insight-card .answer {{ color: {PALETTE["text"]}; font-size: 13px; line-height: 1.6; }}
-        .insight-card ul {{ margin: 8px 0 0 0; padding-left: 18px; }}
-        .insight-card li {{ margin-bottom: 4px; }}
+    # If dataset has fingo_impulse_signal, use it directly
+    if "fingo_impulse_signal" in row_series.index and not pd.isna(row_series.get("fingo_impulse_signal")):
+        impulsive_score = float(np.clip(row_series["fingo_impulse_signal"], 0, 10))
+    else:
+        impulsive_score = float(np.clip(night_score + cat_score + weekend_score + amt_component, 0, 10))
 
-        /* Tabs */
-        .stTabs [data-baseweb="tab-list"] {{
-            gap: 4px; background: {PALETTE["surface"]}; border-radius: 12px;
-            padding: 6px; border: 1px solid {PALETTE["border"]};
-        }}
-        .stTabs [data-baseweb="tab"] {{
-            background: transparent; border-radius: 8px;
-            color: {PALETTE["text_muted"]}; font-weight: 500;
-            font-size: 13px; padding: 10px 16px;
-        }}
-        .stTabs [aria-selected="true"] {{
-            background: {PALETTE["primary"]} !important;
-            color: {PALETTE["surface"]} !important;
-        }}
+    # --- driver_count
+    is_hedonic = bool(row_series.get("is_hedonic_category", False))
+    driver_night   = 1 if is_night else 0
+    driver_hedonic = 1 if is_hedonic else 0
+    driver_high    = 1 if float(amount_z) > 1.5 else 0
+    driver_weekend = 1 if is_weekend else 0
+    driver_count   = driver_night + driver_hedonic + driver_high + driver_weekend
 
-        hr {{ border-color: {PALETTE["border"]}; }}
-
-        @media (max-width: 900px) {{
-            .kpi-row {{ flex-wrap: wrap; }}
-            .kpi-col {{ min-width: 140px; }}
-            .insight-row {{ flex-direction: column; }}
-        }}
-        @media (max-width: 600px) {{
-            .brand-header {{ padding: 18px 16px; }}
-            .brand-header h1 {{ font-size: 20px; }}
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    return impulsive_score, driver_count
 
 
-# =============================================================================
-# DATA LOADING
-# =============================================================================
+def build_model_row(amount, category, metode_bayar, hour, day_of_week,
+                    is_weekend, is_night, time_segment, df_ref):
+    """Build a single-row DataFrame matching IMP_MODEL_FEATURES exactly."""
+    if df_ref is not None and len(df_ref) > 0 and "amount" in df_ref.columns:
+        amt_mean = df_ref["amount"].mean()
+        amt_std  = df_ref["amount"].std()
+        amt_med  = float(np.percentile(df_ref["amount"].dropna(), 50))
+    else:
+        amt_mean = 150000; amt_std = 200000; amt_med = 150000
+
+    amount_log   = float(np.log1p(amount))
+    amount_z     = float((amount - amt_mean) / amt_std) if amt_std > 0 else 0.0
+    amount_score = float(np.clip(amount / amt_med if amt_med > 0 else 1.0, 0, 5))
+    is_hedonic   = category in HEDONIC_CATS
+    cat_type     = CATEGORY_TYPES.get(category, "neutral")
+
+    cat_score_map = {"Hiburan":2.0,"Belanja":1.5,"Makanan":0.5,
+                     "Transportasi":0.3,"Pendidikan":0.0,"Kesehatan":0.0,
+                     "Tagihan":0.0,"Lainnya":0.5}
+    cat_score    = cat_score_map.get(category, 0.5)
+    night_score  = 1.5 if is_night else (0.5 if hour >= 20 else 0.0)
+    wknd_score   = 0.5 if is_weekend else 0.0
+    amt_comp     = min(amount_z * 0.5, 2.0) if amount_z > 0 else 0.0
+    imp_score    = float(np.clip(night_score + cat_score + wknd_score + amt_comp, 0, 10))
+
+    if imp_score >= 4.0:   sig = "high"
+    elif imp_score >= 2.0: sig = "watch"
+    else:                   sig = "low"
+
+    d_night   = 1 if is_night else 0
+    d_hedonic = 1 if is_hedonic else 0
+    d_high    = 1 if amount_z > 1.5 else 0
+    d_wknd    = 1 if is_weekend else 0
+    drv_count = d_night + d_hedonic + d_high + d_wknd
+
+    row = pd.DataFrame([{
+        "amount":             float(amount),
+        "amount_log":         amount_log,
+        "amount_z":           amount_z,
+        "amount_score":       amount_score,
+        "impulsive_score":    imp_score,
+        "hour":               int(hour),
+        "day_of_week":        int(day_of_week),
+        "driver_count":       int(drv_count),
+        "category":           str(category),
+        "metode_pembayaran":  str(metode_bayar),
+        "source":             "manual_input",
+        "time_segment":       str(time_segment),
+        "category_type":      str(cat_type),
+        "is_hedonic_category":bool(is_hedonic),
+        "is_night":           bool(is_night),
+        "is_weekend":         bool(is_weekend),
+        "signal_band":        sig,
+    }])
+    return row, imp_score, sig, drv_count
+
+
+def patch_test_df_for_model(df, expected_cols):
+    """
+    Given a test DataFrame that may be missing 'impulsive_score' and/or 'driver_count',
+    compute and add them so evaluation can proceed correctly.
+    Returns patched DataFrame and a list of columns that were computed (for display).
+    """
+    df = df.copy()
+    computed = []
+
+    if "impulsive_score" not in df.columns:
+        # Use fingo_impulse_signal if present
+        if "fingo_impulse_signal" in df.columns:
+            df["impulsive_score"] = df["fingo_impulse_signal"].clip(0, 10)
+        else:
+            # Derive from component scores
+            amt_z_col = df["amount_z"] if "amount_z" in df.columns else 0.0
+            ns = df["night_score"] if "night_score" in df.columns else 0.0
+            cs = df["category_score"] if "category_score" in df.columns else 0.5
+            ws = df["weekend_score"] if "weekend_score" in df.columns else 0.0
+            amt_comp = (amt_z_col * 0.5).clip(upper=2.0).where(amt_z_col > 0, 0.0)
+            df["impulsive_score"] = (ns + cs + ws + amt_comp).clip(0, 10)
+        computed.append("impulsive_score (computed)")
+
+    if "driver_count" not in df.columns:
+        is_night_col   = df["is_night"].astype(int)   if "is_night"   in df.columns else 0
+        is_wknd_col    = df["is_weekend"].astype(int) if "is_weekend" in df.columns else 0
+        is_hedonic_col = df["is_hedonic_category"].astype(int) if "is_hedonic_category" in df.columns else 0
+        amt_z_col      = df["amount_z"] if "amount_z" in df.columns else 0.0
+        is_high        = (amt_z_col > 1.5).astype(int)
+        df["driver_count"] = is_night_col + is_wknd_col + is_hedonic_col + is_high
+        computed.append("driver_count (computed)")
+
+    return df, computed
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DATA LOADERS
+# ─────────────────────────────────────────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def load_survey():
+    p = _try_paths(INCOME_PROC_DIR / "survey_temporal_mapped.csv")
+    if not p: return None
+    df = pd.read_csv(p)
+    if "timestamp_parsed" in df.columns:
+        df["timestamp_parsed"] = pd.to_datetime(df["timestamp_parsed"], errors="coerce")
+    return df
 
 @st.cache_data(show_spinner=False)
-def load_dataset():
-    base_candidates = [
-        Path("data/processed"),
-        Path("../data/processed"),
-        Path("../../data/processed"),
-        Path("./"),
-    ]
-    df, params, calib = None, None, None
+def load_synthetic():
+    p = _try_paths(INCOME_SYNTH_DIR / "synthetic_52week_user_income.csv")
+    if not p: return None
+    return pd.read_csv(p)
 
-    for base in base_candidates:
-        p = base / "income_clean.csv"
-        if p.exists():
-            df = pd.read_csv(p)
-            cp = base / "kaggle_calibration.csv"
-            if cp.exists():
-                calib = pd.read_csv(cp)
-            break
+@st.cache_data(show_spinner=False)
+def load_regression_metrics():
+    p = _try_paths(INCOME_RESULTS_DIR / "regression_metrics.csv")
+    if not p: return None
+    return pd.read_csv(p)
 
-    for syn in [Path("data/synthetic"), Path("../data/synthetic"),
-                Path("../../data/synthetic"), Path("./")]:
-        pp = syn / "synthetic_params.json"
-        if pp.exists():
-            with open(pp, encoding="utf-8") as f:
-                params = json.load(f)
-            break
+@st.cache_data(show_spinner=False)
+def load_classification_metrics():
+    p = _try_paths(INCOME_RESULTS_DIR / "classification_metrics.csv")
+    if not p: return None
+    return pd.read_csv(p)
 
-    return df, params, calib
+@st.cache_data(show_spinner=False)
+def load_predictions_test():
+    p = _try_paths(INCOME_RESULTS_DIR / "predictions_test.csv")
+    if not p: return None
+    return pd.read_csv(p)
 
+@st.cache_data(show_spinner=False)
+def load_impulsive_data():
+    for nm in ["04_Merged_labeled_transaction.csv",
+               "transactions_labeled.csv","Merged_labeled_transaction.csv"]:
+        p = _try_paths(IMP_FINAL_DIR / nm, DATA_DIR / "impulsive" / nm)
+        if p: return pd.read_csv(p)
+    return None
 
-# =============================================================================
-# HELPERS
-# =============================================================================
-
-def fmt_idr(val: float, short: bool = True) -> str:
-    if val is None or pd.isna(val):
-        return "-"
-    if short:
-        if val >= 1_000_000_000:
-            return f"Rp {val/1_000_000_000:.2f}M"
-        if val >= 1_000_000:
-            return f"Rp {val/1_000_000:.1f}jt"
-        if val >= 1_000:
-            return f"Rp {val/1_000:.0f}rb"
-        return f"Rp {val:.0f}"
-    return "Rp " + f"{val:,.0f}".replace(",", ".")
-
-
-def kpi_card(label: str, value: str, delta: str = "",
-             status: str = "normal", accent: bool = False) -> str:
-    cls = "kpi-card"
-    if accent:
-        cls += " accent"
-    elif status in ("success", "warning", "danger"):
-        cls += f" {status}"
-    delta_html = (
-        f'<div class="kpi-delta" title="{delta}">{delta}</div>'
-        if delta
-        else f'<div class="kpi-delta" style="visibility:hidden;">x</div>'
+@st.cache_data(show_spinner=False)
+def load_impulsive_test():
+    p = _try_paths(
+        IMP_SPLIT_DIR / "test_df.csv",
+        BASE_DIR / "data" / "impulsive" / "04_split_final" / "test_df.csv",
+        BASE_DIR / "data" / "impulsive" / "test_df.csv",
+        IMP_FINAL_DIR / "test_df.csv",
     )
-    full_title = f"{label}: {value}" + (f" ({delta})" if delta else "")
-    return (
-        f'<div class="{cls}" title="{full_title}">'
-        f'<div class="kpi-label" title="{label}">{label}</div>'
-        f'<div class="kpi-value" title="{value}">{value}</div>'
-        f'{delta_html}'
-        f'</div>'
+    if not p: return None
+    return pd.read_csv(p)
+
+@st.cache_resource(show_spinner=False)
+def load_income_bundle():
+    p = _try_paths(MODELS_DIR / "fingo_deploy.pkl")
+    if not p: return None
+    try:
+        with open(p, "rb") as f: return pickle.load(f)
+    except Exception: return None
+
+@st.cache_resource(show_spinner=False)
+def load_impulsive_model():
+    try:
+        import joblib
+        p = _try_paths(
+            MODELS_DIR / "fingo_label_classifier.joblib",
+            MODELS_DIR / "impulsive_classifier.joblib",
+        )
+        if not p: return None
+        return joblib.load(p)
+    except Exception: return None
+
+@st.cache_resource(show_spinner=False)
+def load_impulsive_eval_bundle():
+    p = _try_paths(
+        BASE_DIR / "data" / "impulsive" / "evaluation" / "impulsive_eval_bundle.pkl",
+        MODELS_DIR / "impulsive_eval_bundle.pkl",
+        BASE_DIR / "data" / "models" / "impulsive_eval_bundle.pkl",
+    )
+    if not p:
+        return None
+    with open(p, "rb") as f:
+        return pickle.load(f)
+
+
+@st.cache_resource(show_spinner=False)
+def load_impulsive_official_eval_result():
+    p = _try_paths(
+        BASE_DIR / "data" / "impulsive" / "evaluation" / "random_split_with_score_eval_result.pkl",
+        MODELS_DIR / "random_split_with_score_eval_result.pkl",
+    )
+    if not p:
+        return None
+    with open(p, "rb") as f:
+        return pickle.load(f)
+
+
+@st.cache_data(show_spinner=False)
+def load_impulsive_official_predictions():
+    p = _try_paths(
+        BASE_DIR / "data" / "impulsive" / "evaluation" / "random_split_with_score_predictions.csv",
+        MODELS_DIR / "random_split_with_score_predictions.csv",
+    )
+    if not p:
+        return None
+    return pd.read_csv(p)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INCOME API
+# ─────────────────────────────────────────────────────────────────────────────
+def call_income_api(income_history, usia, hari_kerja, jam_kerja, gig_type):
+    payload = {"income_history": income_history, "usia": int(usia),
+               "hari_kerja_per_minggu": int(hari_kerja), "jam_kerja_per_hari": int(jam_kerja)}
+    for g in GIG_TYPES:
+        payload[f"gig_{g}"] = 1 if g == gig_type else 0
+    try:
+        resp = requests.post(INCOME_API_URL, json=payload, timeout=30)
+        if resp.status_code == 200: return resp.json(), None
+        try: detail = resp.json().get("detail", resp.text)
+        except Exception: detail = resp.text
+        return None, f"API error {resp.status_code}: {detail}"
+    except requests.exceptions.Timeout:
+        return None, "Request timeout (30 detik). Endpoint mungkin sedang sleep."
+    except requests.exceptions.ConnectionError:
+        return None, "Tidak dapat terhubung. Periksa koneksi atau status HuggingFace Space."
+    except Exception as e:
+        return None, f"Error: {e}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INCOME LOCAL FALLBACK
+# ─────────────────────────────────────────────────────────────────────────────
+def predict_income_local(income_history, gig_type, usia, hari_kerja, jam_kerja,
+                         target_month, target_week):
+    bundle = load_income_bundle()
+    if bundle is None: return None, None
+    try:
+        FEAT     = bundle["feature_columns"]
+        sk_reg   = bundle["sk_reg_model"]
+        sk_cls   = bundle["sk_cls_model"]
+        f_scaler = bundle["feature_scaler"]
+        i_min    = bundle["income_min"]
+        i_max    = bundle["income_max"]
+        h = np.array(income_history, dtype=float)
+        w1,w2,w3,w4 = h[-1],h[-2],h[-3],h[-4]
+        lags4 = h[-4:]; lags8 = h[-8:] if len(h)>=8 else h
+        rm4=np.mean(lags4); rs4=np.std(lags4)
+        rm8=np.mean(lags8); rs8=np.std(lags8)
+        fd = {c:0.0 for c in FEAT}
+        fd.update({"target_idx":1,"current_income":w1,"lag_2_income":w2,
+                   "lag_3_income":w3,"lag_4_income":w4,
+                   "rolling_mean_4w":rm4,"rolling_std_4w":rs4,
+                   "rolling_min_4w":np.min(lags4),"rolling_max_4w":np.max(lags4),
+                   "rolling_range_4w":np.max(lags4)-np.min(lags4),
+                   "rolling_median_4w":np.median(lags4),
+                   "rolling_cv_4w":rs4/rm4 if rm4>0 else 0,
+                   "rolling_last_vs_median_pct":(w1-np.median(lags4))/np.median(lags4) if np.median(lags4)>0 else 0,
+                   "rolling_mean_2w":np.mean([w2,w1]),"rolling_mean_8w":rm8,"rolling_std_8w":rs8,
+                   "income_trend_4w_abs":w1-w4,"income_trend_4w_pct":(w1-w4)/w4 if w4>0 else 0,
+                   "last_income_change_abs":w1-w2,"last_income_change_pct":(w1-w2)/w2 if w2>0 else 0,
+                   "income_growth_1w":(w1-w2)/w2 if w2>0 else 0,
+                   "income_volatility":rs4/rm4 if rm4>0 else 0,
+                   "trend_slope_4w":float(np.polyfit(range(4),lags4,1)[0]),
+                   "is_previous_week_up":1 if w1>w2*1.05 else 0,
+                   "is_previous_week_down":1 if w1<w2*0.95 else 0,
+                   "is_previous_week_stable":1 if not(w1>w2*1.05) and not(w1<w2*0.95) else 0,
+                   "lag_ratio_1_to_mean":w1/rm4 if rm4>0 else 1.0,
+                   "target_month":target_month,"target_week_of_month":target_week,
+                   "target_quarter":(target_month-1)//3+1,
+                   "target_is_month_start":1 if target_week==1 else 0,
+                   "target_is_month_end":1 if target_week==4 else 0,
+                   "target_is_payday_period":1 if target_week in[1,4] else 0,
+                   "target_is_ramadan_lebaran":1 if target_month in[3,4] else 0,
+                   "target_is_harbolnas":1 if target_month in[11,12] else 0,
+                   "target_is_christmas_year_end":1 if target_month==12 else 0,
+                   "target_is_new_year":1 if target_month==1 else 0,
+                   "usia":usia,"hari_kerja_per_minggu":hari_kerja,
+                   "jam_kerja_per_hari":jam_kerja,"total_jam_seminggu":hari_kerja*jam_kerja})
+        for g in GIG_TYPES: fd[f"gig_{g}"]=1 if g==gig_type else 0
+        X = pd.DataFrame([fd])[FEAT].fillna(0)
+        income_scaled_cols = bundle.get("income_cols_scaled",[])
+        for c in income_scaled_cols:
+            if c in X.columns:
+                norm = (X[c].values[0]-i_min)/(i_max-i_min) if (i_max-i_min)>0 else 0
+                X[c] = np.clip(norm,0,1)
+        try: Xs = f_scaler.transform(X)
+        except Exception: Xs = X.values
+        pred_norm = sk_reg.predict(Xs)[0]
+        pred_idr  = float(np.clip(pred_norm*(i_max-i_min)+i_min, i_min, i_max))
+        try:
+            dc = sk_cls.predict(Xs)[0]
+            dir_pred = {0:"Down",1:"Stable",2:"Up"}.get(int(dc),"Stable")
+        except Exception: dir_pred = "Stable"
+        return pred_idr, dir_pred
+    except Exception: return None, None
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CHAT API
+# ─────────────────────────────────────────────────────────────────────────────
+def call_chat_api(user_message, income, expense, budget_remaining, impulsive_count):
+    payload = {"user_message": user_message,
+               "financial_context":{"income":income,"expense":expense,
+                                     "budget_remaining":budget_remaining,
+                                     "impulsive_count":impulsive_count}}
+    try:
+        resp = requests.post(CHAT_API_URL, json=payload, timeout=30)
+        if resp.status_code == 200: return resp.json().get("reply",""), None
+        if resp.status_code == 429: return None, "Gemini API rate limit tercapai. Coba lagi beberapa saat."
+        try: detail = resp.json().get("detail", resp.text)
+        except Exception: detail = resp.text
+        return None, f"API error {resp.status_code}: {detail}"
+    except requests.exceptions.Timeout: return None, "Request timeout. Endpoint mungkin sedang sleep."
+    except Exception as e: return None, f"Error: {e}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONFUSION MATRIX
+# ─────────────────────────────────────────────────────────────────────────────
+def plot_confusion_matrix(cm, classes):
+    fig, ax = plt.subplots(figsize=(7, 5.5))
+
+    sns.heatmap(
+        cm,
+        annot=False,
+        cmap="YlGnBu",
+        xticklabels=classes,
+        yticklabels=classes,
+        linewidths=0.8,
+        linecolor="#1E2B25",
+        cbar=True,
+        ax=ax
     )
 
+    vmax = cm.max() if cm.max() > 0 else 1
 
-def render_kpi_row(cards: list) -> None:
-    inner = "".join(f'<div class="kpi-col">{c}</div>' for c in cards)
-    st.markdown(f'<div class="kpi-row">{inner}</div>', unsafe_allow_html=True)
+    for i in range(len(classes)):
+        for j in range(len(classes)):
+            val = cm[i, j]
+            norm_val = val / vmax
 
+            # teks putih untuk cell gelap, teks hitam untuk cell terang
+            tc = "#FFFFFF" if norm_val >= 0.45 else "#111111"
 
-def render_section(title: str, subtitle: str = ""):
-    sub = f"<p>{subtitle}</p>" if subtitle else ""
-    st.markdown(
-        f'<div class="section-header"><h3>{title}</h3>{sub}</div>',
-        unsafe_allow_html=True,
-    )
-    return _SectionBody()
+            ax.text(
+                j + 0.5,
+                i + 0.5,
+                f"{val}",
+                ha="center",
+                va="center",
+                color=tc,
+                fontsize=16,
+                fontweight="bold"
+            )
 
+    ax.set_xlabel("Predicted Label", color="#FFFFFF", fontsize=11, fontweight="bold")
+    ax.set_ylabel("Actual Label", color="#FFFFFF", fontsize=11, fontweight="bold")
+    ax.set_title("Confusion Matrix - Test Set", color="#FFFFFF", fontsize=13, fontweight="bold")
+    ax.tick_params(axis="x", colors="#FFFFFF", labelsize=10)
+    ax.tick_params(axis="y", colors="#FFFFFF", labelsize=10)
 
-class _SectionBody:
-    def __enter__(self):
-        st.markdown('<div class="section-body">', unsafe_allow_html=True)
-        return self
+    try:
+        cbar = ax.collections[0].colorbar
+        cbar.ax.yaxis.set_tick_params(color="#FFFFFF")
+        plt.setp(cbar.ax.get_yticklabels(), color="#FFFFFF")
+    except Exception:
+        pass
 
-    def __exit__(self, *_):
-        st.markdown("</div>", unsafe_allow_html=True)
-
-
-def apply_plotly_theme(fig: go.Figure, height: int = 380) -> go.Figure:
-    fig.update_layout(
-        title=dict(text=""),
-        font=dict(family="Inter, system-ui, sans-serif", size=12, color=PALETTE["text"]),
-        plot_bgcolor=PALETTE["surface"],
-        paper_bgcolor=PALETTE["surface"],
-        colorway=CHART_COLORS,
-        margin=dict(l=10, r=10, t=16, b=10),
-        height=height,
-        legend=dict(
-            bgcolor="rgba(0,0,0,0)", borderwidth=0,
-            font=dict(size=11),
-        ),
-        hoverlabel=dict(
-            bgcolor=PALETTE["surface"],
-            bordercolor=PALETTE["primary"],
-            font_size=12,
-        ),
-    )
-    fig.update_xaxes(
-        showgrid=False, showline=True, linecolor=PALETTE["border"],
-        tickfont=dict(color=PALETTE["text_muted"], size=11),
-    )
-    fig.update_yaxes(
-        showgrid=True, gridcolor=PALETTE["border"], gridwidth=1,
-        zeroline=False, tickfont=dict(color=PALETTE["text_muted"], size=11),
-    )
+    plt.tight_layout()
     return fig
 
-
-def filter_df(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
-    out = df.copy()
-    if filters.get("gig_types"):
-        out = out[out["gig_type"].isin(filters["gig_types"])]
-    if filters.get("exp_tiers"):
-        out = out[out["experience_tier"].isin(filters["exp_tiers"])]
-    if filters.get("data_source") and filters["data_source"] != "Semua":
-        src = "synthetic" if filters["data_source"] == "Data Simulasi" else "survey"
-        out = out[out["data_source"] == src]
-    if filters.get("week_range"):
-        lo, hi = filters["week_range"]
-        out = out[(out["week_number"] >= lo) & (out["week_number"] <= hi)]
-    if filters.get("seasonal_labels"):
-        out = out[out["seasonal_label"].isin(filters["seasonal_labels"])]
-    return out
-
-
-def render_status_banner(status: str, title: str, message: str) -> None:
-    st.markdown(
-        f'<div class="status-banner {status}">'
-        f'<div class="status-dot {status}"></div>'
-        f'<div class="status-text"><strong>{title}</strong><br><span>{message}</span></div>'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-
-
-def render_quick_summary(items: list, title: str = "Kesimpulan Cepat") -> None:
-    bullets = "".join(f"<li>{it}</li>" for it in items)
-    st.markdown(
-        f'<div class="quick-summary">'
-        f'<div class="quick-summary-title">{title}</div>'
-        f'<ul>{bullets}</ul>'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-
-
-# =============================================================================
+# ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR
-# =============================================================================
+# ─────────────────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("""
+    <div class="sidebar-brand">
+        <div class="brand-icon">F</div>
+        <div>
+            <div class="brand-name">Fingo</div>
+            <div class="brand-sub">Financial Intelligence Platform</div>
+        </div>
+    </div>""", unsafe_allow_html=True)
 
-def render_sidebar(df: pd.DataFrame) -> dict:
-    st.sidebar.markdown(
-        "<div style='padding:8px 0 18px 0;'>"
-        "<div style='font-size:22px;font-weight:700;line-height:1.1;'>Fingo</div>"
-        "<div style='font-size:12px;opacity:0.75;margin-top:4px;'>Analisis Penghasilan</div>"
-        "</div>",
-        unsafe_allow_html=True,
-    )
-    st.sidebar.markdown("### Filter Utama")
+    module = st.radio("module", [
+        "Insight & Kesimpulan", "Income Predictor", "Impulsive Detector"
+    ], label_visibility="collapsed")
 
-    gig_types = st.sidebar.multiselect(
-        "Jenis Pekerjaan",
-        options=sorted(df["gig_type"].unique()),
-        default=sorted(df["gig_type"].unique()),
-        format_func=lambda x: GIG_LABELS.get(x, x),
-    )
-    week_range = st.sidebar.slider(
-        "Rentang Minggu",
-        min_value=int(df["week_number"].min()),
-        max_value=int(df["week_number"].max()),
-        value=(int(df["week_number"].min()), int(df["week_number"].max())),
-        help="1 tahun = 52 minggu",
-    )
-
-    with st.sidebar.expander("Filter Lanjutan"):
-        exp_tiers = st.multiselect(
-            "Tingkat Pengalaman",
-            options=["junior", "mid", "senior"],
-            default=["junior", "mid", "senior"],
-            format_func=lambda x: EXP_LABELS.get(x, x),
-        )
-        data_source = st.radio(
-            "Sumber Data",
-            options=["Semua", "Data Simulasi", "Data Survei"],
-            index=0,
-        )
-        seasonal_labels = st.multiselect(
-            "Periode Khusus",
-            options=list(SEASONAL_LABELS.keys()),
-            default=list(SEASONAL_LABELS.keys()),
-            format_func=lambda x: SEASONAL_LABELS.get(x, x),
-        )
-
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(
-        "<div style='font-size:11px;opacity:0.7;line-height:1.5;'>"
-        "<strong>Catatan:</strong> Filter berlaku ke seluruh tab kecuali "
-        "<strong>Kualitas Data</strong>.</div>",
-        unsafe_allow_html=True,
-    )
-
-    return dict(
-        gig_types=gig_types, exp_tiers=exp_tiers,
-        data_source=data_source, week_range=week_range,
-        seasonal_labels=seasonal_labels,
-    )
-
-
-# =============================================================================
-# HEADER
-# =============================================================================
-
-def render_header(df: pd.DataFrame, params) -> None:
-    n_users = df["user_id"].nunique()
-    n_weeks = int(df["week_number"].nunique())
+    st.markdown("<hr style='border-color:var(--border);margin:1rem 0'>", unsafe_allow_html=True)
+    df_s  = load_survey()
+    df_sy = load_synthetic()
+    n_resp  = len(df_s) if df_s is not None else 0
+    n_users = (df_sy["synthetic_user_id"].nunique()
+               if df_sy is not None and "synthetic_user_id" in df_sy.columns else 0)
+    st.markdown(f"""
+    <div style="font-size:.73rem;color:var(--fg-muted);line-height:2">
+        <div class="kv-row"><span class="kv-key">Responden Survey</span><span class="kv-val">{n_resp:,}</span></div>
+        <div class="kv-row"><span class="kv-key">Synthetic Users</span><span class="kv-val">{n_users:,}</span></div>
+        <div class="kv-row"><span class="kv-key">Tim</span><span class="kv-val">CC26-PSU217</span></div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color:var(--border);margin:1rem 0'>", unsafe_allow_html=True)
     st.markdown(
-        f'<div class="brand-header">'
-        f'<h1>Fingo Income Analysis</h1>'
-        f'<p class="subtitle">Analisis pola penghasilan pekerja informal dan gig worker '
-        f'untuk membantu memahami pendapatan mingguan dan bulanan.</p>'
-        f'<div class="brand-tags">'
-        f'<span class="brand-tag accent">{n_users:,} Pengguna</span>'
-        f'<span class="brand-tag">{n_weeks} Minggu Data</span>'
-        f'<span class="brand-tag">Data Simulasi + Survei</span>'
-        f'<span class="brand-tag">Fokus: Prediksi Penghasilan</span>'
-        f'</div></div>',
-        unsafe_allow_html=True,
+        '<div style="font-size:.7rem;color:var(--fg-muted);line-height:1.8">'
+        '<strong style="color:#E8EDE9">Team Members</strong><br>'
+        'DS1: Nayyara<br>'
+        'DS2: Clarisya Adeline<br>'
+        'AI1: M. Fachri<br>'
+        'AI2: Martha Meslina<br>'
+        'Coding Camp 2026 — DBS Foundation<br><br>'
+        '&copy; 2026 Fingo Team</div>',
+        unsafe_allow_html=True
     )
 
+# ══════════════════════════════════════════════════════════════════════════════
+# MODULE 1 — INSIGHT & KESIMPULAN
+# ══════════════════════════════════════════════════════════════════════════════
+if module == "Insight & Kesimpulan":
+    st.markdown("""
+    <div class="page-header">
+        <h1>Insight &amp; Kesimpulan Keseluruhan</h1>
+        <p>Ringkasan jawaban atas 5 Research Questions proyek Fingo CC26-PSU217</p>
+    </div>""", unsafe_allow_html=True)
 
-def render_methodology_expander(params) -> None:
-    bm = params.get("benchmark_source", "BPS + IDinsight + Sakernas") if params else "BPS + IDinsight + Sakernas"
-    nu = params.get("n_users", 300) if params else 300
-    nw = params.get("n_weeks", 52)  if params else 52
-    with st.expander("Lihat Detail Metodologi (untuk Tim Teknis)"):
-        st.markdown(
-            f"**Pipeline Data Science 2** — Capstone Coding Camp 2026 x DBS Foundation, Tim CC26-PSU217.\n\n"
-            f"- **Generator Sintetis:** Log-Normal AR(1) log-space dengan {nu} user x {nw} minggu\n"
-            f"- **Sumber Benchmark:** {bm}\n"
-            f"- **Validasi:** 6 statistical bias test (target 5/6 PASS)\n"
-            f"- **Experience Multiplier:** Junior=0.65x, Mid=1.00x, Senior=1.45x (ratio senior/junior={EXP_TARGET_RATIO:.2f}x)\n"
-            f"- **Output:** `income_clean.csv` siap untuk training LSTM"
-        )
+    df_imp   = load_impulsive_data()
+    df_pred  = load_predictions_test()
+    clf_imp  = load_impulsive_model()
 
+    # RQ1
+    st.markdown('<div class="section-header">RQ1 — Persentase Transaksi Impulsif</div>', unsafe_allow_html=True)
+    if df_imp is not None and "label" in df_imp.columns:
+        total = len(df_imp)
+        lvc   = df_imp["label"].value_counts()
+        n_aman,n_pert,n_imp = lvc.get("AMAN",0),lvc.get("PERTIMBANGAN",0),lvc.get("IMPULSIF",0)
+        p_aman=n_aman/total*100; p_pert=n_pert/total*100; p_imp=n_imp/total*100
 
-# =============================================================================
-# TAB 1 - RINGKASAN
-# =============================================================================
+        c1,c2,c3,c4 = st.columns(4)
+        c1.metric("Total Transaksi", f"{total:,}")
+        c2.metric("AMAN",            f"{n_aman:,}", delta=f"{p_aman:.1f}%")
+        c3.metric("PERTIMBANGAN",    f"{n_pert:,}", delta=f"{p_pert:.1f}%")
+        c4.metric("IMPULSIF",        f"{n_imp:,}",  delta=f"{p_imp:.1f}%")
 
-def render_overview(df: pd.DataFrame, df_full: pd.DataFrame, params) -> None:
-    if df.empty:
-        st.warning("Tidak ada data yang cocok. Coba longgarkan filter di sidebar.")
-        return
+        st.markdown(f"""
+        <div class="rq-card">
+            <div class="rq-num">Research Question 1</div>
+            <div class="rq-q">Berapa persentase transaksi impulsif pada gig worker dan mahasiswa Gen Z?</div>
+            <div class="rq-a">
+                Dari <span class="rq-highlight">{total:,} transaksi</span>,
+                terdapat <span class="rq-highlight">{n_imp:,} IMPULSIF ({p_imp:.1f}%)</span>,
+                <span class="rq-highlight">{n_pert:,} PERTIMBANGAN ({p_pert:.1f}%)</span>, dan
+                <span class="rq-highlight">{n_aman:,} AMAN ({p_aman:.1f}%)</span>.
+                Total <span class="rq-highlight">{p_imp+p_pert:.1f}% transaksi</span> berpotensi impulsif.
+            </div>
+        </div>""", unsafe_allow_html=True)
 
-    pct = len(df) / len(df_full) * 100 if len(df_full) else 0
-    if pct >= 80:
-        render_status_banner("green",  "Data Valid dan Siap Digunakan",
-            f"Menampilkan {pct:.0f}% dari total data.")
-    elif pct >= 30:
-        render_status_banner("yellow", "Data Terbatas",
-            f"Hanya {pct:.0f}% data yang ditampilkan. Pertimbangkan memperluas filter.")
+        fig,ax = plt.subplots(figsize=(5,4))
+        wedges,texts = ax.pie([n_aman,n_pert,n_imp],
+            labels=[f"AMAN\n{p_aman:.1f}%",f"PERTIMBANGAN\n{p_pert:.1f}%",f"IMPULSIF\n{p_imp:.1f}%"],
+            colors=[FG,FG_WARN,FG_RED], startangle=90, wedgeprops=dict(width=0.6))
+        for t in texts: t.set_color("#E8EDE9"); t.set_fontsize(9)
+        ax.set_title("Distribusi Label Transaksi", color="#FFFFFF")
+        st.pyplot(fig, use_container_width=False); plt.close()
     else:
-        render_status_banner("red",    "Data Sangat Terbatas",
-            f"Hanya {pct:.0f}% data. Longgarkan filter di sidebar.")
-
-    mean_inc  = df["income_amount"].mean()
-    top_label = GIG_LABELS.get(df.groupby("gig_type")["income_amount"].mean().idxmax(), "")
-
-    # FIX: Ringkasan sesuai notebook
-    # - Lebaran sebenarnya LEBIH RENDAH (multiplier 0.60-0.80) karena aktivitas turun
-    # - Yang tinggi adalah Ramadan (untuk delivery/kurir/jualan) dan Harbolnas
-    render_quick_summary([
-        f"Rata-rata penghasilan sekitar <strong>{fmt_idr(mean_inc)}</strong>/minggu "
-        f"(sekitar <strong>{fmt_idr(mean_inc*4.345)}</strong>/bulan).",
-        f"Pekerjaan dengan penghasilan tertinggi: <strong>{top_label}</strong>.",
-        "Penghasilan naik saat <strong>Ramadan</strong> (kurir, ojek, jualan online) dan <strong>Harbolnas</strong> (freelancer, content creator).",
-        "Penghasilan <strong>turun saat Lebaran</strong> (aktivitas berhenti) dan Awal Tahun. Akhir bulan selalu lebih tinggi.",
-    ])
-
-    n_rec     = len(df)
-    mean_vol  = df.drop_duplicates("user_id")["income_volatility"].mean()
-    n_synth   = (df["data_source"] == "synthetic").sum()
-    n_surv    = (df["data_source"] == "survey").sum()
-    pct_synth = n_synth / max(n_rec, 1) * 100
-    vol_s     = "success" if mean_vol < 0.30 else ("warning" if mean_vol < 0.50 else "danger")
-    vol_t     = "Stabil" if mean_vol < 0.30 else ("Cukup Stabil" if mean_vol < 0.50 else "Fluktuatif")
-
-    render_kpi_row([
-        kpi_card("Total Pengguna",        f"{df['user_id'].nunique():,}",  "orang dalam analisis"),
-        kpi_card("Total Catatan",         f"{n_rec:,}",                   "minggu x pengguna"),
-        kpi_card("Rata-Rata Penghasilan", fmt_idr(mean_inc),              f"sekitar {fmt_idr(mean_inc*4.345)} / bulan", accent=True),
-        kpi_card("Tingkat Stabilitas",    f"{mean_vol:.2f}",              f"{vol_t} (lebih kecil = lebih stabil)", status=vol_s),
-        kpi_card("Data Simulasi",         f"{pct_synth:.0f}%",            f"{n_synth:,} catatan"),
-        kpi_card("Data Survei Asli",      f"{100-pct_synth:.0f}%",        f"{n_surv:,} catatan"),
-    ])
-
-    left, right = st.columns([1, 1.4], gap="medium")
-
-    with left:
-        with render_section(
-            "Komposisi Sumber Data",
-            "Sebagian besar dari simulasi berdasarkan acuan statistik resmi, "
-            "ditambah responden survei nyata.",
-        ):
-            src = df["data_source"].value_counts().reset_index()
-            src.columns = ["source", "count"]
-            src["label"] = src["source"].map({"synthetic": "Data Simulasi", "survey": "Data Survei"})
-            fig = go.Figure(go.Pie(
-                labels=src["label"], values=src["count"], hole=0.62,
-                marker=dict(colors=[PALETTE["primary"], PALETTE["primary_soft"]],
-                            line=dict(color=PALETTE["surface"], width=2)),
-                textinfo="percent", textposition="outside",
-                hovertemplate="<b>%{label}</b><br>%{value:,} catatan (%{percent})<extra></extra>",
-            ))
-            fig.update_layout(
-                annotations=[dict(
-                    text=f"<b>{n_rec:,}</b><br><span style='font-size:11px;"
-                         f"color:{PALETTE['text_muted']};'>catatan</span>",
-                    x=0.5, y=0.5, font_size=18, font_color=PALETTE["primary_dark"], showarrow=False,
-                )],
-                showlegend=True,
-                legend=dict(orientation="h", yanchor="bottom", y=-0.18, xanchor="center", x=0.5),
-            )
-            fig = apply_plotly_theme(fig, height=320)
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-    with right:
-        with render_section(
-            "Distribusi Jenis Pekerjaan",
-            "Jumlah pengguna per jenis pekerjaan mengikuti komposisi gig worker di Indonesia.",
-        ):
-            gc = df["gig_type"].value_counts().reset_index()
-            gc.columns = ["gig", "count"]
-            gc["gig_label"] = gc["gig"].map(GIG_LABELS)
-            gc = gc.sort_values("count", ascending=True)
-            fig = go.Figure(go.Bar(
-                y=gc["gig_label"], x=gc["count"], orientation="h",
-                marker=dict(color=gc["count"],
-                            colorscale=[[0, "#A6CFB8"], [1, PALETTE["primary_dark"]]],
-                            line=dict(color=PALETTE["surface"], width=0)),
-                text=gc["count"].apply(lambda v: f"{v:,}"),
-                textposition="outside", textfont=dict(size=11, color=PALETTE["text"]),
-                hovertemplate="<b>%{y}</b><br>%{x:,} catatan<extra></extra>",
-            ))
-            fig = apply_plotly_theme(fig, height=320)
-            fig.update_layout(showlegend=False, margin=dict(l=10, r=80, t=10, b=10))
-            fig.update_xaxes(showticklabels=False)
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-
-# =============================================================================
-# TAB 2 - PENGHASILAN PER PEKERJAAN
-# =============================================================================
-
-def render_distribution(df: pd.DataFrame) -> None:
-    if df.empty:
-        st.warning("Tidak ada data yang cocok dengan filter saat ini.")
-        return
-
-    by_gig    = df.groupby("gig_type")["income_amount"].mean().sort_values(ascending=False)
-    top_gig   = by_gig.index[0]
-    bot_gig   = by_gig.index[-1]
-    gap_ratio = by_gig.iloc[0] / by_gig.iloc[-1]
-
-    # FIX: experience ratio dari notebook = 1.45/0.65 = 2.23x (bukan hard-code 2.2x)
-    render_quick_summary([
-        f"<strong>{GIG_LABELS.get(top_gig, top_gig)}</strong> penghasilan tertinggi: "
-        f"{fmt_idr(by_gig.iloc[0])}/minggu (sekitar {fmt_idr(by_gig.iloc[0]*4.345)}/bulan).",
-        f"<strong>{GIG_LABELS.get(bot_gig, bot_gig)}</strong> penghasilan terendah: "
-        f"{fmt_idr(by_gig.iloc[-1])}/minggu.",
-        f"Gap antar pekerjaan mencapai <strong>{gap_ratio:.1f}x</strong>.",
-        f"Pekerja Berpengalaman (Senior) mendapat sekitar <strong>{EXP_TARGET_RATIO:.2f}x</strong> lebih banyak dari Pemula (Junior).",
-    ])
-
-    mg = by_gig.sort_values(ascending=True).reset_index()
-    mg.columns = ["gig_type", "income_amount"]
-    mg["label"]   = mg["gig_type"].map(GIG_LABELS)
-    mg["monthly"] = mg["income_amount"] * 4.345
-
-    fig_mean = go.Figure(go.Bar(
-        y=mg["label"], x=mg["income_amount"], orientation="h",
-        marker=dict(color=PALETTE["primary"], line=dict(color=PALETTE["surface"], width=0)),
-        text=mg["income_amount"].apply(fmt_idr),
-        textposition="outside", textfont=dict(size=11, color=PALETTE["text"]),
-        hovertemplate="<b>%{y}</b><br>Per minggu: %{customdata[0]}<br>Per bulan: %{customdata[1]}<extra></extra>",
-        customdata=np.stack([
-            mg["income_amount"].apply(lambda v: fmt_idr(v, short=False)),
-            mg["monthly"].apply(lambda v: fmt_idr(v, short=False)),
-        ], axis=-1),
-        cliponaxis=False,
-    ))
-    fig_mean = apply_plotly_theme(fig_mean, height=300)
-    fig_mean.update_layout(margin=dict(l=10, r=220, t=10, b=10))
-    fig_mean.update_xaxes(tickformat=",.0f", title="Rp / minggu")
-    fig_mean.update_yaxes(title="")
-
-    me = df.groupby(["gig_type", "experience_tier"])["income_amount"].mean().reset_index()
-    me["gig_label"] = me["gig_type"].map(GIG_LABELS)
-    me["exp_label"] = me["experience_tier"].map(EXP_LABELS)
-    exp_clr = {
-        "Pemula":        PALETTE["primary_soft"],
-        "Menengah":      PALETTE["primary"],
-        "Berpengalaman": PALETTE["primary_dark"],
-    }
-    fig_exp = go.Figure()
-    for exp in ["Pemula", "Menengah", "Berpengalaman"]:
-        sub = me[me["exp_label"] == exp]
-        if not sub.empty:
-            fig_exp.add_trace(go.Bar(
-                name=exp, x=sub["gig_label"], y=sub["income_amount"],
-                marker_color=exp_clr[exp],
-                hovertemplate=f"<b>%{{x}}</b><br>{exp}<br>Per minggu: %{{customdata}}<extra></extra>",
-                customdata=sub["income_amount"].apply(lambda v: fmt_idr(v, short=False)),
-            ))
-    fig_exp = apply_plotly_theme(fig_exp, height=360)
-    fig_exp.update_layout(
-        barmode="group",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
-        margin=dict(l=10, r=20, t=50, b=110),
-    )
-    fig_exp.update_yaxes(tickformat=",.0f", title="Rp / minggu")
-    fig_exp.update_xaxes(title="", tickangle=-30, automargin=True)
-
-    col1, col2 = st.columns(2, gap="medium")
-    with col1:
-        with render_section(
-            "Penghasilan Rata-Rata per Jenis Pekerjaan",
-            "Freelancer IT memimpin; ojek dan kurir berada di kisaran Rp 700-730rb/minggu.",
-        ):
-            st.plotly_chart(fig_mean, use_container_width=True, config={"displayModeBar": False})
-    with col2:
-        with render_section(
-            "Penghasilan Berdasarkan Pengalaman",
-            f"Pekerja Berpengalaman konsisten mendapat sekitar {EXP_TARGET_RATIO:.2f}x lebih banyak dari Pemula.",
-        ):
-            st.plotly_chart(fig_exp, use_container_width=True, config={"displayModeBar": False})
-
-    with st.expander("Analisis Detail: Sebaran Lengkap per Pekerjaan (Boxplot)"):
-        db = df.copy()
-        db["gig_label"] = db["gig_type"].map(GIG_LABELS)
-        fig_box = go.Figure()
-        for i, g in enumerate(sorted(db["gig_label"].unique())):
-            fig_box.add_trace(go.Box(
-                y=db[db["gig_label"] == g]["income_amount"], name=g,
-                marker_color=CHART_COLORS[i % len(CHART_COLORS)],
-                boxmean=True,
-                hovertemplate=f"<b>{g}</b><br>Rp %{{y:,.0f}}<extra></extra>",
-            ))
-        fig_box = apply_plotly_theme(fig_box, height=380)
-        fig_box.update_layout(showlegend=False)
-        fig_box.update_yaxes(tickformat=",.0f", title="Rp / minggu")
-        st.plotly_chart(fig_box, use_container_width=True, config={"displayModeBar": False})
-
-# =============================================================================
-# TAB 3 - POLA WAKTU
-# =============================================================================
-
-def render_temporal(df: pd.DataFrame) -> None:
-    import numpy as np
-
-    if df.empty:
-        st.warning("Tidak ada data yang cocok dengan filter saat ini.")
-        return
-
-    # FIX: Sesuai notebook SEASONAL_MULT (CELL 4.3):
-    # - Lebaran (minggu 14-15): multiplier 0.60-0.80 → LEBIH RENDAH dari normal
-    # - Ramadan (minggu 10-13): naik untuk ojek(1.15), kurir(1.20), jualan_online(1.35)
-    # - Harbolnas (minggu 45-46): naik untuk kurir(1.35), jualan_online(1.50), content_creator(1.20)
-    # - Low season (minggu 1-6): turun 8-12%
-    render_quick_summary([
-        "<strong>Ramadan (minggu 10-13)</strong>: naik 15-35% untuk ojek, kurir, dan jualan online.",
-        "<strong>Lebaran (minggu 14-15)</strong>: penghasilan <em>turun</em> 20-40% — aktivitas berhenti saat hari raya.",
-        "<strong>Harbolnas (minggu 45-46)</strong>: naik 35-50% untuk kurir, jualan online, dan content creator.",
-        "<strong>Awal Tahun (Jan-Feb)</strong> adalah periode terendah. <strong>Akhir bulan</strong> selalu lebih tinggi.",
-    ])
-
-    gig_opts = ["Semua Pekerjaan (Rata-rata Gabungan)"] + [
-        GIG_LABELS[g] for g in sorted(df["gig_type"].unique())
-    ]
-
-    selected = st.selectbox(
-        "Pilih tampilan grafik:",
-        options=gig_opts,
-        index=0
-    )
-
-    with render_section(
-        "Kapan Penghasilan Biasanya Naik atau Turun?",
-        "Rata-rata penghasilan mingguan sepanjang tahun. Area berwarna = periode khusus.",
-    ):
-        if selected == "Semua Pekerjaan (Rata-rata Gabungan)":
-            ts = df.groupby("week_number")["income_amount"].mean().reset_index()
-            lbl = "Rata-rata semua pekerjaan"
-        else:
-            inv = {v: k for k, v in GIG_LABELS.items()}
-            ts = (
-                df[df["gig_type"] == inv[selected]]
-                .groupby("week_number")["income_amount"]
-                .mean()
-                .reset_index()
-            )
-            lbl = selected
-
-        fig_ts = go.Figure()
-
-        fig_ts.add_trace(go.Scatter(
-            x=ts["week_number"],
-            y=ts["income_amount"],
-            mode="lines+markers",
-            name=lbl,
-            line=dict(
-                color=PALETTE["primary"],
-                width=3
-            ),
-            marker=dict(size=6),
-            fill="tozeroy",
-            fillcolor="rgba(27,152,94,0.08)",
-            hovertemplate=f"<b>{lbl}</b><br>Minggu %{{x}}: Rp %{{y:,.0f}}<extra></extra>",
-        ))
-
-        ymax = (ts["income_amount"].max() if len(ts) else 1) * 1.22
-
-        for ev in SEASONAL_EVENTS:
-            fig_ts.add_vrect(
-                x0=ev["x0"],
-                x1=ev["x1"],
-                fillcolor=ev["color"],
-                opacity=0.15,
-                line_width=0,
-                layer="below"
-            )
-
-        # Stagger annotasi agar tidak tumpang tindih
-        y_offsets = [1.0, 0.87, 1.0, 0.87, 1.0]
-
-        for i, ev in enumerate(SEASONAL_EVENTS):
-            y_ann = ymax * y_offsets[i]
-
-            fig_ts.add_annotation(
-                x=(ev["x0"] + ev["x1"]) / 2,
-                y=y_ann,
-                text=f"<b>{ev['name']}</b>",
-                showarrow=False,
-                font=dict(
-                    size=10,
-                    color=ev["color"]
-                ),
-                bgcolor="rgba(255,255,255,0.88)",
-                borderpad=3,
-                yanchor="top",
-            )
-
-        fig_ts = apply_plotly_theme(fig_ts, height=460)
-
-        fig_ts.update_layout(
-            showlegend=False,
-            margin=dict(l=10, r=10, t=50, b=10)
-        )
-
-        fig_ts.update_yaxes(
-            tickformat=",.0f",
-            title="Rp / minggu",
-            range=[0, ymax * 1.05],
-        )
-
-        fig_ts.update_xaxes(
-            title="Minggu ke- (1 = awal Januari, 52 = akhir Desember)",
-            dtick=4
-        )
-
-        st.plotly_chart(
-            fig_ts,
-            use_container_width=True,
-            config={"displayModeBar": False}
-        )
-
-    with render_section(
-        "Efek Akhir Bulan (Payday Effect)",
-        "Warna hijau gelap = penghasilan tinggi. Akhir bulan hampir selalu lebih tinggi.",
-    ):
-        pivot = (
-            df.pivot_table(
-                index="gig_type",
-                columns="week_of_month",
-                values="income_amount",
-                aggfunc="mean"
-            )
-            .rename(index=GIG_LABELS)
-        )
-
-        wlbl = {
-            1: "Minggu ke-1",
-            2: "Minggu ke-2",
-            3: "Minggu ke-3",
-            4: "Minggu ke-4\n(Akhir Bulan)",
-            5: "Minggu ke-5"
-        }
-
-        xlbl = [wlbl.get(c, f"Minggu {c}") for c in pivot.columns]
-        ylbl = pivot.index.tolist()
-
-        z = pivot.values
-        zmin = np.nanmin(z)
-        zmax = np.nanmax(z)
-
-        def get_heatmap_text_color(value):
-            """
-            Mengatur warna font berdasarkan tingkat warna cell.
-            - Cell terang  : font hijau gelap
-            - Cell gelap   : font putih
-            """
-            if pd.isna(value):
-                return "#173F2B"
-
-            norm = (value - zmin) / (zmax - zmin) if zmax != zmin else 0
-
-            # 0.0 sampai 0.35 di colorscale masih terang,
-            # jadi font dibuat hijau gelap agar tidak nabrak.
-            if norm <= 0.35:
-                return "#173F2B"
-
-            return "#FFFFFF"
-
-        heatmap_text = [
-            [fmt_idr(v) for v in row]
-            for row in pivot.values
-        ]
-
-        fig_h = go.Figure(go.Heatmap(
-            z=pivot.values,
-            x=xlbl,
-            y=ylbl,
-            colorscale=[
-                [0.0, "#F3F1F2"],
-                [0.35, "#A6CFB8"],
-                [0.70, "#4A7A5E"],
-                [1.0, "#1A4632"]
-            ],
-            customdata=heatmap_text,
-            hovertemplate="<b>%{y}</b><br>%{x}: %{customdata}<extra></extra>",
-            colorbar=dict(
-                title=dict(
-                    text="Rp/minggu",
-                    font=dict(size=11)
-                ),
-                tickformat=",.0f",
-                thickness=12,
-                len=0.7
-            ),
-        ))
-
-        # Text manual per-cell supaya warna font bisa berbeda-beda
-        for i, y_val in enumerate(ylbl):
-            for j, x_val in enumerate(xlbl):
-                value = pivot.iloc[i, j]
-
-                fig_h.add_annotation(
-                    x=x_val,
-                    y=y_val,
-                    text=fmt_idr(value),
-                    showarrow=False,
-                    font=dict(
-                        size=10,
-                        color=get_heatmap_text_color(value)
-                    )
-                )
-
-        fig_h = apply_plotly_theme(fig_h, height=340)
-
-        fig_h.update_xaxes(
-            side="top",
-            title="",
-            tickangle=0
-        )
-
-        fig_h.update_yaxes(title="")
-
-        fig_h.update_layout(
-            margin=dict(l=10, r=10, t=60, b=10)
-        )
-
-        st.plotly_chart(
-            fig_h,
-            use_container_width=True,
-            config={"displayModeBar": False}
-        )
-
-    with render_section(
-        "Penghasilan per Periode Khusus",
-        "Harbolnas dan Akhir Tahun tertinggi; Lebaran dan Awal Tahun adalah titik terendah.",
-    ):
-        sm = (
-            df.groupby("seasonal_label")["income_amount"]
-            .mean()
-            .reset_index()
-            .sort_values("income_amount", ascending=True)
-        )
-
-        sm["label"] = sm["seasonal_label"].map(SEASONAL_LABELS)
-
-        fig_s = go.Figure(go.Bar(
-            y=sm["label"],
-            x=sm["income_amount"],
-            orientation="h",
-            marker=dict(
-                color=sm["income_amount"],
-                colorscale=[
-                    [0.0, PALETTE["primary_soft"]],
-                    [0.5, PALETTE["primary"]],
-                    [1.0, PALETTE["primary_dark"]]
-                ],
-                showscale=False,
-                line=dict(
-                    color=PALETTE["surface"],
-                    width=0
-                ),
-            ),
-            text=sm["income_amount"].apply(fmt_idr),
-            textposition="outside",
-            textfont=dict(
-                size=12,
-                color=PALETTE["primary_dark"]
-            ),
-            hovertemplate="<b>%{y}</b><br>Rata-rata: %{customdata}<extra></extra>",
-            customdata=sm["income_amount"].apply(
-                lambda v: fmt_idr(v, short=False)
-            ),
-            cliponaxis=False,
-        ))
-
-        fig_s = apply_plotly_theme(fig_s, height=340)
-
-        fig_s.update_layout(
-            margin=dict(l=10, r=200, t=10, b=10)
-        )
-
-        fig_s.update_xaxes(
-            tickformat=",.0f",
-            title="Rp / minggu"
-        )
-
-        fig_s.update_yaxes(title="")
-
-        st.plotly_chart(
-            fig_s,
-            use_container_width=True,
-            config={"displayModeBar": False}
-        )
-# =============================================================================
-# TAB 4 - STABILITAS
-# =============================================================================
-
-def render_volatility(df: pd.DataFrame) -> None:
-    if df.empty:
-        st.warning("Tidak ada data yang cocok dengan filter saat ini.")
-        return
-
-    uv  = df.drop_duplicates("user_id")[["gig_type", "income_volatility"]].copy()
-    uv["gig_label"] = uv["gig_type"].map(GIG_LABELS)
-    vol = uv.groupby("gig_label")["income_volatility"].mean().sort_values(ascending=True)
-
-    render_quick_summary([
-        f"Pekerjaan paling stabil: <strong>{vol.index[0]}</strong>.",
-        f"Pekerjaan paling fluktuatif: <strong>{vol.index[-1]}</strong>.",
-        "Pekerjaan stabil cocok untuk yang butuh kepastian; fluktuatif berpeluang lebih banyak tapi lebih berisiko.",
-        "Tingkat stabilitas adalah faktor terpenting untuk memprediksi penghasilan minggu depan.",
-    ])
-
-    with render_section(
-        "Seberapa Stabil Penghasilan Tiap Jenis Pekerjaan?",
-        "Angka lebih kecil = penghasilan lebih stabil. "
-        "Garis biru putus-putus = batas stabilitas (0.30).",
-    ):
-        colors, statuses = [], []
-        for v in vol.values:
-            if v < 0.30:
-                colors.append(PALETTE["primary"]); statuses.append("Stabil")
-            elif v < 0.50:
-                colors.append(PALETTE["warning"]); statuses.append("Cukup Stabil")
-            else:
-                colors.append(PALETTE["danger"]);  statuses.append("Fluktuatif")
-
-        fig_bar = go.Figure(go.Bar(
-            y=vol.index, x=vol.values, orientation="h",
-            marker=dict(color=colors, line=dict(color=PALETTE["surface"], width=0)),
-            text=[f"{v:.2f} ({s})" for v, s in zip(vol.values, statuses)],
-            textposition="outside", textfont=dict(size=11, color=PALETTE["text"]),
-            hovertemplate="<b>%{y}</b><br>Nilai: %{x:.3f}<br>Status: %{customdata}<extra></extra>",
-            customdata=statuses,
-            cliponaxis=False,
-        ))
-        fig_bar.add_vline(
-            x=0.30,
-            line=dict(color=PALETTE["threshold_line"], width=2, dash="dash"),
-            annotation_text="Batas stabil (0.30)",
-            annotation_position="top right",
-            annotation_font=dict(size=10, color=PALETTE["threshold_line"]),
-        )
-        fig_bar = apply_plotly_theme(fig_bar, height=340)
-        fig_bar.update_layout(margin=dict(l=10, r=200, t=20, b=10))
-        fig_bar.update_xaxes(
-            title="Tingkat Ketidakstabilan (semakin kecil semakin baik)",
-            range=[0, max(vol.values) * 1.50],
-        )
-        fig_bar.update_yaxes(title="")
-        st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
-
-    with render_section(
-        "Faktor yang Paling Memengaruhi Prediksi Penghasilan",
-        "Faktor-faktor terpenting untuk memprediksi penghasilan minggu depan.",
-    ):
-        factors = [
-            ("FAKTOR 1", "Rata-rata 4 minggu terakhir",   "Tren penghasilan sebulan terakhir adalah indikator terkuat."),
-            ("FAKTOR 2", "Penghasilan minggu lalu",        "Penghasilan minggu ini biasanya mirip minggu lalu (AR1 log-space)."),
-            ("FAKTOR 3", "Periode khusus",                 "Ramadan, Harbolnas, akhir tahun menaikkan; Lebaran & awal tahun menurunkan."),
-            ("FAKTOR 4", "Jenis pekerjaan",                "Tiap jenis punya pola penghasilan berbeda."),
-            ("FAKTOR 5", "Tingkat pengalaman",             f"Pemula vs Berpengalaman beda sekitar {EXP_TARGET_RATIO:.2f}x."),
-            ("FAKTOR 6", "Minggu dalam bulan",             "Akhir bulan biasanya tertinggi (efek gajian/payday)."),
-        ]
-        html = "".join(
-            f'<div style="background:{PALETTE["bg"]};padding:14px 16px;border-radius:10px;'
-            f'border-left:4px solid {PALETTE["primary"]};min-width:0;">'
-            f'<div style="font-size:10px;font-weight:700;color:{PALETTE["primary_dark"]};'
-            f'text-transform:uppercase;letter-spacing:0.5px;">{tag}</div>'
-            f'<div style="font-size:14px;font-weight:600;color:{PALETTE["text"]};margin-top:4px;">{t}</div>'
-            f'<div style="font-size:12px;color:{PALETTE["text_muted"]};margin-top:4px;">{d}</div>'
-            f'</div>'
-            for tag, t, d in factors
-        )
-        st.markdown(
-            f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">'
-            f'{html}</div>',
-            unsafe_allow_html=True,
-        )
-
-    with st.expander("Analisis Detail: Distribusi dan Korelasi Antar Fitur (Untuk Tim Teknis)"):
-        st.markdown("#### Distribusi Volatilitas (CoV) per Gig")
-        fig_b = go.Figure()
-        for i, g in enumerate(vol.index):
-            fig_b.add_trace(go.Box(
-                y=uv[uv["gig_label"] == g]["income_volatility"], name=g,
-                marker_color=CHART_COLORS[i % len(CHART_COLORS)],
-                boxmean=True,
-                hovertemplate=f"<b>{g}</b><br>CoV: %{{y:.3f}}<extra></extra>",
-            ))
-        fig_b.add_hline(
-            y=0.30,
-            line=dict(color=PALETTE["threshold_line"], width=2, dash="dash"),
-            annotation_text="Threshold stabil (CoV 0.30)",
-            annotation_position="top right",
-            annotation_font=dict(size=10, color=PALETTE["threshold_line"]),
-        )
-        fig_b = apply_plotly_theme(fig_b, height=380)
-        fig_b.update_layout(showlegend=False)
-        fig_b.update_yaxes(title="Coefficient of Variation (std / mean)")
-        st.plotly_chart(fig_b, use_container_width=True, config={"displayModeBar": False})
-
-        st.markdown("#### Korelasi Antar Fitur Engineered")
-        fcols = [c for c in [
-            "income_amount", "rolling_mean_4w", "rolling_std_4w",
-            "rolling_cov_8w", "income_volatility", "income_growth_1w",
-            "lag_1w", "lag_4w", "week_of_month",
-            "seasonal_income_pattern", "is_payday_week",
-        ] if c in df.columns]
-        if len(fcols) >= 2:
-            corr = df[fcols].corr()
-            fig_c = go.Figure(go.Heatmap(
-                z=corr.values, x=corr.columns.tolist(), y=corr.index.tolist(),
-                colorscale=[[0.0, "#B23A3A"], [0.5, "#F3F1F2"], [1.0, "#1A4632"]],
-                zmin=-1, zmax=1,
-                text=[[f"{v:.2f}" for v in row] for row in corr.values],
-                texttemplate="%{text}", textfont={"size": 9, "color": PALETTE["text"]},
-                hovertemplate="<b>%{x}</b> vs <b>%{y}</b>: %{z:.3f}<extra></extra>",
-                colorbar=dict(title=dict(text="Korelasi"), thickness=12, len=0.8),
-            ))
-            fig_c = apply_plotly_theme(fig_c, height=420)
-            fig_c.update_xaxes(tickangle=-30)
-            st.plotly_chart(fig_c, use_container_width=True, config={"displayModeBar": False})
-
-
-# =============================================================================
-# TAB 5 - KUALITAS DATA
-# =============================================================================
-
-def _compute_bias(df_full: pd.DataFrame, calib, params) -> dict:
-    syn = df_full[df_full["data_source"] == "synthetic"].copy()
-    out: dict = {"tests": [], "test1_data": [], "test4_data": [], "test5_acs": [], "test5_mean": 0.0}
-
-    # Test 1 — Mean vs Benchmark
-    bmap: dict = {}
-    if calib is not None:
-        for _, row in calib.iterrows():
-            bmap[row["gig_type"]] = float(row["mu"])
-    if bmap:
-        np_ = nt = 0
-        for gig, mu in bmap.items():
-            sub = syn[syn["gig_type"] == gig]["income_amount"]
-            if sub.empty:
-                continue
-            actual = sub.mean(); pct = (actual - mu) / mu * 100; ok = abs(pct) <= 15.0
-            out["test1_data"].append({"gig": gig, "benchmark": mu, "actual": actual, "pct_diff": pct, "ok": ok})
-            np_ += int(ok); nt += 1
-        out["tests"].append({
-            "name": "Penghasilan Sesuai Acuan", "tech": "Test 1 - Mean vs Benchmark",
-            "result": f"{np_}/{nt} sesuai",
-            "status": "pass" if np_ == nt else "partial",
-            "note": "Rata-rata penghasilan simulasi cocok dengan data acuan resmi Indonesia.",
-        })
-    else:
-        out["tests"].append({
-            "name": "Penghasilan Sesuai Acuan", "tech": "Test 1 - Mean vs Benchmark",
-            "result": "data acuan tidak ditemukan", "status": "warn",
-            "note": "File data acuan belum tersedia.",
-        })
-
-    # Test 2 — KS Distribution
-    out["tests"].append({
-        "name": "Bentuk Sebaran Data", "tech": "Test 2 - KS Distribution",
-        "result": "Perlu Dicatat", "status": "partial",
-        "note": "Sebaran sedikit bergeser karena efek musiman — ini wajar.",
-    })
-
-    # Test 3 — Seasonal Direction
-    # FIX: sesuai notebook, lebaran dan low_season TURUN, bukan naik
-    np_ = nt = 0
-    for gig in syn["gig_type"].unique():
-        base = syn[(syn["gig_type"] == gig) & (syn["seasonal_label"] == "normal")]["income_amount"].mean()
-        for lbl in ["lebaran", "ramadan", "harbolnas", "yearend", "low_season"]:
-            sub = syn[(syn["gig_type"] == gig) & (syn["seasonal_label"] == lbl)]["income_amount"]
-            if sub.empty or pd.isna(base) or base == 0:
-                continue
-            nt += 1
-            actual_mean = sub.mean()
-            # Sesuai notebook: ramadan, harbolnas, yearend naik; lebaran dan low_season TURUN
-            expected_up = lbl in ["ramadan", "harbolnas", "yearend"]
-            actual_up   = actual_mean / base > 1
-            np_ += int(expected_up == actual_up)
-    out["tests"].append({
-        "name": "Pola Musiman", "tech": "Test 3 - Seasonal Direction",
-        "result": f"{np_}/{nt} benar",
-        "status": "pass" if np_ == nt else "partial",
-        "note": "Naik di Ramadan/Harbolnas/Akhir Tahun; turun saat Lebaran dan Awal Tahun — sesuai kenyataan.",
-    })
-
-    # Test 4 — Experience Multiplier
-    # FIX: gunakan EXP_TARGET_RATIO = 1.45/0.65 dari notebook
-    np_ = nt = 0
-    for gig in syn["gig_type"].unique():
-        sub = syn[syn["gig_type"] == gig]
-        jr  = sub[sub["experience_tier"] == "junior"]["income_amount"].mean()
-        sr  = sub[sub["experience_tier"] == "senior"]["income_amount"].mean()
-        if pd.isna(jr) or pd.isna(sr) or jr == 0:
-            continue
-        ratio = sr / jr
-        ok = abs(ratio - EXP_TARGET_RATIO) / EXP_TARGET_RATIO * 100 <= 25.0
-        out["test4_data"].append({"gig": gig, "actual": ratio, "target": EXP_TARGET_RATIO, "ok": ok})
-        nt += 1; np_ += int(ok)
-    out["tests"].append({
-        "name": "Gap Pemula vs Berpengalaman", "tech": "Test 4 - Experience Multiplier",
-        "result": f"{np_}/{nt} sesuai",
-        "status": "pass" if np_ == nt else "partial",
-        "note": f"Selisih penghasilan pemula vs berpengalaman target {EXP_TARGET_RATIO:.2f}x sudah sesuai kenyataan.",
-    })
-
-    # Test 5 — AR(1) Autocorrelation
-    acs = []
-    for uid in syn["user_id"].unique()[:30]:
-        s = syn[syn["user_id"] == uid].sort_values("week_number")["income_amount"].values
-        if len(s) > 5:
-            ac = np.corrcoef(s[:-1], s[1:])[0, 1]
-            if not np.isnan(ac):
-                acs.append(ac)
-    mean_ac = float(np.mean(acs)) if acs else 0.0
-    out["test5_acs"] = acs; out["test5_mean"] = mean_ac
-    out["tests"].append({
-        "name": "Konsistensi Antar Minggu", "tech": "Test 5 - AR(1) Autocorrelation",
-        "result": f"skor: {mean_ac:.2f}",
-        "status": "pass" if 0.20 <= mean_ac <= 0.60 else "fail",
-        "note": "Penghasilan tidak melompat-lompat ekstrem dari minggu ke minggu (target range 0.20-0.60).",
-    })
-
-    # Test 6 — BPS Range (threshold absolut, tidak tergantung parsing BPS)
-    np_ = nt = 0
-    for gig in syn["gig_type"].unique():
-        mo = syn[syn["gig_type"] == gig]["income_amount"].mean() * 4.345
-        nt += 1; np_ += int(500_000 <= mo <= 8_000_000)
-    out["tests"].append({
-        "name": "Rentang Penghasilan Wajar", "tech": "Test 6 - BPS Range",
-        "result": f"{np_}/{nt} dalam batas",
-        "status": "pass" if np_ == nt else "partial",
-        "note": "Penghasilan bulanan masuk akal (Rp 500rb-8jt/bulan), tidak terlalu kecil atau terlalu besar.",
-    })
-
-    return out
-
-
-def render_bias(df_full: pd.DataFrame, calib, params) -> None:
-    bias   = _compute_bias(df_full, calib, params)
-    n_pass = sum(1 for t in bias["tests"] if t["status"] == "pass")
-    n_fail = sum(1 for t in bias["tests"] if t["status"] == "fail")
-    total  = len(bias["tests"])
-
-    if n_fail == 0 and (total - n_pass) <= 1:
-        render_status_banner("green",  f"Data Aman Digunakan ({n_pass}/{total} pengecekan lolos)",
-            "Data simulasi sudah dibandingkan dengan acuan pendapatan Indonesia.")
-    elif n_fail == 0:
-        render_status_banner("yellow", f"Data Cukup Aman ({n_pass}/{total} pengecekan lolos)",
-            "Data sebagian besar valid namun ada beberapa catatan.")
-    else:
-        render_status_banner("red",    f"Data Perlu Dicek Ulang ({n_pass}/{total} pengecekan lolos)",
-            "Ada pengecekan yang gagal. Konsultasi dengan tim teknis.")
-
-    st.info("Pengecekan kualitas data selalu memakai **data lengkap** (tidak terpengaruh filter sidebar).")
-    render_quick_summary([
-        f"<strong>{n_pass} dari {total} pengecekan</strong> berhasil lulus.",
-        "Penghasilan rata-rata cocok dengan data acuan resmi Indonesia (BPS).",
-        "Pola musiman sesuai kenyataan — naik Ramadan/Harbolnas, turun Lebaran.",
-        f"Selisih penghasilan antara pemula dan berpengalaman mendekati target {EXP_TARGET_RATIO:.2f}x.",
-    ])
-
-    with render_section(
-        "Hasil Pengecekan Kualitas Data",
-        "Setiap pengecekan memastikan data simulasi sesuai kondisi nyata di Indonesia.",
-    ):
-        smap = {
-            "pass":    ("Aman",          "#DCF1E5", "#1A4632", PALETTE["primary"]),
-            "partial": ("Perlu Dicatat", "#FDF1DC", "#8C5A0E", PALETTE["warning"]),
-            "warn":    ("Perlu Dicek",   "#FDF1DC", "#8C5A0E", PALETTE["warning"]),
-            "fail":    ("Tidak Aman",    "#FBE0E0", "#8C2424", PALETTE["danger"]),
-        }
-        grid = ('<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));'
-                'gap:12px;margin-top:8px;">')
-        for t in bias["tests"]:
-            lbl, bg, tc, bc = smap[t["status"]]
-            grid += (
-                f'<div style="background:{PALETTE["bg"]};border-radius:10px;padding:16px 18px;'
-                f'border:1px solid {PALETTE["border"]};border-left:4px solid {bc};min-height:130px;">'
-                f'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'
-                f'<div style="font-size:11px;color:{PALETTE["text_muted"]};text-transform:uppercase;'
-                f'letter-spacing:0.5px;font-weight:700;">{t["name"]}</div>'
-                f'<span style="background:{bg};color:{tc};padding:3px 10px;border-radius:999px;'
-                f'font-size:11px;font-weight:600;">{lbl}</span>'
-                f'</div>'
-                f'<div style="font-size:16px;font-weight:700;color:{PALETTE["text"]};margin:6px 0;">{t["result"]}</div>'
-                f'<div style="font-size:12px;color:{PALETTE["text_muted"]};line-height:1.5;">{t["note"]}</div>'
-                f'</div>'
-            )
-        grid += "</div>"
-        st.markdown(grid, unsafe_allow_html=True)
-
-    if bias["test1_data"]:
-        dt1 = pd.DataFrame(bias["test1_data"])
-        dt1["gig_label"] = dt1["gig"].map(GIG_LABELS)
-        with render_section(
-            "Perbandingan Data Simulasi vs Data Acuan Resmi",
-            "Hijau muda = data acuan resmi; Hijau tua = data simulasi. Semakin mirip semakin baik.",
-        ):
-            fig = go.Figure()
-            fig.add_trace(go.Bar(
-                name="Data Acuan Resmi", x=dt1["gig_label"], y=dt1["benchmark"],
-                marker_color=PALETTE["primary_soft"],
-                hovertemplate="<b>%{x}</b><br>Acuan: %{customdata}<extra></extra>",
-                customdata=dt1["benchmark"].apply(lambda v: fmt_idr(v, short=False)),
-            ))
-            fig.add_trace(go.Bar(
-                name="Data Simulasi", x=dt1["gig_label"], y=dt1["actual"],
-                marker_color=PALETTE["primary"],
-                hovertemplate="<b>%{x}</b><br>Simulasi: %{customdata}<extra></extra>",
-                customdata=dt1["actual"].apply(lambda v: fmt_idr(v, short=False)),
-            ))
-            fig = apply_plotly_theme(fig, height=360)
-            fig.update_layout(barmode="group",
-                              legend=dict(orientation="h", yanchor="bottom", y=1.02))
-            fig.update_yaxes(tickformat=",.0f", title="Rp / minggu")
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-    with st.expander("Detail Statistik Pengecekan (Untuk Tim Teknis)"):
-        for t in bias["tests"]:
-            st.markdown(f"- **{t['tech']}**: {t['result']}")
-
-        col1, col2 = st.columns(2, gap="medium")
-        with col1:
-            if bias["test4_data"]:
-                st.markdown(f"#### Test 4 — Experience Multiplier (target {EXP_TARGET_RATIO:.2f}x)")
-                dt4 = pd.DataFrame(bias["test4_data"])
-                dt4["gig_label"] = dt4["gig"].map(GIG_LABELS)
-                fig4 = go.Figure(go.Bar(
-                    x=dt4["gig_label"], y=dt4["actual"],
-                    marker_color=[PALETTE["primary"] if ok else PALETTE["danger"] for ok in dt4["ok"]],
-                    text=[f"{v:.2f}x" for v in dt4["actual"]],
-                    textposition="outside",
-                    hovertemplate="<b>%{x}</b><br>Ratio: %{y:.2f}x<extra></extra>",
-                ))
-                fig4.add_hline(
-                    y=dt4["target"].iloc[0],
-                    line=dict(color=PALETTE["threshold_line"], width=2, dash="dash"),
-                    annotation_text=f"Target {dt4['target'].iloc[0]:.2f}x",
-                    annotation_position="top left",
-                    annotation_font=dict(size=10, color=PALETTE["threshold_line"]),
-                )
-                fig4 = apply_plotly_theme(fig4, height=320)
-                fig4.update_yaxes(title="Senior / Junior ratio")
-                st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar": False})
-
-        with col2:
-            if bias["test5_acs"]:
-                st.markdown("#### Test 5 — AR(1) Autocorrelation (range 0.20-0.60)")
-                fig5 = go.Figure(go.Histogram(
-                    x=bias["test5_acs"], nbinsx=15,
-                    marker=dict(color=PALETTE["primary"],
-                                line=dict(color=PALETTE["surface"], width=1)),
-                    hovertemplate="AC: %{x:.2f}<br>Count: %{y}<extra></extra>",
-                ))
-                for xv, ann, pos in [
-                    (0.20, "Min (0.20)", "top left"),
-                    (0.60, "Maks (0.60)", "top right"),
-                ]:
-                    fig5.add_vline(
-                        x=xv,
-                        line=dict(color=PALETTE["threshold_line"], width=1.5, dash="dash"),
-                        annotation_text=ann, annotation_position=pos,
-                        annotation_font=dict(size=9, color=PALETTE["threshold_line"]),
-                    )
-                fig5.add_vline(
-                    x=bias["test5_mean"],
-                    line=dict(color=PALETTE["primary_dark"], width=2.5),
-                    annotation_text=f"Mean: {bias['test5_mean']:.3f}",
-                    annotation_font=dict(size=9, color=PALETTE["primary_dark"]),
-                )
-                fig5 = apply_plotly_theme(fig5, height=320)
-                fig5.update_xaxes(title="Lag-1 Autocorrelation per User")
-                fig5.update_yaxes(title="Jumlah User")
-                st.plotly_chart(fig5, use_container_width=True, config={"displayModeBar": False})
-
-
-# =============================================================================
-# TAB 6 - KESIMPULAN
-# =============================================================================
-
-def render_insights(df_full: pd.DataFrame, params) -> None:
-    render_quick_summary([
-        "Penghasilan pekerja gig <strong>sangat dipengaruhi musim</strong>: "
-        "naik saat Ramadan, Harbolnas, dan Akhir Tahun; <em>turun</em> saat Lebaran dan Awal Tahun.",
-        "<strong>Kurir dan Ojek Online</strong> paling stabil; "
-        "<strong>Content Creator dan Freelancer Desain</strong> berpeluang tinggi tapi fluktuatif.",
-        f"<strong>Pengalaman sangat berarti</strong>: pekerja berpengalaman dapat sekitar {EXP_TARGET_RATIO:.2f}x lebih banyak dari pemula.",
-        "Untuk memprediksi penghasilan, <strong>riwayat 4 minggu terakhir</strong> adalah faktor terpenting.",
-    ], title="Ringkasan Utama")
-
-    cards = [
-        {
-            "tag": "Pertanyaan Bisnis",
-            "q":   "Kapan penghasilan biasanya naik dan turun?",
-            "a": (
-                "Polanya jelas dan terjadi setiap tahun:"
-                "<ul>"
-                "<li><strong>Ramadan (minggu 10-13):</strong> naik 15-35% untuk ojek, kurir, dan jualan online</li>"
-                "<li><strong>Lebaran (minggu 14-15):</strong> <em>turun</em> 20-40% — pekerja berhenti beroperasi saat hari raya</li>"
-                "<li><strong>Harbolnas (minggu 45-46):</strong> naik 35-50% untuk kurir, jualan online, dan content creator</li>"
-                "<li><strong>Akhir Tahun (minggu 49-52):</strong> naik 10-20% di hampir semua pekerjaan</li>"
-                "<li><strong>Awal Tahun (Jan-Feb, minggu 1-6):</strong> turun 8-12% di semua pekerjaan</li>"
-                "</ul>"
-                "Pola ini penting untuk perencanaan keuangan dan pengembangan fitur tabungan."
-            ),
-        },
-        {
-            "tag": "Insight Pekerjaan",
-            "q":   "Pekerjaan mana yang stabil vs fluktuatif?",
-            "a": (
-                "Tingkat stabilitas berbeda-beda (berdasarkan Coefficient of Variation dari data Kaggle):"
-                "<ul>"
-                "<li><strong>Paling stabil:</strong> Kurir (CoV ~0.25) dan Ojek Online (CoV ~0.28)</li>"
-                "<li><strong>Cukup stabil:</strong> Jualan Online, Freelancer IT</li>"
-                "<li><strong>Paling fluktuatif:</strong> Content Creator (CoV ~0.55) dan Freelancer Desain</li>"
-                "</ul>"
-                "Implikasi untuk Fingo: pekerja fluktuatif sangat butuh fitur prediksi dan tabungan otomatis."
-            ),
-        },
-        {
-            "tag": "Insight Pengalaman",
-            "q":   "Apakah pengalaman benar-benar memengaruhi penghasilan?",
-            "a": (
-                f"Sangat memengaruhi. Berdasarkan benchmark notebook (CELL 4.3):"
-                "<ul>"
-                f"<li><strong>Pemula (Junior):</strong> multiplier 0.65x dari baseline mid</li>"
-                f"<li><strong>Menengah (Mid):</strong> baseline 1.00x</li>"
-                f"<li><strong>Berpengalaman (Senior):</strong> multiplier 1.45x (~{EXP_TARGET_RATIO:.2f}x dari Junior)</li>"
-                "</ul>"
-                "Pola ini konsisten di semua jenis pekerjaan dan sudah divalidasi di Test 4."
-            ),
-        },
-        {
-            "tag": "Kualitas Data",
-            "q":   "Apakah data ini bisa dipercaya untuk pengambilan keputusan?",
-            "a": (
-                "Ya, data sudah melalui pengecekan ketat (6 bias test):"
-                "<ul>"
-                "<li>Penghasilan rata-rata cocok dengan data acuan resmi Indonesia (BPS, IDinsight, Sakernas)</li>"
-                "<li>Pola musiman sesuai kenyataan (naik Ramadan/Harbolnas, turun Lebaran)</li>"
-                "<li>Selisih pemula vs berpengalaman mendekati target</li>"
-                "<li>Tidak ada penghasilan yang tidak wajar (range Rp 500rb-8jt/bulan)</li>"
-                "<li>AR(1) autocorrelation log-space dalam range 0.20-0.60</li>"
-                "</ul>"
-                "Target 5 dari 6 pengecekan kualitas <strong>lulus dengan aman</strong>."
-            ),
-        },
-        {
-            "tag": "Untuk Tim Bisnis",
-            "q":   "Apa yang bisa dilakukan dengan insight ini?",
-            "a": (
-                "<ul>"
-                "<li><strong>Edukasi pengguna:</strong> beri tahu kapan periode panen (Ramadan, Harbolnas) dan kapan harus hemat (Lebaran, Awal Tahun)</li>"
-                "<li><strong>Fitur tabungan musiman:</strong> dorong menabung otomatis di periode tinggi sebelum Lebaran</li>"
-                "<li><strong>Targeting:</strong> pekerja fluktuatif (content creator, freelancer) butuh fitur prediksi paling banyak</li>"
-                "<li><strong>Promosi modal usaha:</strong> tawarkan sebelum Ramadan dan Harbolnas</li>"
-                "<li><strong>Onboarding:</strong> jelaskan ke pemula bahwa pengalaman menaikkan penghasilan ~2.23x</li>"
-                "</ul>"
-            ),
-        },
-        {
-            "tag": "Catatan dan Batasan",
-            "q":   "Apa yang perlu diperhatikan?",
-            "a": (
-                "Beberapa hal yang belum tercakup:"
-                "<ul>"
-                "<li><strong>Wilayah:</strong> data per kota masih terbatas (fokus DKI Jakarta)</li>"
-                "<li><strong>Multi-platform:</strong> pekerja di banyak platform belum dihitung terpisah</li>"
-                "<li><strong>Kondisi tak terduga:</strong> pandemi, kenaikan BBM belum dimasukkan model</li>"
-                "<li><strong>Demografi:</strong> jenis kelamin dan usia belum dipakai sebagai faktor prediksi</li>"
-                "</ul>"
-            ),
-        },
-    ]
-
-    for i in range(0, len(cards), 2):
-        pair     = cards[i: i + 2]
-        col_html = ""
-        for c in pair:
-            col_html += (
-                f'<div class="insight-col">'
-                f'<div class="insight-card">'
-                f'<h4>{c["tag"]}</h4>'
-                f'<div class="question">{c["q"]}</div>'
-                f'<div class="answer">{c["a"]}</div>'
-                f'</div></div>'
-            )
-        if len(pair) == 1:
-            col_html += '<div class="insight-col"></div>'
-        st.markdown(f'<div class="insight-row">{col_html}</div>', unsafe_allow_html=True)
-
-    with st.expander("Catatan Teknis untuk AI Engineer (Tim Modeling)"):
-        st.markdown(
-            f"""
-            **Rekomendasi untuk training LSTM:**
-
-            - Gunakan `income_normalized` sebagai target (sudah MinMax per-user)
-            - Inverse-transform pakai `income_scalers.pkl` saat inference
-            - Drop baris dengan `target_next_week` NaN sebelum training
-            - Eksperimen window length: mulai dari 4 minggu, lalu coba 8 dan 12
-            - Tambahkan one-hot encoding `gig_*` dan `exp_*` sebagai static features
-            - AR(1) diterapkan di **log-space** (CELL 6.3 notebook) dengan koefisien AR1=0.45
-
-            **Fitur prioritas:**
-
-            1. `rolling_mean_4w` - sinyal terkuat
-            2. `lag_1w`, `lag_4w` - autocorrelation (AR1 log-space)
-            3. `seasonal_income_pattern` - event musiman (CATATAN: lebaran = turun)
-            4. `is_payday_week` - efek minggu gajian
-            5. `income_volatility` - profil risiko per user (CoV dari 4 dataset Kaggle)
-
-            **Target experience ratio:** {EXP_TARGET_RATIO:.4f}x (junior=0.65, mid=1.00, senior=1.45)
-            """
-        )
-
-
-# =============================================================================
-# DATA MISSING
-# =============================================================================
-
-def render_data_missing() -> None:
-    bg   = PALETTE["bg"]
-    text = PALETTE["text"]
+        no_data("Dataset impulsive tidak ditemukan. Pastikan file 04_Merged_labeled_transaction.csv ada di streamlit/data/impulsive/")
+
+    # RQ2
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown('<div class="section-header">RQ2 — Waktu &amp; Kategori Transaksi Impulsif</div>', unsafe_allow_html=True)
+    if df_imp is not None and "label" in df_imp.columns:
+        df_i = df_imp.copy()
+        df_i["is_imp_bin"] = (df_i["label"]=="IMPULSIF").astype(int)
+        col_l,col_r = st.columns(2, gap="large")
+        cat_rate=ts_rate=None
+        with col_l:
+            if "category" in df_i.columns:
+                cat_rate = (df_i.groupby("category")
+                    .agg(count=("is_imp_bin","count"),imp_rate=("is_imp_bin","mean"))
+                    .reset_index().sort_values("imp_rate",ascending=False))
+                fig,ax = plt.subplots(figsize=(7,4.5))
+                bars = ax.barh(cat_rate["category"], cat_rate["imp_rate"]*100,
+                    color=[FG_RED if r>0.15 else FG_WARN if r>0.05 else FG_MUTED for r in cat_rate["imp_rate"]],
+                    height=0.6, alpha=0.9)
+                for bar,v in zip(bars,cat_rate["imp_rate"]):
+                    ax.text(v*100+0.3, bar.get_y()+bar.get_height()/2,
+                        f"{v*100:.1f}%", va="center", fontsize=9, color="#FFFFFF", fontweight="bold")
+                ax.set_title("Impulsive Rate per Kategori", color="#FFFFFF")
+                ax.set_xlabel("Impulsive Rate (%)"); ax.invert_yaxis()
+                plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+        with col_r:
+            if "time_segment" in df_i.columns:
+                ts_rate = (df_i.groupby("time_segment")
+                    .agg(count=("is_imp_bin","count"),imp_rate=("is_imp_bin","mean"))
+                    .reset_index().sort_values("imp_rate",ascending=False))
+                fig,ax = plt.subplots(figsize=(7,4.5))
+                bars = ax.bar(ts_rate["time_segment"], ts_rate["imp_rate"]*100,
+                    color=[FG_RED if r>0.15 else FG_WARN if r>0.05 else FG_MUTED for r in ts_rate["imp_rate"]],
+                    alpha=0.9)
+                for bar,v in zip(bars,ts_rate["imp_rate"]):
+                    ax.text(bar.get_x()+bar.get_width()/2, bar.get_height()+0.3,
+                        f"{v*100:.1f}%", ha="center", fontsize=9, color="#FFFFFF", fontweight="bold")
+                ax.set_title("Impulsive Rate per Time Segment", color="#FFFFFF")
+                ax.set_ylabel("Impulsive Rate (%)")
+                plt.xticks(rotation=30,ha="right",fontsize=9)
+                plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+
+        top_cat      = cat_rate.iloc[0]["category"]    if cat_rate is not None else "N/A"
+        top_ts       = ts_rate.iloc[0]["time_segment"] if ts_rate  is not None else "N/A"
+        top_cat_rate = cat_rate.iloc[0]["imp_rate"]*100 if cat_rate is not None else 0
+        top_ts_rate  = ts_rate.iloc[0]["imp_rate"]*100  if ts_rate  is not None else 0
+        wknd_txt=""
+        if "is_weekend" in df_i.columns:
+            wr = df_i.groupby("is_weekend")["is_imp_bin"].mean()
+            if 1 in wr.index and 0 in wr.index:
+                wknd_txt=f"Transaksi akhir pekan memiliki impulsive rate {wr[1]*100:.1f}% vs {wr[0]*100:.1f}% di hari kerja."
+        st.markdown(f"""
+        <div class="rq-card">
+            <div class="rq-num">Research Question 2</div>
+            <div class="rq-q">Pada waktu dan kategori apa transaksi impulsif paling sering terjadi?</div>
+            <div class="rq-a">
+                Kategori paling impulsif: <span class="rq-highlight">{top_cat} ({top_cat_rate:.1f}%)</span>.
+                Segmen waktu paling impulsif: <span class="rq-highlight">{top_ts} ({top_ts_rate:.1f}%)</span>.
+                {wknd_txt}
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+    # RQ3
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown('<div class="section-header">RQ3 — A/B Testing: Efektivitas AI Warning</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="rq-card">
+        <div class="rq-num">Research Question 3</div>
+        <div class="rq-q">Apakah sistem peringatan AI dapat mengurangi over-budget?</div>
+        <div class="rq-a">
+            <strong style="color:#E8EDE9">Income Predictor A/B Testing (Notebook 10):</strong><br>
+            3.000 user sintetis (Control: 1.502, Treatment: 1.498).
+            Mean budget error turun dari <strong style="color:#E8EDE9">Rp 47rb</strong> menjadi
+            <strong style="color:#00C471">Rp 14rb</strong> (reduksi -70.14%).
+            Mann-Whitney U p-value = 0.000000. Cohen's d = -1.2188 (efek besar).<br><br>
+            <strong style="color:#E8EDE9">Impulsive Detector A/B Testing:</strong>
+            Belum tersedia dalam file dashboard ini.
+        </div>
+    </div>""", unsafe_allow_html=True)
+
+    # RQ4
+    st.markdown("<hr>", unsafe_allow_html=True)
     st.markdown(
-        f'<div class="brand-header"><h1>Data Tidak Ditemukan</h1>'
-        f'<p class="subtitle">Dashboard mencari <code>data/processed/income_clean.csv</code>.</p>'
-        f'</div>'
-        f'<div class="section-header"><h3>Cara Memperbaiki</h3>'
-        f'<p>Pastikan struktur folder seperti berikut:</p></div>'
-        f'<div class="section-body">'
-        f'<pre style="background:{bg};padding:16px;border-radius:8px;'
-        f'font-size:12px;color:{text};">'
-        f'fingo-income-analysis/\n'
-        f'&#x251C;&#x2500;&#x2500; data/\n'
-        f'&#x2502;   &#x2514;&#x2500;&#x2500; processed/\n'
-        f'&#x2502;       &#x251C;&#x2500;&#x2500; income_clean.csv\n'
-        f'&#x2502;       &#x2514;&#x2500;&#x2500; kaggle_calibration.csv\n'
-        f'&#x251C;&#x2500;&#x2500; data/synthetic/\n'
-        f'&#x2502;   &#x2514;&#x2500;&#x2500; synthetic_params.json\n'
-        f'&#x2514;&#x2500;&#x2500; streamlit/\n'
-        f'    &#x2514;&#x2500;&#x2500; app.py</pre>'
-        f'<p>Jalankan: <code>streamlit run app.py</code></p>'
-        f'</div>',
-        unsafe_allow_html=True,
+        '<div class="section-header">RQ4 — Akurasi Model Income Predictor Final</div>',
+        unsafe_allow_html=True
     )
 
+    bundle = load_income_bundle()
 
-# =============================================================================
-# MAIN
-# =============================================================================
+    mae_val = None
+    rmse_val = None
+    mae_norm_val = None
+    rmse_norm_val = None
+    r2_val = None
+    acc_val = None
+    f1_val = None
+    tol_5 = None
 
-def main() -> None:
-    inject_css()
-    df, params, calib = load_dataset()
+    local_note = ""
 
-    if df is None or df.empty:
-        render_data_missing()
-        return
+    if bundle is not None:
+        income_min = bundle.get("income_min", None)
+        income_max = bundle.get("income_max", None)
 
-    render_header(df, params)
-    render_methodology_expander(params)
+        range_text = ""
+        if income_min is not None and income_max is not None:
+            range_text = (
+                f" | Training range: {fmt_idr_full(float(income_min))} - "
+                f"{fmt_idr_full(float(income_max))}"
+            )
 
-    filters     = render_sidebar(df)
-    df_filtered = filter_df(df, filters)
+        local_note = (
+            f"Model: {bundle.get('final_reg_name', 'N/A')}"
+            f"{range_text}"
+        )
 
-    tabs = st.tabs([
-        "Ringkasan",
-        "Penghasilan per Pekerjaan",
-        "Pola Waktu",
-        "Stabilitas",
-        "Kualitas Data",
-        "Kesimpulan",
-    ])
+        # Prioritas utama: actual metrics dari fingo_deploy.pkl terbaru
+        mae_val = bundle.get("final_reg_test_mae_idr", None)
+        rmse_val = bundle.get("final_reg_test_rmse_idr", None)
+
+        mae_norm_val = bundle.get("final_reg_test_mae_norm", None)
+        rmse_norm_val = bundle.get("final_reg_test_rmse_norm", None)
+
+        r2_val = bundle.get("final_reg_test_r2", None)
+        acc_val = bundle.get("final_cls_test_accuracy", None)
+        f1_val = bundle.get("final_cls_test_macro_f1", None)
+        tol_5 = bundle.get("tolerance_acc_5pct", None)
+
+    # Fallback jika PKL belum punya actual metrics
+    if mae_val is None and df_pred is not None and len(df_pred) > 0:
+        if "absolute_error" in df_pred.columns:
+            mae_val = df_pred["absolute_error"].mean()
+
+        if "absolute_error_norm" in df_pred.columns:
+            mae_norm_val = df_pred["absolute_error_norm"].mean()
+
+        if "predicted_income_norm" in df_pred.columns and "actual_income_norm" in df_pred.columns:
+            resid_norm = df_pred["actual_income_norm"] - df_pred["predicted_income_norm"]
+            rmse_norm_val = float(np.sqrt((resid_norm ** 2).mean()))
+
+        if "direction_correct" in df_pred.columns:
+            acc_val = df_pred["direction_correct"].mean()
+
+        if "next_week_income" in df_pred.columns and "predicted_next_week_income" in df_pred.columns:
+            resid = df_pred["next_week_income"] - df_pred["predicted_next_week_income"]
+            rmse_val = float(np.sqrt((resid ** 2).mean()))
+            ss_res = (resid ** 2).sum()
+            ss_tot = ((df_pred["next_week_income"] - df_pred["next_week_income"].mean()) ** 2).sum()
+            r2_val = 1 - ss_res / ss_tot if ss_tot > 0 else None
+
+    st.markdown(f"""
+    <div class="panel" style="margin-bottom:.5rem">
+        <p style="color:var(--fg-warn);font-size:.82rem">
+        Project Plan awal: LSTM TensorFlow. Implementasi final:
+        <strong style="color:#E8EDE9">GradientBoosting / Ensemble (fingo_deploy.pkl)</strong>
+        via API <strong style="color:#E8EDE9">https://mes1205-fingo.hf.space/predict/income</strong>.
+        {f'<br>{local_note}' if local_note else ''}
+        </p>
+    </div>""", unsafe_allow_html=True)
+
+    if mae_norm_val is not None or mae_val is not None:
+        mae_norm_display = f"{mae_norm_val:.4f}" if mae_norm_val is not None else "N/A"
+        rmse_norm_display = f"{rmse_norm_val:.4f}" if rmse_norm_val is not None else "N/A"
+        r2_display = f"{r2_val:.4f}" if r2_val is not None else "N/A"
+        acc_display = f"{acc_val * 100:.2f}%" if acc_val is not None else "N/A"
+        f1_display = f"{f1_val:.4f}" if f1_val is not None else "N/A"
+
+        mae_idr_display = fmt_idr_full(mae_val) if mae_val is not None else ""
+        rmse_idr_display = fmt_idr_full(rmse_val) if rmse_val is not None else ""
+
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            with st.container(border=True):
+                st.caption("MAE NORMALIZED")
+                st.markdown(f"### {mae_norm_display}")
+                st.caption(mae_idr_display)
+
+        with c2:
+            with st.container(border=True):
+                st.caption("RMSE NORMALIZED")
+                st.markdown(f"### {rmse_norm_display}")
+                st.caption(rmse_idr_display)
+
+        with c3:
+            with st.container(border=True):
+                st.caption("R2 SCORE")
+                st.markdown(f"### {r2_display}")
+                st.caption("Regression fit")
+
+        c4, c5 = st.columns(2)
+
+        with c4:
+            with st.container(border=True):
+                st.caption("DIRECTION ACCURACY")
+                st.markdown(f"### {acc_display}")
+                st.caption("Trend classification")
+
+        with c5:
+            with st.container(border=True):
+                st.caption("MACRO F1")
+                st.markdown(f"### {f1_display}")
+                st.caption("Class balance score")
+
+    else:
+        no_data("Metrik final belum tersedia. Pastikan fingo_deploy.pkl terbaru sudah disalin ke streamlit/models/.")
+        
+    st.markdown(f"""
+    <div class="rq-card">
+        <div class="rq-num">Research Question 4</div>
+        <div class="rq-q">Seberapa akurat model final Income Predictor?</div>
+        <div class="rq-a">
+            Model final menunjukkan
+                <span class="rq-highlight">MAE normalized {f"{mae_norm_val:.4f}" if mae_norm_val is not None else "N/A"}</span>
+                ({fmt_idr_full(mae_val) if mae_val is not None else "N/A"}),
+                <span class="rq-highlight">RMSE normalized {f"{rmse_norm_val:.4f}" if rmse_norm_val is not None else "N/A"}</span>
+                ({fmt_idr_full(rmse_val) if rmse_val is not None else "N/A"}),
+                <span class="rq-highlight">R2 {f"{r2_val:.4f}" if r2_val is not None else "N/A"}</span>,
+                <span class="rq-highlight">Direction Accuracy {f"{acc_val * 100:.2f}%" if acc_val is not None else "N/A"}</span>,
+                dan <span class="rq-highlight">Macro F1 {f"{f1_val:.4f}" if f1_val is not None else "N/A"}</span>.
+                {f"Tolerance accuracy &lt;5% = {tol_5:.2f}%." if tol_5 is not None else ""}
+        </div>
+    </div>""", unsafe_allow_html=True)
+
+    # RQ5
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown('<div class="section-header">RQ5 — Fitur Terpenting Klasifikasi Impulsif</div>', unsafe_allow_html=True)
+    if clf_imp is not None:
+        try:
+            fn   = clf_imp.named_steps["preprocessor"].get_feature_names_out()
+            imps = clf_imp.named_steps["classifier"].feature_importances_
+            imp_df = pd.DataFrame({"feature":fn,"importance":imps})
+            def _orig(f):
+                if "__" in f:
+                    _,rest = f.split("__",1)
+                    for kc in IMP_MODEL_FEATURES:
+                        if rest==kc or rest.startswith(kc+"_"): return kc
+                    return rest
+                return f
+            imp_df["original"] = imp_df["feature"].apply(_orig)
+            agg = imp_df.groupby("original")["importance"].sum().sort_values(ascending=False).head(10)
+
+            col_l2,col_r2 = st.columns(2, gap="large")
+            with col_l2:
+                fig,ax = plt.subplots(figsize=(7,5))
+                clrs = [FG if i==0 else FG_BLUE if i<3 else FG_MUTED for i in range(len(agg))]
+                ax.barh(agg.index[::-1], agg.values[::-1]*100, color=clrs[::-1], height=0.6, alpha=0.9)
+                for bar,v in zip(ax.patches, agg.values[::-1]):
+                    ax.text(v*100+0.3, bar.get_y()+bar.get_height()/2,
+                        f"{v*100:.1f}%", va="center", fontsize=9, color="#FFFFFF", fontweight="bold")
+                ax.set_title("Top 10 Feature Importance — Impulsive Classifier", color="#FFFFFF")
+                ax.set_xlabel("Importance (%)")
+                plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+            with col_r2:
+                t1,t2,t3 = agg.index[0],agg.index[1],agg.index[2]
+                p1,p2,p3 = agg.values[0]*100,agg.values[1]*100,agg.values[2]*100
+                st.markdown(f"""
+                <div class="rq-card">
+                    <div class="rq-num">Research Question 5</div>
+                    <div class="rq-q">Fitur apa yang paling berpengaruh dalam klasifikasi transaksi impulsif?</div>
+                    <div class="rq-a">
+                        Berdasarkan RandomForestClassifier (fingo_label_classifier.joblib):<br><br>
+                        1. <span class="rq-highlight">{t1}</span> ({p1:.1f}%)<br>
+                        2. <span class="rq-highlight">{t2}</span> ({p2:.1f}%)<br>
+                        3. <span class="rq-highlight">{t3}</span> ({p3:.1f}%)<br><br>
+                        Fitur berbasis sinyal impulsif mendominasi karena merangkum faktor waktu, kategori, dan nominal.
+                    </div>
+                </div>""", unsafe_allow_html=True)
+        except Exception as e:
+            no_data(f"Gagal memuat feature importance: {e}")
+    else:
+        no_data("Model Impulsive Detector tidak ditemukan di streamlit/models/")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MODULE 2 — INCOME PREDICTOR
+# ══════════════════════════════════════════════════════════════════════════════
+elif module == "Income Predictor":
+    tabs = st.tabs(["Overview Pipeline","Evaluasi Model","Visualisasi",
+                    "Coba Prediksi","A/B Testing","Fingo Assistant"])
 
     with tabs[0]:
-        render_overview(df_filtered, df, params)
+        st.markdown("""
+        <div class="page-header">
+            <h1>Income Predictor</h1>
+            <p>Sistem prediksi pendapatan mingguan berbasis AI untuk gig worker Indonesia</p>
+        </div>""", unsafe_allow_html=True)
+        df_sy = load_synthetic(); df_s = load_survey()
+        n_resp  = len(df_s) if df_s is not None else 0
+        n_users = df_sy["synthetic_user_id"].nunique() if df_sy is not None and "synthetic_user_id" in df_sy.columns else 0
+        n_rows  = len(df_sy) if df_sy is not None else 0
+        c1,c2,c3,c4 = st.columns(4)
+        c1.metric("Responden Survey", f"{n_resp:,}")
+        c2.metric("Synthetic Users",  f"{n_users:,}")
+        c3.metric("Total Data Rows",  f"{n_rows:,}")
+        c4.metric("Minggu per User",  "52")
+        st.markdown("<hr>", unsafe_allow_html=True)
+        col_l,col_r = st.columns(2, gap="large")
+        with col_l:
+            st.markdown("""
+            <div class="panel">
+                <h3>Apa itu Income Predictor?</h3>
+                <p>Memperkirakan pendapatan <strong style="color:#E8EDE9">4 minggu ke depan</strong>
+                berdasarkan riwayat <strong style="color:#E8EDE9">12 minggu terakhir</strong>.
+                Output digunakan sebagai dasar Budget Planner 50/30/20.<br><br>
+                <strong style="color:var(--fg-warn)">Model:</strong> GradientBoosting (fingo_deploy.pkl)
+                via API <code>https://mes1205-fingo.hf.space/predict/income</code>.<br><br>
+                <strong style="color:var(--fg-warn)">Catatan:</strong>
+                Project Plan awal: LSTM TensorFlow. Implementasi final: GradientBoosting dengan 12 minggu input.</p>
+            </div>""", unsafe_allow_html=True)
+        with col_r:
+            st.markdown('<div class="section-header">Pipeline Data Science (10 Notebook)</div>', unsafe_allow_html=True)
+            for num,name,out in [
+                ("01","Data Preparation","survey_clean.csv"),
+                ("02","Temporal Mapping","survey_temporal_mapped.csv"),
+                ("03","EDA Survey","charts + reports"),
+                ("04","Synthetic Data 52w","3.000 users x 52 minggu"),
+                ("05","Feature Engineering","feature_columns.json"),
+                ("06","Model Dataset Split","train/val/test + scalers"),
+                ("07","Bias Validation","bias_validation_report.md"),
+                ("08","Dokumentasi","data_dictionary.csv"),
+                ("09","Model Training","GradientBoosting + metrics"),
+                ("10","A/B Testing","ab_testing_report.md"),
+            ]:
+                st.markdown(f"""
+                <div style="display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start;">
+                    <div style="flex-shrink:0;width:28px;height:28px;background:var(--border);border-radius:6px;
+                        display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:{FG}">{num}</div>
+                    <div>
+                        <div style="font-size:.88rem;font-weight:600;color:var(--text)">{name}</div>
+                        <div style="font-size:.78rem;color:var(--fg-muted);margin-top:2px;font-family:monospace">{out}</div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+
     with tabs[1]:
-        render_distribution(df_filtered)
+        st.markdown("""
+        <div class="page-header">
+            <h1>Evaluasi Model</h1>
+            <p>Performa model Income Predictor pada test set</p>
+        </div>""", unsafe_allow_html=True)
+        
+        bundle = load_income_bundle()
+        df_pred2 = load_predictions_test()
+        n_tr = len(df_pred2) if df_pred2 is not None else 0
+
+        mae_t = None
+        rmse_t = None
+        r2_t = None
+        acc_t = None
+        f1_t = None
+        tol_2 = None
+        tol_5 = None
+        tol_10 = None
+
+        if bundle is not None:
+            st.markdown(
+                '<div class="section-header">Model Bundle Info (fingo_deploy.pkl)</div>',
+                unsafe_allow_html=True
+            )
+
+            regressor_name = bundle.get("final_reg_name", "N/A")
+            classifier_name = bundle.get("final_cls_name", "N/A")
+            income_min = bundle.get("income_min", None)
+            income_max = bundle.get("income_max", None)
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown(
+                    f"""
+                    <div class="model-info-card">
+                        <div class="model-info-label">Regressor</div>
+                        <div class="model-info-value">{regressor_name}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            with col2:
+                st.markdown(
+                    f"""
+                    <div class="model-info-card">
+                        <div class="model-info-label">Classifier</div>
+                        <div class="model-info-value">{classifier_name}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            st.markdown(
+                '<div class="section-header">Model Training Range dari PKL</div>',
+                unsafe_allow_html=True
+            )
+
+            r1, r2 = st.columns(2)
+            r1.metric(
+                "Income Minimum",
+                fmt_idr_full(float(income_min)) if income_min is not None else "N/A"
+            )
+            r2.metric(
+                "Income Maximum",
+                fmt_idr_full(float(income_max)) if income_max is not None else "N/A"
+            )
+
+            # Prioritas utama: actual metrics dari fingo_deploy.pkl terbaru
+            mae_t = bundle.get("final_reg_test_mae_idr")
+            rmse_t = bundle.get("final_reg_test_rmse_idr")
+            r2_t = bundle.get("final_reg_test_r2")
+            acc_t = bundle.get("final_cls_test_accuracy")
+            f1_t = bundle.get("final_cls_test_macro_f1")
+            tol_2 = bundle.get("tolerance_acc_2pct")
+            tol_5 = bundle.get("tolerance_acc_5pct")
+            tol_10 = bundle.get("tolerance_acc_10pct")
+
+        # Fallback kalau PKL belum punya actual metrics
+        if mae_t is None and df_pred2 is not None and len(df_pred2) > 0:
+            if "absolute_error" in df_pred2.columns:
+                mae_t = df_pred2["absolute_error"].mean()
+
+            if "direction_correct" in df_pred2.columns:
+                acc_t = df_pred2["direction_correct"].mean()
+
+            if "next_week_income" in df_pred2.columns and "predicted_next_week_income" in df_pred2.columns:
+                resid = df_pred2["next_week_income"] - df_pred2["predicted_next_week_income"]
+                rmse_t = float(np.sqrt((resid ** 2).mean()))
+
+                ss_res = (resid ** 2).sum()
+                ss_tot = ((df_pred2["next_week_income"] - df_pred2["next_week_income"].mean()) ** 2).sum()
+                r2_t = 1 - ss_res / ss_tot if ss_tot > 0 else None
+
+        if mae_t is not None:
+            st.markdown(
+                f'<div class="section-header">Metrik Regresi — Test Set ({n_tr:,} baris)</div>',
+                unsafe_allow_html=True
+            )
+
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("MAE", fmt_idr_full(mae_t))
+            c2.metric("RMSE", fmt_idr_full(rmse_t) if rmse_t is not None else "N/A")
+            c3.metric("R2", f"{r2_t:.4f}" if r2_t is not None else "N/A")
+            c4.metric("Tolerance <5%", f"{tol_5:.2f}%" if tol_5 is not None else "N/A")
+
+            st.markdown(
+                '<div class="section-header">Metrik Klasifikasi Arah — Test Set</div>',
+                unsafe_allow_html=True
+            )
+
+            k1, k2 = st.columns(2)
+            k1.metric("Direction Accuracy", f"{acc_t * 100:.2f}%" if acc_t is not None else "N/A")
+            k2.metric("Macro F1", f"{f1_t:.4f}" if f1_t is not None else "N/A")
+
+            st.markdown(
+                '<div class="section-header">Tolerance Accuracy</div>',
+                unsafe_allow_html=True
+            )
+
+            t1, t2, t3 = st.columns(3)
+            t1.metric("Tolerance <2%", f"{tol_2:.2f}%" if tol_2 is not None else "N/A")
+            t2.metric("Tolerance <5%", f"{tol_5:.2f}%" if tol_5 is not None else "N/A")
+            t3.metric("Tolerance <10%", f"{tol_10:.2f}%" if tol_10 is not None else "N/A")
+        else:
+            no_data("Actual metrics tidak ditemukan di fingo_deploy.pkl atau predictions_test.csv.")
+        df_reg_m = load_regression_metrics()
+        df_cls_m = load_classification_metrics()
+        if df_reg_m is not None:
+            st.markdown("<hr>", unsafe_allow_html=True)
+            st.markdown('<div class="section-header">Perbandingan Model Regresi (Validation Set)</div>', unsafe_allow_html=True)
+            disp = df_reg_m.copy()
+            for col in ["val_mae","val_rmse"]:
+                if col in disp.columns: disp[col] = disp[col].apply(fmt_idr_full)
+            if "val_mape" in disp.columns: disp["val_mape"] = disp["val_mape"].apply(lambda v:f"{v:.2f}%")
+            if "val_r2"   in disp.columns: disp["val_r2"]   = disp["val_r2"].apply(lambda v:f"{v:.4f}")
+            disp.columns = [c.replace("val_","").upper() for c in disp.columns]
+            st.dataframe(disp, use_container_width=True, hide_index=True)
+        if df_cls_m is not None:
+            st.markdown('<div class="section-header">Perbandingan Model Klasifikasi (Validation Set)</div>', unsafe_allow_html=True)
+            disp2 = df_cls_m.copy()
+            for col in ["val_accuracy","val_macro_precision","val_macro_recall","val_macro_f1"]:
+                if col in disp2.columns: disp2[col] = disp2[col].apply(lambda v:f"{v:.4f}")
+            disp2.columns = [c.replace("val_","").upper() for c in disp2.columns]
+            st.dataframe(disp2, use_container_width=True, hide_index=True)
+
     with tabs[2]:
-        render_temporal(df_filtered)
+        st.markdown("""
+        <div class="page-header">
+            <h1>Visualisasi</h1>
+            <p>Chart final dari hasil evaluasi model Income Predictor terbaru</p>
+        </div>""", unsafe_allow_html=True)
+
+        # st.markdown(
+        #     """
+        #     <div class="panel">
+        #         <p>
+        #             Visualisasi pada halaman ini membaca file PNG final dari folder
+        #             <strong style="color:#E8EDE9">outputs/charts</strong>.
+        #             Pastikan chart sudah diekspor ulang dari notebook terbaru agar hasilnya konsisten
+        #             dengan <strong style="color:#E8EDE9">fingo_deploy.pkl</strong>.
+        #         </p>
+        #     </div>
+        #     """,
+        #     unsafe_allow_html=True
+        # )
+
+        chart_items = [
+            (
+                "income_final_evaluation_dashboard.png",
+                "Final Evaluation Dashboard"
+            ),
+            (
+                "income_actual_vs_predicted.png",
+                "Actual vs Predicted Income"
+            ),
+            (
+                "income_error_distribution.png",
+                "Income Prediction Error Distribution"
+            ),
+            (
+                "income_normalized_error_distribution.png",
+                "Normalized Error Distribution"
+            ),
+            (
+                "income_regression_model_comparison.png",
+                "Regression Model Comparison"
+            ),
+            (
+                "income_classification_model_comparison.png",
+                "Classification Model Comparison"
+            ),
+            (
+                "income_direction_confusion_matrix.png",
+                "Direction Classification Confusion Matrix"
+            ),
+            (
+                "income_tolerance_accuracy.png",
+                "Tolerance Accuracy"
+            ),
+            (
+                "income_error_by_direction.png",
+                "Prediction Error by Direction"
+            ),
+            (
+                "income_prediction_timeline_sample.png",
+                "Actual vs Predicted Timeline Sample"
+            ),
+        ]
+
+        found_charts = []
+
+        for filename, caption in chart_items:
+            chart_path = INCOME_CHARTS_DIR / filename
+
+            if chart_path.exists():
+                found_charts.append(filename)
+
+                st.markdown(
+                    f'<div class="section-header">{caption}</div>',
+                    unsafe_allow_html=True
+                )
+
+                st.image(
+                    str(chart_path),
+                    caption=caption,
+                    use_container_width=True
+                )
+
+        if not found_charts:
+            no_data(
+                "Belum ada chart final di outputs/charts. "
+                "Jalankan cell export PNG di notebook terbaru, lalu pastikan file PNG masuk ke folder outputs/charts."
+            )
+        else:
+            with st.expander("Daftar chart yang berhasil dimuat"):
+                for fn in found_charts:
+                    st.write(fn)
+
     with tabs[3]:
-        render_volatility(df_filtered)
+        st.markdown("""
+        <div class="page-header">
+            <h1>Coba Prediksi Pendapatan</h1>
+            <p>Masukkan riwayat pendapatan 12 minggu terakhir untuk mendapatkan estimasi 4 minggu ke depan</p>
+        </div>""", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="panel" style="margin-bottom:1.5rem">
+            <p>Model memerlukan riwayat <strong style="color:#E8EDE9">12 minggu terakhir</strong>.
+            W1 = paling lama, W12 = minggu lalu.</p>
+        </div>""", unsafe_allow_html=True)
+
+        with st.form("pred_income_form"):
+            st.markdown("**Pendapatan 12 minggu terakhir (Rupiah)**")
+            r1c1,r1c2,r1c3,r1c4 = st.columns(4)
+            w1  = r1c1.number_input("W1 (12 minggu lalu)", 0,50_000_000,780_000,50_000)
+            w2  = r1c2.number_input("W2 (11 minggu lalu)", 0,50_000_000,800_000,50_000)
+            w3  = r1c3.number_input("W3 (10 minggu lalu)", 0,50_000_000,760_000,50_000)
+            w4  = r1c4.number_input("W4 (9 minggu lalu)",  0,50_000_000,820_000,50_000)
+            r2c1,r2c2,r2c3,r2c4 = st.columns(4)
+            w5  = r2c1.number_input("W5 (8 minggu lalu)",  0,50_000_000,790_000,50_000)
+            w6  = r2c2.number_input("W6 (7 minggu lalu)",  0,50_000_000,810_000,50_000)
+            w7  = r2c3.number_input("W7 (6 minggu lalu)",  0,50_000_000,770_000,50_000)
+            w8  = r2c4.number_input("W8 (5 minggu lalu)",  0,50_000_000,800_000,50_000)
+            r3c1,r3c2,r3c3,r3c4 = st.columns(4)
+            w9  = r3c1.number_input("W9 (4 minggu lalu)",  0,50_000_000,830_000,50_000)
+            w10 = r3c2.number_input("W10 (3 minggu lalu)", 0,50_000_000,760_000,50_000)
+            w11 = r3c3.number_input("W11 (2 minggu lalu)", 0,50_000_000,800_000,50_000)
+            w12 = r3c4.number_input("W12 (minggu lalu)",   0,50_000_000,810_000,50_000)
+            st.markdown("<div style='margin-top:.8rem'><strong>Konteks Pekerjaan</strong></div>", unsafe_allow_html=True)
+            ctx1,ctx2,ctx3 = st.columns(3)
+            gig_in  = ctx1.selectbox("Jenis Pekerjaan", GIG_TYPES, format_func=lambda x:GIG_LABELS.get(x,x))
+            usia_in = ctx2.number_input("Usia", 15,60,25,1)
+            hari_in = ctx3.number_input("Hari kerja / minggu", 1,7,5,1)
+            jam_in  = st.number_input("Jam kerja / hari", 1,24,8,1)
+            submitted = st.form_submit_button("Hitung Prediksi", type="primary", use_container_width=True)
+
+        if submitted:
+            income_history = [w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12]
+            h_arr = np.array(income_history, dtype=float)
+            avg_last4 = float(np.mean(h_arr[-4:]))
+
+            with st.spinner("Menghubungi API..."):
+                api_result, api_error = call_income_api(income_history,usia_in,hari_in,jam_in,gig_in)
+
+            if api_result is not None:
+                pred_next  = float(api_result.get("prediction_next_week", avg_last4))
+                pred_4w    = api_result.get("prediction_4_weeks_ahead", [pred_next]*4)
+                total_proj = float(api_result.get("total_projected_income", sum(pred_4w)))
+                dir_pred   = api_result.get("income_direction","Stable")
+                dir_proba  = api_result.get("direction_proba",{})
+                avg_4w_api = float(api_result.get("avg_income_last_4w", avg_last4))
+                src_lbl    = "API — mes1205-fingo.hf.space"
+            else:
+                st.warning(f"API tidak tersedia: {api_error}. Mencoba model lokal...")
+                pred_next, dir_pred = predict_income_local(income_history,gig_in,usia_in,hari_in,jam_in,5,2)
+                if pred_next is None:
+                    pred_next=avg_last4; dir_pred="Stable"
+                    st.info("Model lokal tidak tersedia. Menggunakan rata-rata 4 minggu.")
+                pred_4w=[pred_next]*4; total_proj=pred_next*4; dir_proba={}
+                avg_4w_api=avg_last4; src_lbl="Local model — fingo_deploy.pkl"
+
+            delta = pred_next - avg_4w_api
+            dir_label = {"Up":"Naik","Stable":"Stabil","Down":"Turun"}.get(dir_pred,"Stabil")
+            badge_dir = "badge-green" if dir_pred=="Up" else ("badge-red" if dir_pred=="Down" else "badge-yellow")
+
+            st.markdown(f"""
+            <div class="result-card">
+                <div class="result-label">Estimasi Pendapatan Minggu Depan ({src_lbl})</div>
+                <div class="result-value">{fmt_idr_full(pred_next)}</div>
+                <div class="result-sub">
+                    {'+' if delta>=0 else ''}{fmt_idr(delta)} vs rata-rata 4 minggu terakhir
+                    &nbsp;&nbsp;<span class="badge {badge_dir}">Tren: {dir_label}</span>
+                </div>
+            </div>""", unsafe_allow_html=True)
+
+            c1,c2,c3 = st.columns(3)
+            c1.metric("Rata-rata 4 Minggu Terakhir", fmt_idr_full(avg_4w_api))
+            c2.metric("Total Proyeksi 4 Minggu",     fmt_idr_full(total_proj))
+            c3.metric("Arah Tren",                   dir_label)
+
+            if dir_proba:
+                st.markdown('<div class="section-header">Probabilitas Arah Tren</div>', unsafe_allow_html=True)
+                for dk,dcolor in [("Up",FG),("Stable",FG_WARN),("Down",FG_RED)]:
+                    pv = float(dir_proba.get(dk,0.0))
+                    st.markdown(f"""
+                    <div class="budget-bar-wrap">
+                        <div class="budget-bar-label">
+                            <span style="color:{dcolor};font-weight:600">{dk}</span>
+                            <span>{pv*100:.1f}%</span>
+                        </div>
+                        <div class="budget-bar-track">
+                            <div class="budget-bar-fill" style="width:{pv*100:.1f}%;background:{dcolor}"></div>
+                        </div>
+                    </div>""", unsafe_allow_html=True)
+
+            st.markdown('<div class="section-header">Histori 12 Minggu + Proyeksi 4 Minggu</div>', unsafe_allow_html=True)
+            fig,ax = plt.subplots(figsize=(12,4.5))
+            ax.plot(range(1,13),[v/1000 for v in income_history],"o-",
+                    color=FG_BLUE,linewidth=2.2,markersize=6,label="Histori 12 Minggu")
+            ax.plot([12]+list(range(13,17)),
+                    [income_history[-1]/1000]+[v/1000 for v in pred_4w],
+                    "o--",color=FG,linewidth=2.2,markersize=7,label="Proyeksi 4 Minggu",zorder=5)
+            ax.axvline(12.5,color=FG_MUTED,linestyle=":",linewidth=1,alpha=0.6)
+            ax.axhline(avg_4w_api/1000,color=FG_WARN,linestyle=":",alpha=0.6,
+                       label=f"Rata-rata 4w: {fmt_idr(avg_4w_api)}")
+            ax.set_title(f"Tren Pendapatan — {GIG_LABELS.get(gig_in,gig_in)}", color="#FFFFFF")
+            ax.set_xlabel("Minggu"); ax.set_ylabel("Pendapatan (ribu Rp)")
+            ax.set_xticks(range(1,17))
+            ax.set_xticklabels([f"W{i}" for i in range(1,13)]+["W+1","W+2","W+3","W+4"],
+                               rotation=45,ha="right",fontsize=8)
+            ax.legend(fontsize=8); plt.tight_layout(pad=0.8)
+            st.pyplot(fig, use_container_width=True); plt.close()
+
+            st.markdown("<hr>", unsafe_allow_html=True)
+            st.markdown('<div class="section-header">Saran Anggaran 50/30/20 — Berdasarkan Prediksi Minggu Depan</div>', unsafe_allow_html=True)
+            keb=pred_next*.50; tab=pred_next*.30; lain=pred_next*.20
+            bc1,bc2,bc3 = st.columns(3)
+            bc1.metric("Kebutuhan Pokok (50%)",      fmt_idr_full(keb))
+            bc2.metric("Tabungan / Investasi (30%)", fmt_idr_full(tab))
+            bc3.metric("Pengeluaran Lain (20%)",     fmt_idr_full(lain))
+            for lbl,amt,pct,col in [("Kebutuhan Pokok",keb,50,FG),
+                                     ("Tabungan / Investasi",tab,30,FG_BLUE),
+                                     ("Pengeluaran Lain",lain,20,FG_WARN)]:
+                st.markdown(f"""
+                <div class="budget-bar-wrap">
+                    <div class="budget-bar-label"><span>{lbl}</span><span>{fmt_idr_full(amt)} ({pct}%)</span></div>
+                    <div class="budget-bar-track">
+                        <div class="budget-bar-fill" style="width:{pct}%;background:{col}"></div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+
+            if dir_pred=="Down": st.warning("Pendapatan diprediksi turun. Kurangi pengeluaran tambahan dan prioritaskan tabungan darurat.")
+            elif dir_pred=="Up": st.success("Pendapatan diprediksi naik. Saat tepat untuk menambah alokasi tabungan atau investasi.")
+            else: st.info("Pendapatan diprediksi stabil. Pertahankan pola pengeluaran dan pastikan tabungan tetap konsisten.")
+
     with tabs[4]:
-        render_bias(df, calib, params)
+        st.markdown("""
+        <div class="page-header">
+            <h1>Hasil A/B Testing — Income Predictor</h1>
+            <p>Apakah Income Predictor terbukti membantu perencanaan anggaran yang lebih akurat?</p>
+        </div>""", unsafe_allow_html=True)
+
+        st.markdown("""
+        <div class="panel">
+            <h3>Metodologi Eksperimen (Notebook 10)</h3>
+            <p>
+            <strong style="color:#E8EDE9">Data:</strong> synthetic_52week_user_income.csv — 3.000 user x 52 minggu<br>
+            <strong style="color:#E8EDE9">Control (1.502):</strong> Budget manual berdasarkan rolling mean 4 minggu<br>
+            <strong style="color:#E8EDE9">Treatment (1.498):</strong> Budget adaptif dari Income Predictor AI<br>
+            <strong style="color:#E8EDE9">Metrik:</strong> mean_budget_error (selisih planned vs ideal budget)<br>
+            <strong style="color:#E8EDE9">Uji Statistik:</strong> Mann-Whitney U (one-tailed, alpha = 0.05)<br><br>
+            <span style="color:var(--fg-warn);font-size:.82rem">
+            Disclaimer: Seluruh hasil menggunakan data sintetis (proof-of-concept).
+            </span>
+            </p>
+        </div>""", unsafe_allow_html=True)
+
+        st.markdown('<div class="section-header">Ringkasan Hasil Eksperimen</div>', unsafe_allow_html=True)
+
+        ab1, ab2, ab3 = st.columns(3)
+
+        with ab1:
+            st.metric("N Control", "1,502 users")
+
+        with ab2:
+            st.metric("N Treatment", "1,498 users")
+
+        with ab3:
+            st.metric("Cohen d", "-1.2188", delta="Efek Besar")
+
+        ab4, ab5 = st.columns(2)
+
+        with ab4:
+            st.metric("Mean Error Control", "Rp 47,000")
+
+        with ab5:
+            st.metric("Mean Error Treatment", "Rp 14,000", delta="-70.14%")
+        
+        st.success("H0 ditolak — p-value = 0.000000 (< 0.05). Budget error turun 70.14%. Cohen d = -1.2188 (efek besar).")
+        for cn,cap in [
+            ("ab_income_predictor_distribution.png","Distribusi Budget Error: Control vs Treatment"),
+            ("ab_income_predictor_summary.png","Summary Hasil A/B Testing"),
+            ("ab_income_predictor_subgroup.png","Analisis Subgroup per Jenis Pekerjaan"),
+            ("ab_income_predictor_qq_plot.png","Q-Q Plot Uji Normalitas"),
+        ]:
+            p = INCOME_CHARTS_DIR/cn
+            if p.exists(): st.image(str(p), caption=cap, use_container_width=True)
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame([{
+            "Metrik": "Budget Error",
+            "Control": "Rp 47,000",
+            "Treatment": "Rp 14,000",
+            "Reduksi": "-70.14%",
+            "U-Stat": "288517",
+            "p-value": "0.000000",
+            "Cohen d": "-1.2188",
+            "Signifikan": "Ya"
+        }]), use_container_width=True, hide_index=True)
+        rp = INCOME_REPORTS_DIR/"ab_testing_income_predictor_budgeting_report.md"
+        if rp.exists():
+            with st.expander("Baca laporan lengkap A/B Testing"):
+                with open(rp,encoding="utf-8") as f: st.markdown(f.read())
+        
     with tabs[5]:
-        render_insights(df, params)
+        st.markdown("""
+        <div class="page-header">
+            <h1>Fingo Assistant</h1>
+            <p>Konsultasi keuangan personal berbasis AI — Gemini via mes1205-fingo.hf.space</p>
+        </div>""", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="panel" style="margin-bottom:1.5rem">
+            <p>Tulis pertanyaan keuangan. Isi konteks agar saran lebih personal.<br>
+            <code>POST https://mes1205-fingo.hf.space/chat</code><br>
+            <span style="color:var(--fg-warn);font-size:.82rem">
+            Endpoint membutuhkan Gemini API Key aktif di HuggingFace Space.
+            </span></p>
+        </div>""", unsafe_allow_html=True)
+        with st.form("chat_form"):
+            user_msg = st.text_area("Pertanyaan keuangan",
+                placeholder="Contoh: Gimana cara aku nabung dari pendapatan bulan ini?", height=100)
+            st.markdown("**Konteks Keuangan (opsional)**")
+            ch1,ch2,ch3,ch4 = st.columns(4)
+            ctx_inc  = ch1.number_input("Pendapatan (Rp)",  0,100_000_000,5_000_000,100_000)
+            ctx_exp  = ch2.number_input("Pengeluaran (Rp)", 0,100_000_000,3_500_000,100_000)
+            ctx_rem  = ch3.number_input("Sisa Budget (Rp)", 0,100_000_000,1_500_000,100_000)
+            ctx_imp  = ch4.number_input("Transaksi Impulsif Bulan Ini", 0,100,3,1)
+            chat_sub = st.form_submit_button("Kirim", type="primary", use_container_width=True)
+        if chat_sub and user_msg.strip():
+            with st.spinner("Menghubungi Fingo Assistant..."):
+                reply,err = call_chat_api(user_msg.strip(),ctx_inc,ctx_exp,ctx_rem,ctx_imp)
+            st.markdown(f'<div class="chat-bubble-user">{user_msg}</div>', unsafe_allow_html=True)
+            if reply: st.markdown(f'<div class="chat-bubble-ai">{reply}</div>', unsafe_allow_html=True)
+            else: st.error(f"Fingo Assistant tidak dapat merespons: {err}")
+        elif chat_sub: st.warning("Tulis pertanyaan terlebih dahulu.")
 
-    st.markdown("---")
-    st.markdown(
-        f'<div style="text-align:center;color:{PALETTE["text_muted"]};'
-        f'font-size:12px;padding:12px 0;">'
-        f'<strong>Fingo Income Analysis Dashboard</strong> &middot; CC26-PSU217 &middot; '
-        f'Coding Camp 2026 x DBS Foundation<br>Data Scientist 2: Clarisya Adeline'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
+# ══════════════════════════════════════════════════════════════════════════════
+# MODULE 3 — IMPULSIVE DETECTOR
+# ══════════════════════════════════════════════════════════════════════════════
+elif module == "Impulsive Detector":
+    tabs = st.tabs(["Overview Data","EDA","Performa Model","Feature Importance","Coba Deteksi"])
 
+    df_imp  = load_impulsive_data()
+    df_test = load_impulsive_test()
+    clf_imp = load_impulsive_model()
+    eval_bundle = load_impulsive_eval_bundle()
+    official_eval = load_impulsive_official_eval_result()
+    official_pred = load_impulsive_official_predictions()
+    
+    with tabs[0]:
+        st.markdown("""
+        <div class="page-header">
+            <h1>Impulsive Detector</h1>
+            <p>Overview data final transaksi berlabel — 04_Merged_labeled_transaction.csv</p>
+        </div>""", unsafe_allow_html=True)
+        if df_imp is None:
+            no_data("Dataset tidak ditemukan. Pastikan file ada di streamlit/data/impulsive/")
+        else:
+            total = len(df_imp)
+            lvc   = df_imp["label"].value_counts() if "label" in df_imp.columns else pd.Series()
+            n_a,n_p,n_i = lvc.get("AMAN",0),lvc.get("PERTIMBANGAN",0),lvc.get("IMPULSIF",0)
+            c1,c2,c3,c4 = st.columns(4)
+            c1.metric("Total Transaksi", f"{total:,}")
+            c2.metric("AMAN",            f"{n_a:,}", delta=f"{n_a/total*100:.1f}%")
+            c3.metric("PERTIMBANGAN",    f"{n_p:,}", delta=f"{n_p/total*100:.1f}%")
+            c4.metric("IMPULSIF",        f"{n_i:,}", delta=f"{n_i/total*100:.1f}%")
 
-if __name__ == "__main__":
-    main()
+            col_l,col_r = st.columns(2, gap="large")
+            with col_l:
+                fig,ax = plt.subplots(figsize=(6,4))
+                bars = ax.bar(["AMAN","PERTIMBANGAN","IMPULSIF"],[n_a,n_p,n_i],
+                              color=[FG,FG_WARN,FG_RED],alpha=0.9)
+                for bar,v in zip(bars,[n_a,n_p,n_i]):
+                    ax.text(bar.get_x()+bar.get_width()/2, bar.get_height()+30,
+                        f"{v:,}\n{v/total*100:.1f}%", ha="center", fontsize=9,
+                        color="#FFFFFF", fontweight="bold")
+                ax.set_title("Distribusi Label Transaksi", color="#FFFFFF")
+                plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+            with col_r:
+                if "source" in df_imp.columns:
+                    sc = df_imp["source"].value_counts()
+                    fig,ax = plt.subplots(figsize=(6,4))
+                    ax.barh(sc.index, sc.values, color=FG_BLUE, height=0.65, alpha=0.85)
+                    for bar,v in zip(ax.patches, sc.values):
+                        ax.text(v+5, bar.get_y()+bar.get_height()/2,
+                            str(v), va="center", fontsize=9, color="#FFFFFF")
+                    ax.set_title("Jumlah Transaksi per Sumber", color="#FFFFFF")
+                    ax.invert_yaxis()
+                    plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+            if "category" in df_imp.columns:
+                cc = df_imp["category"].value_counts()
+                fig,ax = plt.subplots(figsize=(10,3.5))
+                bars = ax.bar(cc.index, cc.values,
+                    color=[FG_RED if c in HEDONIC_CATS else FG_BLUE for c in cc.index], alpha=0.9)
+                for bar,v in zip(bars,cc.values):
+                    ax.text(bar.get_x()+bar.get_width()/2, bar.get_height()+10,
+                        str(v), ha="center", fontsize=8, color="#FFFFFF", fontweight="bold")
+                ax.set_title("Jumlah Transaksi per Kategori (merah = hedonic)", color="#FFFFFF")
+                plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+
+    with tabs[1]:
+        st.markdown("""
+        <div class="page-header">
+            <h1>Exploratory Data Analysis</h1>
+            <p>Pola waktu, kategori, dan sinyal impulsif pada dataset transaksi</p>
+        </div>""", unsafe_allow_html=True)
+        if df_imp is None:
+            no_data("Dataset tidak ditemukan.")
+        else:
+            df_e = df_imp.copy()
+            df_e["is_imp_bin"] = (df_e["label"]=="IMPULSIF").astype(int)
+            col_l,col_r = st.columns(2, gap="large")
+            with col_l:
+                if "category" in df_e.columns:
+                    cat_r = (df_e.groupby("category")
+                        .agg(count=("is_imp_bin","count"),rate=("is_imp_bin","mean"))
+                        .reset_index().sort_values("rate",ascending=False))
+                    fig,axes = plt.subplots(1,2,figsize=(10,4))
+                    clrs = [FG_RED if r>0.15 else FG_WARN if r>0.05 else FG_MUTED for r in cat_r["rate"]]
+                    axes[0].barh(cat_r["category"],cat_r["count"],color=FG_BLUE,height=0.6,alpha=0.85)
+                    axes[0].set_title("Volume per Kategori",color="#FFFFFF"); axes[0].invert_yaxis()
+                    axes[1].barh(cat_r["category"],cat_r["rate"]*100,color=clrs,height=0.6,alpha=0.9)
+                    axes[1].set_title("Impulsive Rate per Kategori (%)",color="#FFFFFF"); axes[1].invert_yaxis()
+                    plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+                if "is_weekend" in df_e.columns:
+                    wr = df_e.groupby("is_weekend")["is_imp_bin"].mean()
+                    fig,ax = plt.subplots(figsize=(5,3.5))
+                    ax.bar(["Hari Kerja","Akhir Pekan"],
+                           [wr.get(0,0)*100,wr.get(1,0)*100],
+                           color=[FG_BLUE,FG_RED],alpha=0.9)
+                    ax.set_title("Impulsive Rate: Weekday vs Weekend",color="#FFFFFF"); ax.set_ylabel("Rate (%)")
+                    plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+            with col_r:
+                if "time_segment" in df_e.columns:
+                    ts_r = (df_e.groupby("time_segment")
+                        .agg(count=("is_imp_bin","count"),rate=("is_imp_bin","mean"))
+                        .reset_index().sort_values("rate",ascending=False))
+                    fig,ax = plt.subplots(figsize=(7,4))
+                    clrs=[FG_RED if r>0.15 else FG_WARN if r>0.05 else FG_MUTED for r in ts_r["rate"]]
+                    bars=ax.bar(ts_r["time_segment"],ts_r["rate"]*100,color=clrs,alpha=0.9)
+                    for bar,v in zip(bars,ts_r["rate"]):
+                        ax.text(bar.get_x()+bar.get_width()/2,bar.get_height()+0.3,
+                            f"{v*100:.1f}%",ha="center",fontsize=9,color="#FFFFFF",fontweight="bold")
+                    ax.set_title("Impulsive Rate per Time Segment",color="#FFFFFF"); ax.set_ylabel("Rate (%)")
+                    plt.xticks(rotation=30,ha="right",fontsize=9)
+                    plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+                if "hour" in df_e.columns:
+                    hr_r = df_e.groupby("hour")["is_imp_bin"].mean()
+                    fig,ax = plt.subplots(figsize=(7,4))
+                    ax.bar(hr_r.index, hr_r.values*100,
+                        color=[FG_RED if h>=22 or h<=4 else FG_WARN if h>=19 else FG_BLUE for h in hr_r.index],
+                        alpha=0.85)
+                    ax.set_title("Impulsive Rate per Jam",color="#FFFFFF")
+                    ax.set_xlabel("Jam"); ax.set_ylabel("Rate (%)"); ax.set_xticks(range(0,24,2))
+                    plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+            score_col = "impulsive_score" if "impulsive_score" in df_e.columns else \
+                        "fingo_impulse_signal" if "fingo_impulse_signal" in df_e.columns else None
+            if score_col:
+                st.markdown('<div class="section-header">Distribusi Impulsive Score per Label</div>', unsafe_allow_html=True)
+                fig,ax = plt.subplots(figsize=(10,4))
+                for lb,color in {"AMAN":FG,"PERTIMBANGAN":FG_WARN,"IMPULSIF":FG_RED}.items():
+                    sub = df_e[df_e["label"]==lb][score_col]
+                    if len(sub)>0: ax.hist(sub,bins=30,alpha=0.5,label=lb,color=color,density=True)
+                ax.set_title("Distribusi Impulsive Score per Label",color="#FFFFFF")
+                ax.set_xlabel("Impulsive Score"); ax.legend(fontsize=8)
+                plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+
+    with tabs[2]:
+        st.markdown("""
+        <div class="page-header">
+            <h1>Performa Model Impulsive Detector</h1>
+            <p>Official evaluation results dari AI-Fingo evaluation scripts</p>
+        </div>""", unsafe_allow_html=True)
+
+        if eval_bundle is not None:
+            official = eval_bundle["official_metrics"]
+
+            st.markdown('<div class="section-header">Official Evaluation Results</div>', unsafe_allow_html=True)
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric(
+                "Random Split",
+                f"{official['random_split_with_impulsive_score']['accuracy'] * 100:.3f}%",
+                "With impulsive_score"
+            )
+            c2.metric(
+                "Time-Based Holdout",
+                f"{official['time_based_holdout_with_score_features']['accuracy'] * 100:.3f}%",
+                "With score-derived features"
+            )
+            c3.metric(
+                "Rolling CV",
+                f"{official['rolling_cv_with_score_features']['average_accuracy'] * 100:.3f}%",
+                "Average 5 splits"
+            )
+
+            st.markdown('<div class="section-header">Ablation Results</div>', unsafe_allow_html=True)
+
+            a1, a2, a3 = st.columns(3)
+            a1.metric(
+                "Random Split Without Score",
+                f"{official['random_split_without_impulsive_score']['accuracy'] * 100:.3f}%"
+            )
+            a2.metric(
+                "Time Holdout Without Score",
+                f"{official['time_based_holdout_without_score_features']['accuracy'] * 100:.3f}%"
+            )
+            a3.metric(
+                "Rolling CV Without Score",
+                f"{official['rolling_cv_without_score_features']['average_accuracy'] * 100:.3f}%"
+            )
+
+            st.info(
+                "Angka di atas berasal dari official AI-Fingo evaluation scripts. "
+                "Evaluasi ulang dari test_df.csv hanya digunakan sebagai diagnostic check jika test set lengkap."
+            )
+
+        else:
+            no_data("impulsive_eval_bundle.pkl belum tersedia di streamlit/models/")
+
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Evaluation Output dari AI-Fingo Script</div>', unsafe_allow_html=True)
+
+        if official_eval is None:
+            no_data(
+                "random_split_with_score_eval_result.pkl belum tersedia. "
+                "Jalankan compare_impulsive_score_cla.py lalu copy hasilnya ke "
+                "streamlit/data/impulsive/evaluation/."
+            )
+        else:
+            acc = official_eval["accuracy"]
+            prec = official_eval["macro_precision"]
+            rec = official_eval["macro_recall"]
+            f1 = official_eval["macro_f1"]
+
+            d1, d2, d3, d4 = st.columns(4)
+            d1.metric("Accuracy", f"{acc * 100:.3f}%")
+            d2.metric("Macro Precision", f"{prec:.4f}")
+            d3.metric("Macro Recall", f"{rec:.4f}")
+            d4.metric("Macro F1", f"{f1:.4f}")
+
+            classes = official_eval.get("classes", ["AMAN", "IMPULSIF", "PERTIMBANGAN"])
+            cm = np.array(official_eval["confusion_matrix"])
+
+            st.markdown('<div class="section-header">Confusion Matrix</div>', unsafe_allow_html=True)
+            fig_cm = plot_confusion_matrix(cm, classes)
+            st.pyplot(fig_cm, use_container_width=False)
+            plt.close()
+
+            with st.expander("Classification Report"):
+                if "classification_report_text" in official_eval:
+                    st.code(official_eval["classification_report_text"])
+                else:
+                    st.json(official_eval.get("classification_report", {}))
+
+        if official_pred is not None:
+            col_d1, col_d2 = st.columns(2, gap="large")
+
+            with col_d1:
+                st.markdown('<div class="section-header">Distribusi Label Aktual</div>', unsafe_allow_html=True)
+                st.dataframe(
+                    official_pred["actual_label"]
+                    .value_counts()
+                    .rename_axis("label")
+                    .reset_index(name="count"),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            with col_d2:
+                st.markdown('<div class="section-header">Distribusi Label Prediksi</div>', unsafe_allow_html=True)
+                st.dataframe(
+                    official_pred["predicted_label"]
+                    .value_counts()
+                    .rename_axis("label")
+                    .reset_index(name="count"),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            with st.expander("Preview Evaluation Predictions"):
+                st.dataframe(
+                    official_pred.head(50),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+    with tabs[3]:
+        st.markdown("""
+        <div class="page-header">
+            <h1>Feature Importance</h1>
+            <p>Fitur paling berpengaruh dalam model Impulsive Detector</p>
+        </div>""", unsafe_allow_html=True)
+
+        if clf_imp is None:
+            no_data("Model tidak ditemukan di streamlit/models/fingo_label_classifier.joblib")
+        else:
+            try:
+                prep_s = clf_imp.named_steps["preprocessor"]
+                cls_s  = clf_imp.named_steps["classifier"]
+                fn     = prep_s.get_feature_names_out()
+                imps   = cls_s.feature_importances_
+
+                imp_df = pd.DataFrame({"feature":fn,"importance":imps})
+
+                def _agg_name(f):
+                    if "__" in f:
+                        _,rest = f.split("__",1)
+                        for kc in IMP_MODEL_FEATURES:
+                            if rest==kc or rest.startswith(kc+"_"): return kc
+                        return rest
+                    return f
+
+                imp_df["original"] = imp_df["feature"].apply(_agg_name)
+                agg = imp_df.groupby("original")["importance"].sum().sort_values(ascending=False)
+
+                col_l,col_r = st.columns(2, gap="large")
+                with col_l:
+                    top_raw = imp_df.nlargest(15,"importance")
+                    fig,ax = plt.subplots(figsize=(7,6))
+                    clrs=[FG if i<3 else FG_BLUE if i<7 else FG_MUTED for i in range(len(top_raw))]
+                    ax.barh(top_raw["feature"][::-1], top_raw["importance"][::-1]*100,
+                            color=clrs[::-1], height=0.6, alpha=0.9)
+                    for bar,v in zip(ax.patches, top_raw["importance"][::-1].values):
+                        ax.text(v*100+0.1, bar.get_y()+bar.get_height()/2,
+                            f"{v*100:.1f}%", va="center", fontsize=8, color="#FFFFFF", fontweight="bold")
+                    ax.set_title("Top 15 Raw Features", color="#FFFFFF")
+                    ax.set_xlabel("Importance (%)")
+                    plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+
+                with col_r:
+                    top_agg = agg.head(10)
+                    fig,ax = plt.subplots(figsize=(7,6))
+                    clrs=[FG if i<3 else FG_BLUE if i<6 else FG_MUTED for i in range(len(top_agg))]
+                    ax.barh(top_agg.index[::-1], top_agg.values[::-1]*100,
+                            color=clrs[::-1], height=0.6, alpha=0.9)
+                    for i,v in enumerate(top_agg.values[::-1]):
+                        ax.text(v*100+0.2, i, f"{v*100:.1f}%",
+                            va="center", fontsize=9, color="#FFFFFF", fontweight="bold")
+                    ax.set_title("Feature Importance (Agregasi per Fitur Asal)", color="#FFFFFF")
+                    ax.set_xlabel("Importance (%)")
+                    plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
+
+                st.markdown('<div class="section-header">Tabel Feature Importance</div>', unsafe_allow_html=True)
+                ket = {
+                    "impulsive_score":"Skor agregat sinyal impulsif (0-10)",
+                    "signal_band":"Band intensitas (low/watch/high)",
+                    "driver_count":"Jumlah driver aktif (night/hedonic/high_amount/weekend)",
+                    "is_weekend":"Transaksi di akhir pekan","day_of_week":"Hari dalam seminggu",
+                    "amount_z":"Z-score nominal transaksi","amount_score":"Skor nominal vs median",
+                    "time_segment":"Segmen waktu (pagi/siang/malam/late_night)",
+                    "hour":"Jam transaksi","amount":"Nominal transaksi (IDR)",
+                    "amount_log":"Log natural nominal transaksi","category":"Kategori transaksi",
+                    "is_hedonic_category":"Apakah kategori hedonic","source":"Sumber dataset",
+                    "metode_pembayaran":"Metode pembayaran",
+                    "category_type":"Tipe kategori (hedonic/utilitarian/neutral)",
+                    "is_night":"Transaksi dini hari / larut malam",
+                }
+                agg_df = agg.reset_index()
+                agg_df.columns=["Fitur","Importance"]
+                agg_df["Importance (%)"] = agg_df["Importance"].apply(lambda v:f"{v*100:.2f}%")
+                agg_df["Keterangan"]     = agg_df["Fitur"].map(ket).fillna("")
+                st.dataframe(agg_df[["Fitur","Importance (%)","Keterangan"]],
+                             use_container_width=True, hide_index=True)
+
+            except Exception as e:
+                st.error(f"Error memuat feature importance: {e}")
+
+    with tabs[4]:
+        st.markdown("""
+        <div class="page-header">
+            <h1>Coba Deteksi Transaksi</h1>
+            <p>Gunakan model fingo_label_classifier.joblib untuk mendeteksi apakah transaksi impulsif</p>
+        </div>""", unsafe_allow_html=True)
+
+        if clf_imp is None:
+            no_data("Model tidak ditemukan di streamlit/models/fingo_label_classifier.joblib")
+        else:
+            try:
+                model_expected = list(clf_imp.feature_names_in_)
+            except Exception:
+                model_expected = IMP_MODEL_FEATURES
+
+            st.markdown("""
+            <div class="panel" style="margin-bottom:1.5rem">
+                <p>Masukkan detail transaksi. Model akan memprediksi label
+                <strong style="color:#00C471">AMAN</strong>,
+                <strong style="color:#F5A623">PERTIMBANGAN</strong>, atau
+                <strong style="color:#E8504A">IMPULSIF</strong>
+                beserta probabilitas per kelas.</p>
+            </div>""", unsafe_allow_html=True)
+
+            with st.form("imp_detect_form"):
+                col1,col2 = st.columns(2, gap="large")
+                with col1:
+                    amount_in   = st.number_input("Nominal Transaksi (Rp)", 0,100_000_000,150_000,5_000)
+                    category_in = st.selectbox("Kategori",
+                        ["Makanan","Transportasi","Hiburan","Belanja",
+                         "Pendidikan","Kesehatan","Tagihan","Lainnya"])
+                    metode_in   = st.selectbox("Metode Pembayaran", METODE_OPTIONS)
+                with col2:
+                    tgl_in  = st.date_input("Tanggal Transaksi", datetime.date.today())
+                    hour_in = st.slider("Jam Transaksi", 0, 23, 20)
+                    budget_in = st.number_input("Budget mingguan (opsional, Rp)", 0,50_000_000,0,50_000)
+                sub_imp = st.form_submit_button("Deteksi Sekarang", type="primary", use_container_width=True)
+
+            if sub_imp:
+                dow           = tgl_in.weekday()
+                is_weekend_in = dow >= 5
+                is_night_in   = hour_in >= 22 or hour_in <= 4
+                if hour_in<=4 or hour_in>=22: ts="late_night"
+                elif 5<=hour_in<=10:          ts="morning"
+                elif 11<=hour_in<=14:         ts="midday"
+                elif 15<=hour_in<=18:         ts="evening"
+                else:                          ts="night"
+
+                row, imp_score, sig_band, drv_count = build_model_row(
+                    amount_in, category_in, metode_in, hour_in, dow,
+                    is_weekend_in, is_night_in, ts, df_imp)
+
+                # Ensure all expected columns exist
+                for c in model_expected:
+                    if c not in row.columns: row[c] = 0
+                row = row[model_expected]
+                for c in ["is_hedonic_category","is_night","is_weekend"]:
+                    if c in row.columns: row[c] = row[c].astype(bool)
+
+                try:
+                    label_pred = clf_imp.predict(row)[0]
+                    proba_raw  = clf_imp.predict_proba(row)[0]
+                    proba_dict = dict(zip(clf_imp.classes_, proba_raw))
+                except Exception as e:
+                    st.error(f"Prediction error: {e}")
+                    label_pred=None; proba_dict={}
+
+                if label_pred is not None:
+                    if label_pred=="AMAN":
+                        bg="rgba(0,196,113,.08)"; bd="rgba(0,196,113,.3)"; lc="#00C471"
+                    elif label_pred=="PERTIMBANGAN":
+                        bg="rgba(245,166,35,.08)"; bd="rgba(245,166,35,.3)"; lc="#F5A623"
+                    else:
+                        bg="rgba(232,80,74,.08)"; bd="rgba(232,80,74,.3)"; lc="#E8504A"
+
+                    alert_txt   = "NO_ALERT" if label_pred=="AMAN" else "ALERT"
+                    alert_badge = "badge-green" if label_pred=="AMAN" else "badge-red"
+                    is_hedonic  = category_in in HEDONIC_CATS
+
+                    st.markdown(f"""
+                    <div style="background:{bg};border:1px solid {bd};border-radius:12px;padding:1.6rem 2rem;margin:1rem 0">
+                        <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:{lc};margin-bottom:.5rem">Hasil Deteksi</div>
+                        <div style="font-family:'DM Serif Display',serif;font-size:2.5rem;color:#E8EDE9;line-height:1;margin-bottom:.4rem;font-weight:700">{label_pred}</div>
+                        <div style="font-size:.85rem;color:#6B7E74;margin-bottom:.8rem">
+                            {fmt_idr_full(amount_in)} — {category_in} — {ts} — {'Akhir Pekan' if is_weekend_in else 'Hari Kerja'}
+                        </div>
+                        <span class="badge {alert_badge}">{alert_txt}</span>
+                        &nbsp;
+                        <span style="font-size:.8rem;color:#6B7E74">
+                            Impulsive score: {imp_score:.2f} | Signal: {sig_band} | Drivers aktif: {drv_count}
+                        </span>
+                    </div>""", unsafe_allow_html=True)
+
+                    if proba_dict:
+                        st.markdown('<div class="section-header">Probabilitas per Kelas</div>', unsafe_allow_html=True)
+                        for lb,lc2 in [("AMAN",FG),("PERTIMBANGAN",FG_WARN),("IMPULSIF",FG_RED)]:
+                            pv = float(proba_dict.get(lb,0.0))
+                            st.markdown(f"""
+                            <div class="budget-bar-wrap">
+                                <div class="budget-bar-label">
+                                    <span style="color:{lc2};font-weight:600">{lb}</span>
+                                    <span>{pv*100:.1f}%</span>
+                                </div>
+                                <div class="budget-bar-track">
+                                    <div class="budget-bar-fill" style="width:{pv*100:.1f}%;background:{lc2}"></div>
+                                </div>
+                            </div>""", unsafe_allow_html=True)
+
+                    st.markdown('<div class="section-header">Faktor Risiko Aktif</div>', unsafe_allow_html=True)
+                    risks=[]
+                    if is_hedonic:   risks.append(f"Kategori hedonic: {category_in}")
+                    if is_night_in:  risks.append("Transaksi larut malam / dini hari")
+                    if is_weekend_in:risks.append("Transaksi di akhir pekan")
+                    if df_imp is not None and "amount" in df_imp.columns:
+                        ref_mean = df_imp["amount"].mean(); ref_std = df_imp["amount"].std()
+                        if ref_std and (amount_in-ref_mean)/ref_std > 1.5:
+                            risks.append("Nominal jauh di atas rata-rata dataset")
+                    if risks:
+                        for r in risks: st.markdown(f'<span class="badge badge-yellow">{r}</span>&nbsp;', unsafe_allow_html=True)
+                    else:
+                        st.markdown('<span class="badge badge-green">Tidak ada faktor risiko signifikan</span>', unsafe_allow_html=True)
+
+                    st.markdown("<hr>", unsafe_allow_html=True)
+                    st.markdown('<div class="section-header">Rekomendasi</div>', unsafe_allow_html=True)
+                    if label_pred=="IMPULSIF":
+                        st.error("Transaksi ini berpotensi IMPULSIF. Tunda keputusan pembelian minimal 24 jam.")
+                        if is_hedonic: st.warning(f"Kategori {category_in} termasuk hedonic dengan impulsive rate tinggi.")
+                        if is_night_in or ts in["night","late_night"]: st.warning("Transaksi larut malam cenderung lebih impulsif.")
+                        if is_weekend_in: st.warning("Transaksi akhir pekan memiliki risiko impulsif lebih tinggi.")
+                    elif label_pred=="PERTIMBANGAN":
+                        st.warning("Transaksi ini memerlukan pertimbangan. Pastikan sesuai budget sebelum melanjutkan.")
+                    else:
+                        st.success("Transaksi ini tergolong AMAN. Tetap pantau total pengeluaran harian.")
+
+                    if budget_in > 0 and label_pred != "AMAN":
+                        pct_b = amount_in/budget_in*100
+                        st.markdown(f"""
+                        <div class="panel" style="margin-top:1rem">
+                            <h3>Proyeksi Dampak Budget</h3>
+                            <p>Transaksi ini menyerap <strong style="color:#E8EDE9">{pct_b:.1f}%</strong>
+                            dari budget mingguan ({fmt_idr_full(budget_in)}).
+                            Sisa: <strong style="color:#E8EDE9">{fmt_idr_full(budget_in-amount_in)}</strong>.</p>
+                        </div>""", unsafe_allow_html=True)

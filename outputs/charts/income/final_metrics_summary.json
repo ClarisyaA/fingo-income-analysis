@@ -1,0 +1,17 @@
+{
+  "final_reg_name": "Ens(DL=0.15+GradientBoosting)",
+  "final_cls_name": "Ens_cls(DL=0.50)",
+  "final_reg_test_mae_norm": 0.021370531271497403,
+  "final_reg_test_rmse_norm": 0.048212784255350034,
+  "final_reg_test_r2": 0.9101836349248511,
+  "final_reg_test_mae_idr": 39862.45198072411,
+  "final_reg_test_rmse_idr": 89931.30647150442,
+  "final_cls_test_accuracy": 0.7909259259259259,
+  "final_cls_test_macro_f1": 0.610462552223653,
+  "tolerance_acc_2pct": 77.01851851851852,
+  "tolerance_acc_5pct": 90.17592592592592,
+  "tolerance_acc_10pct": 94.95833333333333,
+  "income_min": 75000.0,
+  "income_max": 1940300.0,
+  "n_test": 21600
+}

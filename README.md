@@ -1,536 +1,575 @@
-# Fingo — Weekly Income Forecasting Pipeline
+# Fingo — Weekly Income Forecasting for Gig Workers
 
-> End-to-end data science pipeline untuk fitur **Income Predictor** pada aplikasi Fingo. Pipeline ini membersihkan data survei gig worker, membangun synthetic longitudinal dataset 52 minggu, membuat dataset forecasting mingguan, melatih baseline model, memvalidasi kualitas data, dan menghasilkan **model contract** yang siap digunakan oleh AI Engineer.
-
-**Program:** Coding Camp 2026 × DBS Foundation  
-**Tim:** CC26-PSU217  
-**Role:** Data Scientist 2 — Clarisya Adeline  
-**Downstream consumer:** AI Engineer — Weekly Income Forecasting Model  
-**Versi pipeline:** `v13-FINAL`
+**Tim:** CC26-PSU217 | **Role:** Data Scientist 2 — Clarisya Adeline  
+**Branch:** `feat/income-predictor-final`  
+**Repo:** [ClarisyaA/fingo-income-analysis](https://github.com/ClarisyaA/fingo-income-analysis)
 
 ---
 
 ## Daftar Isi
 
-1. [Konteks Proyek](#1-konteks-proyek)
-2. [Tujuan Pipeline](#2-tujuan-pipeline)
-3. [Ringkasan Hasil Akhir](#3-ringkasan-hasil-akhir)
-4. [Sumber Data](#4-sumber-data)
-5. [Struktur Repository](#5-struktur-repository)
-6. [Alur Notebook](#6-alur-notebook)
-7. [Output Utama untuk AI Engineer](#7-output-utama-untuk-ai-engineer)
-8. [Kontrak Fitur dan Target](#8-kontrak-fitur-dan-target)
-9. [Validasi Kualitas dan Anti-Leakage](#9-validasi-kualitas-dan-anti-leakage)
-10. [Hasil Baseline Modeling](#10-hasil-baseline-modeling)
-11. [Dashboard dan Report](#11-dashboard-dan-report)
-12. [Setup dan Cara Menjalankan](#12-setup-dan-cara-menjalankan)
-13. [Catatan Penting untuk Development Lanjutan](#13-catatan-penting-untuk-development-lanjutan)
-14. [Dokumentasi Tambahan](#14-dokumentasi-tambahan)
-15. [Tim dan Lisensi](#15-tim-dan-lisensi)
+- [Overview](#overview)
+- [Konteks & Latar Belakang](#konteks--latar-belakang)
+- [Temporal Mapping income_w1–w4](#temporal-mapping-income_w1w4)
+- [Struktur Pipeline](#struktur-pipeline)
+- [Cara Menjalankan](#cara-menjalankan)
+- [Detail Tiap Notebook](#detail-tiap-notebook)
+  - [01 — Data Preparation](#01--data-preparation)
+  - [02 — Temporal Mapping](#02--temporal-mapping)
+  - [03 — EDA Survey](#03--eda-survey)
+  - [04 — Synthetic Data Generation](#04--synthetic-data-generation)
+  - [05 — Feature Engineering](#05--feature-engineering)
+  - [06 — Model Dataset Split](#06--model-dataset-split)
+  - [07 — Bias Validation](#07--bias-validation)
+  - [08 — Documentation Export](#08--documentation-export)
+  - [09 — Model Training & Evaluation](#09--model-training--evaluation)
+  - [10 — A/B Testing Income Predictor & Budgeting](#10--ab-testing-income-predictor--budgeting)
+- [Output untuk AI Engineer](#output-untuk-ai-engineer)
+- [Struktur Direktori](#struktur-direktori)
+- [Dokumentasi Lanjutan](#dokumentasi-lanjutan)
 
 ---
 
-## 1. Konteks Proyek
+## Overview
 
-**Fingo** adalah aplikasi finansial untuk membantu pekerja gig/informal Indonesia mengelola pendapatan yang tidak stabil. Salah satu fitur utamanya adalah **Income Predictor**, yaitu fitur yang memprediksi pendapatan minggu berikutnya berdasarkan pola pendapatan beberapa minggu terakhir, karakteristik pekerjaan, kalender, preferensi musiman, dan profil pengguna.
+Pipeline prediksi pendapatan mingguan untuk pekerja gig Indonesia. Proyek ini mencakup seluruh alur dari data survey mentah hingga model-ready dataset beserta evaluasi model dan simulasi A/B testing.
 
-Masalah utama dalam pengembangan fitur ini adalah keterbatasan dataset publik yang secara spesifik memuat pendapatan mingguan pekerja gig Indonesia selama 1 tahun. Oleh karena itu, pipeline ini menggunakan pendekatan:
-
-1. **Data survei real** sebagai baseline empiris.
-2. **Data BPS** sebagai benchmark pendapatan regional.
-3. **Synthetic longitudinal generation** untuk membentuk data 52 minggu per user.
-4. **Forecasting dataset** berbasis sliding window 4 minggu.
-5. **Model contract** agar output Data Scientist bisa langsung dipakai oleh AI Engineer.
-
----
-
-## 2. Tujuan Pipeline
-
-Pipeline pada `Notebook_Income.ipynb` dibuat untuk:
-
-- Membersihkan dan menstandarkan data survei real gig worker.
-- Menjaga mapping jawaban form agar konsisten dengan opsi Google Form.
-- Menghasilkan dataset synthetic sebanyak **3.000 user × 52 minggu**.
-- Membentuk dataset forecasting mingguan dengan input 4 minggu terakhir.
-- Menyediakan train/test split yang aman dari data leakage.
-- Melatih baseline model regresi dan klasifikasi.
-- Menghasilkan file kontrak fitur, target, scaler, encoder, dan leakage rules.
-- Menyediakan file dashboard/report untuk eksplorasi dan presentasi.
+| Item | Detail |
+|------|--------|
+| **Dataset survey** | 384 responden pekerja gig Indonesia (Google Form, Mei 2026) |
+| **Fungsi survey** | Distribusi acuan untuk generate 3.000 synthetic users |
+| **Target prediksi** | `next_week_income` — pendapatan minggu berikutnya |
+| **Target klasifikasi** | `next_week_direction` — arah perubahan (naik/turun/stabil) |
+| **Synthetic dataset** | 3.000 users × 52 minggu = **156.000 rows** |
+| **Split model** | Kronologis by `synthetic_user_id` (train 70% / val 15% / test 15%) |
 
 ---
 
-## 3. Ringkasan Hasil Akhir
+## Konteks & Latar Belakang
 
-| Komponen | Hasil |
-|---|---:|
-| Survey real bersih | 384 responden |
-| Synthetic raw users | 3.000 user |
-| Synthetic raw weekly rows | 156.000 rows |
-| Synthetic forecasting rows | 144.000 rows |
-| Train split | 2.400 users / 115.200 rows |
-| Test split | 600 users / 28.800 rows |
-| Forecasting window | 4 minggu historis → prediksi minggu berikutnya |
-| Regression target | `next_week_income` |
-| Classification target | `next_week_direction` |
-| Direction classes | `Down`, `Stable`, `Up` |
-| Direction threshold | 10% |
-| Split strategy | By `synthetic_user_id`, bukan random rows |
-| Normalisasi target | `log1p` → `MinMaxScaler`, fit on train only |
-| Feature scaling | `RobustScaler`, fit on train only |
-| Final validation checklist | 17/17 PASS |
+Pekerja gig (ojek online, freelancer, kurir, dll.) mengalami fluktuasi pendapatan yang tinggi sehingga sulit membuat rencana anggaran yang realistis. Fingo membangun fitur **Income Predictor** untuk membantu pengguna memperkirakan pendapatan minggu depan agar budget planner mereka dapat disesuaikan secara adaptif — bukan berdasarkan rata-rata historis yang statis.
+
+Survey dilakukan sebagai **bootstrap data**, bukan sebagai dataset training langsung. Distribusi demografis, tipe pekerjaan, domisili, dan profil income dari 384 responden digunakan sebagai acuan statistik untuk mensimulasikan 3.000 user sintetis dengan pola perilaku yang realistis.
 
 ---
 
-## 4. Sumber Data
+## Temporal Mapping income_w1–w4
 
-### 4.1 Data Primer
+> ⚠️ **Penting — baca ini sebelum melihat data.**
+
+`income_w1`–`income_w4` dalam survey **bukan** minggu 1–4 bulan kalender. Keempat kolom ini adalah **4 periode mingguan relatif** sebelum responden mengisi form:
+
+| Kolom | Rentang Waktu | Keterangan |
+|-------|--------------|------------|
+| `income_w1` | H-7 s/d H-1 dari timestamp | Minggu terbaru |
+| `income_w2` | H-14 s/d H-8 dari timestamp | — |
+| `income_w3` | H-21 s/d H-15 dari timestamp | — |
+| `income_w4` | H-28 s/d H-22 dari timestamp | Minggu terlama |
+
+**Urutan kronologis yang benar untuk model:**
+
+```
+income_w4 → income_w3 → income_w2 → income_w1 → [PREDIKSI next_week_income]
+   terlama                                terbaru
+```
+
+Urutan ini **wajib dijaga** di seluruh pipeline. Membalik urutan akan menyebabkan data leakage.
+
+---
+
+## Struktur Pipeline
+
+```
+Survey (384 responden)
+        │
+        ▼
+01_Data_Preparation          ← Cleaning & standarisasi survey
+        │
+        ▼
+02_Temporal_Mapping          ← Pemetaan w1–w4 ke tanggal absolut
+        │
+        ▼
+03_EDA_Survey                ← Eksplorasi distribusi & pola income
+        │
+        ▼
+04_Synthetic_Data_Generation ← Generate 3.000 users × 52 minggu
+        │
+        ▼
+05_Feature_Engineering       ← Sliding window → supervised dataset
+        │
+        ▼
+06_Model_Dataset_Split       ← Train/Val/Test split (kronologis by user)
+        │
+        ▼
+07_Bias_Validation           ← Validasi data synthetic vs survey & BPS
+        │
+        ▼
+08_Documentation_Export      ← Auto-generate README, notebook.md, data_dictionary.md
+        │
+        ▼
+09_Model_Training_Evaluation ← Train & evaluasi model (regression + classification)
+        │
+        ▼
+10_AB_Testing_…              ← Simulasi A/B test dampak income predictor ke budget planning
+```
+
+---
+
+## Cara Menjalankan
+
+### Prasyarat
+
+- Google Colab (direkomendasikan) atau Python 3.10+
+- `GITHUB_TOKEN` tersimpan di Colab Secrets (key: `GITHUB_TOKEN`)
+- Akses ke repo `ClarisyaA/fingo-income-analysis` branch `feat/income-predictor-final`
+
+### Urutan Eksekusi
+
+Jalankan notebook **secara berurutan** dari 01 sampai 10. Setiap notebook melakukan:
+1. **Auto-pull** dari GitHub di cell pertama
+2. **Auto-push** ke GitHub di cell terakhir
+
+```
+01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10
+```
+
+> Notebook 09 dan 10 dapat dijalankan **ulang secara independen** setelah notebook 01–08 selesai, karena inputnya berasal dari `outputs/model_contract/` dan `data/synthetic/` yang sudah tersimpan di GitHub.
+
+### Flag Penting
+
+```python
+FRESH_CLONE = False  # Ganti True hanya untuk clone ulang dari nol
+```
+
+---
+
+## Detail Tiap Notebook
+
+---
+
+### 01 — Data Preparation
+
+**File:** `01_Data_Preparation.ipynb`
+
+**Tujuan:** Membersihkan dan menstandarisasi data mentah dari Google Form survey sebelum digunakan di tahap berikutnya.
+
+**Input:**
+- `data/raw/form_responses.csv` — hasil export Google Form survey (384 baris)
+- BPS files di `data/raw/` — referensi benchmark pendapatan per daerah
+
+**Output:**
+- `data/processed/survey_clean.csv`
+
+**Yang dilakukan:**
+- Normalisasi nama kolom (lowercase, snake_case)
+- Parsing `timestamp` dan `timestamp_parsed` dari kolom waktu form (⚠️ **tidak boleh di-drop** — dibutuhkan oleh notebook 02)
+- Standarisasi format nilai income (hapus karakter non-numerik, konversi ke float)
+- Validasi range income: nilai < Rp 50.000/minggu dianggap tidak valid dan di-flag
+- Penanganan missing values dan outlier ekstrem
+- Standarisasi kolom kategorik (`gig_type`, `domisili`, dll.)
+
+**Catatan penting:**
+- Kolom `timestamp` dan `timestamp_parsed` **wajib dipertahankan** karena menjadi acuan kalkulasi tanggal absolut di notebook 02
+- Income floor minimum: **Rp 50.000/minggu** (batas bawah yang masuk akal untuk pekerja gig Indonesia)
+
+---
+
+### 02 — Temporal Mapping
+
+**File:** `02_Temporal_Mapping.ipynb`
+
+**Tujuan:** Mengubah income_w1–w4 yang bersifat relatif menjadi tanggal absolut berdasarkan timestamp responden, lalu menghasilkan format long untuk analisis time-series.
+
+**Input:**
+- `data/processed/survey_clean.csv`
+
+**Output:**
+- `data/processed/survey_temporal_mapped.csv` — format wide, dengan kolom tanggal absolut tiap minggu
+- `data/processed/survey_weekly_income_long.csv` — format long (1 baris per responden per minggu)
+
+**Logika pemetaan:**
+
+```
+timestamp responden → T (hari H)
+
+income_w1 → [T-7, T-1]   (minggu terbaru)
+income_w2 → [T-14, T-8]
+income_w3 → [T-21, T-15]
+income_w4 → [T-28, T-22] (minggu terlama)
+```
+
+**Yang dilakukan:**
+- Kalkulasi `week_start` dan `week_end` absolut untuk setiap w1–w4 per responden
+- Generate format long: satu baris per (responden, minggu) dengan kolom `week_number`, `week_start`, `income`
+- Validasi bahwa urutan kronologis w4 → w3 → w2 → w1 terjaga
+- Verifikasi tidak ada tanggal yang tumpang tindih antar periode
+
+---
+
+### 03 — EDA Survey
+
+**File:** `03_EDA_Survey.ipynb`
+
+**Tujuan:** Eksplorasi mendalam distribusi data survey untuk memahami karakteristik responden dan pola income sebelum data sintetis dibuat.
+
+**Input:**
+- `data/processed/survey_temporal_mapped.csv`
+- `data/processed/survey_weekly_income_long.csv`
+
+**Output:**
+- Chart ke `outputs/charts/` — visualisasi distribusi dan tren
+- Dashboard CSV ke `outputs/dashboard/` — ringkasan statistik untuk keperluan dashboard
+- `outputs/reports/survey_eda_summary.md` — laporan naratif hasil EDA
+
+**Yang dilakukan:**
+- Distribusi demografis: `gig_type`, `domisili`, jenis kelamin, usia
+- Analisis distribusi income per minggu (w1–w4): mean, median, std, skewness
+- Pola volatilitas income: perubahan w4→w1 per responden
+- Analisis musiman: apakah ada pola income berdasarkan bulan atau event kalender (Ramadan, Lebaran)
+- Korelasi antar minggu: seberapa prediktif income minggu lalu terhadap minggu ini
+- Segmentasi: profil income berbeda-beda per `gig_type` dan `domisili`
+- Outlier analysis: identifikasi responden dengan pola income tidak wajar
+
+---
+
+### 04 — Synthetic Data Generation
+
+**File:** `04_Synthetic_Data_Generation.ipynb`
+
+**Tujuan:** Membuat dataset sintetis 52 minggu untuk 3.000 user menggunakan distribusi dari data survey sebagai acuan statistik.
+
+**Input:**
+- `data/processed/survey_temporal_mapped.csv`
+
+**Output:**
+- `data/synthetic/synthetic_52week_user_income.csv` — 3.000 users × 52 minggu = 156.000 rows
+- `data/synthetic/synthetic_params.json` — parameter distribusi yang digunakan untuk generate data
+
+**Yang dilakukan:**
+- Estimasi parameter distribusi income per segmen (`gig_type` × `domisili`): mean, std, dan koefisien variasi dari data survey
+- Generate profil user sintetis: distribusi `gig_type` dan `domisili` mengikuti proporsi survey
+- Simulasi time-series 52 minggu per user dengan mempertahankan:
+  - **Autocorrelation**: income minggu ini bergantung pada minggu sebelumnya
+  - **Seasonality**: kenaikan income saat event musiman (Ramadan, Lebaran, akhir tahun)
+  - **Volatilitas per gig_type**: freelancer lebih volatile dibanding driver ojek
+- Income floor enforcement: setiap nilai income di-clamp ke minimum **Rp 50.000/minggu**
+- Simpan `synthetic_params.json` sebagai dokumentasi reproducibility
+
+**Validasi bawaan:**
+- Fail-fast jika ada income < Rp 50.000 lolos ke output
+- Cek distribusi mean synthetic vs mean survey (harus dalam toleransi ±20%)
+
+---
+
+### 05 — Feature Engineering
+
+**File:** `05_Feature_Engineering.ipynb`
+
+**Tujuan:** Mengubah time-series 52 minggu menjadi supervised learning dataset menggunakan sliding window 4 minggu, dengan target prediksi minggu berikutnya.
+
+**Input:**
+- `data/synthetic/synthetic_52week_user_income.csv`
+- `data/processed/survey_temporal_mapped.csv` (untuk merge atribut user)
+
+**Output:**
+- `data/processed/income_features.csv` — supervised dataset siap untuk model
+
+**Urutan kronologis fitur (wajib dijaga):**
+
+```
+income_w4 (terlama) → income_w3 → income_w2 → income_w1 (terbaru) → next_week_income (target)
+```
+
+**Yang dilakukan:**
+- **Sliding window 4 minggu**: untuk setiap user, generate semua window `[w4, w3, w2, w1] → next` dari 52 minggu historis
+- **Fitur income lag**: `income_w1`, `income_w2`, `income_w3`, `income_w4`
+- **Fitur statistik**: rolling mean, rolling std, rolling min/max atas window 4 minggu
+- **Fitur trend**: delta income (w1−w2, w2−w3, w3−w4), pct_change
+- **Fitur user**: `gig_type`, `domisili`, dan atribut demografis lain dari survey
+- **Target regresi**: `next_week_income` (nilai kontinu)
+- **Target klasifikasi**: `next_week_direction` (up/down/flat berdasarkan threshold %)
+- **Anti-leakage check** (Cell 05.5): verifikasi bahwa tidak ada fitur dari `next_week_income` yang bocor ke feature set
+
+**Fail-fast validation:**
+- Semua kolom income harus ≥ Rp 50.000. Notebook berhenti jika ditemukan pelanggaran (akar masalah seharusnya sudah ditangani di notebook 04).
+
+---
+
+### 06 — Model Dataset Split
+
+**File:** `06_Model_Dataset_Split.ipynb`
+
+**Tujuan:** Membagi dataset fitur menjadi train/validation/test secara kronologis per user, lalu menyimpan scaler dan model contract untuk AI Engineer.
+
+**Input:**
+- `data/processed/income_features.csv`
+
+**Output:**
 
 | File | Keterangan |
-|---|---|
-| `data/raw/form_responses.csv` | Data Google Form dari 384 responden setelah proses cleaning. Digunakan sebagai baseline distribusi karakteristik user. |
+|------|-----------|
+| `outputs/model_contract/income_train.csv` | Data training |
+| `outputs/model_contract/income_val.csv` | Data validasi |
+| `outputs/model_contract/income_test.csv` | Data test (held-out) |
+| `outputs/model_contract/income_scalers.pkl` | StandardScaler fitted on train only |
+| `outputs/model_contract/feature_columns.json` | Daftar kolom fitur yang digunakan |
+| `outputs/model_contract/model_contract.json` | Metadata lengkap pipeline untuk AI Engineer |
 
-### 4.2 Data Sekunder
+**Strategi split — kronologis by user:**
 
-| Sumber | Kegunaan |
-|---|---|
-| BPS 2023–2025 | Benchmark pendapatan regional, terutama untuk fitur `bps_jasa_weekly`. |
-| Data referensi pekerjaan gig/informal | Membantu sanity check terhadap range pendapatan dan pola pekerjaan. |
+```
+Split bukan random row, melainkan per synthetic_user_id:
+- Train : user ID ke-1   s/d ke-2.100  (70%)
+- Val   : user ID ke-2.101 s/d ke-2.550 (15%)
+- Test  : user ID ke-2.551 s/d ke-3.000 (15%)
+```
 
-### 4.3 Peran Data Survey
+Dengan split ini, **tidak ada overlap user** antara train, val, dan test — menghindari data leakage level user.
 
-Data survey **bukan dataset training utama** karena hanya memiliki histori 4 minggu. Perannya adalah sebagai:
-
-- Distribusi acuan untuk sampling synthetic users.
-- Baseline karakteristik gig type, domisili, umur, pengalaman, jam kerja, dan preferensi musiman.
-- Sanity check terhadap synthetic data.
-- Dataset validasi ringan untuk memastikan model tidak hanya masuk akal pada synthetic data.
+**Yang dilakukan:**
+- Sort user secara deterministik sebelum split
+- Fit `StandardScaler` **hanya pada train set**, lalu transform val dan test (tidak ada train-test contamination)
+- Generate `model_contract.json` berisi: daftar fitur, target kolom, scaler path, ukuran split, dan metadata pipeline
+- Final validation (Cell 06.8): fail-fast jika ada income < Rp 50.000 di manapun dalam split
 
 ---
 
-## 5. Struktur Repository
+### 07 — Bias Validation
 
-```text
+**File:** `07_Bias_Validation.ipynb`
+
+**Tujuan:** Memvalidasi apakah data sintetis secara statistik masih representatif terhadap data survey asli dan benchmark BPS.
+
+**Input:**
+- `data/processed/income_features.csv`
+- `data/processed/survey_temporal_mapped.csv`
+- `data/synthetic/synthetic_52week_user_income.csv`
+
+**Output:**
+- `outputs/reports/bias_validation_report.md` — laporan bias lengkap dengan tabel pass/fail
+- Charts ke `outputs/charts/` — visualisasi distribusi, autokorelasi, dan tren musiman
+
+**Bias tests yang dijalankan:**
+
+| Test | Cell | Penjelasan |
+|------|------|-----------|
+| **Bias Test 0**: Income Floor Sanity | 07.3b | Fail-fast: tidak boleh ada income < Rp 50.000 |
+| **Bias Test 1**: Mean vs benchmark BPS | 07.4 | Mean synthetic harus dalam toleransi benchmark BPS per domisili |
+| **Bias Test 2**: Distribution test (KS-like) | 07.5 | Distribusi synthetic vs survey tidak boleh terlalu divergen |
+| **Bias Test 3**: Seasonal direction | 07.6 | Arah perubahan income saat event musiman (Ramadan, dll.) harus konsisten |
+| **Bias Test 4**: Autocorrelation | 07.7 | Autokorelasi time-series synthetic harus realistis |
+| **Bias Test 5**: BPS range per domisili | 07.8 | Income synthetic harus masuk rentang BPS per daerah |
+| **Bias Test 6**: Income per gig_type vs survey | 07.9 | Distribusi per segmen pekerjaan harus proporsional terhadap survey |
+
+> **Catatan:** Bias Test 0 dijalankan sebelum test lain dan bersifat blocking — notebook berhenti jika FAIL.
+
+---
+
+### 08 — Documentation Export
+
+**File:** `08_Documentation_Export.ipynb`
+
+**Tujuan:** Auto-generate dokumentasi repo yang selalu sinkron dengan kondisi pipeline terkini.
+
+**Output:**
+- `notebook.md` — alur modular lengkap seluruh pipeline (deskripsi tiap notebook dan sel utama)
+- `data_dictionary.md` — definisi semua kolom di semua file output
+- `README.md` — README utama repo (di-overwrite oleh notebook ini)
+
+**Yang dilakukan:**
+- Baca metadata dari setiap notebook (nama, input, output, deskripsi)
+- Generate `data_dictionary.md` secara programatik dari schema `income_features.csv` dan `model_contract.json`
+- Tulis ulang `README.md` dengan format standar tim
+
+> Notebook ini dijalankan **terakhir sebelum hand-off** ke AI Engineer untuk memastikan semua dokumentasi up-to-date.
+
+---
+
+### 09 — Model Training & Evaluation
+
+**File:** `09_Model_Training_Evaluation.ipynb`
+
+**Tujuan:** Melatih dan mengevaluasi baseline model regresi (prediksi nilai income) dan klasifikasi (prediksi arah perubahan income), lalu menyimpan model terbaik beserta metrik evaluasi.
+
+**Input:**
+- `outputs/model_contract/income_train.csv`
+- `outputs/model_contract/income_val.csv`
+- `outputs/model_contract/income_test.csv`
+- `outputs/model_contract/feature_columns.json`
+- `outputs/model_contract/income_scalers.pkl`
+- `outputs/model_contract/model_contract.json`
+
+**Output:**
+
+| File | Keterangan |
+|------|-----------|
+| `outputs/model_results/best_income_regressor.pkl` | Model regresi terbaik |
+| `outputs/model_results/best_direction_classifier.pkl` | Model klasifikasi terbaik |
+| `outputs/model_results/regression_metrics.csv` | Metrik semua model regresi (RMSE, MAE, R²) |
+| `outputs/model_results/classification_metrics.csv` | Metrik semua model klasifikasi (accuracy, F1, dll.) |
+| `outputs/model_results/predictions_test.csv` | Prediksi vs aktual di test set |
+| `outputs/model_results/model_evaluation_report.md` | Laporan evaluasi lengkap |
+| `outputs/charts/regression_prediction_vs_actual.png` | Scatter plot actual vs predicted |
+| `outputs/charts/regression_residual_distribution.png` | Distribusi residual |
+| `outputs/charts/classification_confusion_matrix.png` | Confusion matrix klasifikasi |
+| `outputs/charts/feature_importance_best_model.png` | Top 20 feature importance |
+| `outputs/charts/regression_error_by_gig_type.png` | Error breakdown per gig type |
+
+**Alur training (per cell):**
+
+| Cell | Isi |
+|------|-----|
+| 09.3 | Load dataset dan validasi model contract |
+| 09.4 | Prepare X (fitur) dan y (target regresi & klasifikasi) |
+| 09.5 | Train baseline regression models (Linear Regression, Random Forest, Gradient Boosting, dll.) |
+| 09.6 | Evaluasi model regresi terbaik di test set (RMSE, MAE, MAPE, R²) |
+| 09.7 | Train baseline classification models (Logistic Regression, Random Forest, dll.) |
+| 09.8 | Evaluasi model klasifikasi terbaik di test set (accuracy, precision, recall, F1) |
+| 09.9 | Ekstrak feature importance dari model terbaik |
+| 09.10 | Visualisasi: actual vs predicted, residual, confusion matrix, feature importance, error by gig type |
+| 09.11 | Simpan model dan metrik ke disk |
+| 09.12 | Generate `model_evaluation_report.md` |
+| 09.13 | Final validation (cek semua file output tersimpan) |
+| 09.14 | Git push output ke GitHub |
+
+---
+
+### 10 — A/B Testing Income Predictor & Budgeting
+
+**File:** `10_AB_Testing_Income_Predictor_Budgeting.ipynb`
+
+> ⚠️ **Catatan:** Notebook ini menggunakan **synthetic dataset** untuk mensimulasikan pipeline evaluasi fitur. Seluruh hasil harus diinterpretasikan sebagai **proof-of-concept**, bukan sebagai bukti kausalitas atau efektivitas fitur di dunia nyata.
+
+**Tujuan:** Menguji secara simulasi apakah pengguna yang mendapat bantuan prediksi income menghasilkan perencanaan budget yang lebih akurat dibandingkan pengguna yang membuat budget berdasarkan rata-rata historis manual.
+
+> Income Predictor tidak secara langsung mengubah perilaku pengeluaran user — melainkan menghasilkan **planned budget** yang lebih mendekati kemampuan finansial aktual.
+
+**Input:**
+- `data/synthetic/synthetic_52week_user_income.csv`
+- `outputs/model_results/predictions_test.csv` *(opsional — jika tersedia dari notebook 09)*
+
+**Output:**
+- `outputs/reports/ab_testing_report.md` — laporan lengkap hasil A/B test
+- Charts ke `outputs/charts/` — distribusi metrik, comparison bar chart
+
+**Desain eksperimen:**
+
+| Elemen | Deskripsi |
+|--------|-----------|
+| **Control Group** | Budget manual = 70% dari rolling mean 4 minggu income historis |
+| **Treatment Group** | Budget adaptif = 70% dari predicted income (Income Predictor) |
+| **Assignment** | Stratified random 50:50 per `gig_type` |
+| **Primary Metric** | `mean_budget_error` — rata-rata selisih absolut antara planned budget dan ideal budget (actual_income × 70%) |
+| **Secondary Metrics** | `budget_adherence_rate`, `over_budget_rate`, `expense_to_income_ratio`, `saving_allocation_rate`, `budget_gap` |
+
+**Hipotesis:**
+- **H₀**: `mean_budget_error` Treatment = Control
+- **H₁**: `mean_budget_error` Treatment < Control *(one-tailed, α = 0.05)*
+
+**Alur analisis (per cell):**
+
+| Cell | Isi |
+|------|-----|
+| 10.3 | Load data, deteksi kolom fleksibel, load predictions dari NB09, bangun dataset per user-week, stratified assignment |
+| 10.4 | Simulasi planned budget (rolling mean vs predicted), actual expense dengan volatilitas per gig_type, kalkulasi metrik per minggu |
+| 10.5 | Agregasi metrik per user (mean_budget_error, derived metrics) |
+| 10.6 | Visualisasi distribusi metrik: histogram, boxplot, bar chart CI untuk primary & secondary metrics |
+| 10.7 | Uji asumsi: normalitas (Shapiro-Wilk / Lilliefors) dan homogenitas variansi (Levene) → tentukan apakah pakai t-test atau Mann-Whitney U |
+| 10.8 | Uji hipotesis utama + effect size (Cohen's d / rank-biserial) |
+| 10.9 | Analisis secondary metrics (budget adherence, over-budget rate, dll.) |
+| 10.10 | Subgroup analysis per `gig_type` *(eksploratorif, bukan konklusif)* |
+| 10.11 | Power analysis & kalkulasi sample size minimum |
+| 10.12 | Summary visualization ringkasan A/B test |
+| 10.13 | Generate laporan Markdown |
+| 10.14 | Final validation |
+| 10.15 | Git push ke GitHub |
+
+**Decision rule uji statistik:**
+- Data normal → **Welch's t-test** sebagai uji utama
+- Data tidak normal → **Mann-Whitney U** sebagai uji utama (lebih robust)
+
+---
+
+## Output untuk AI Engineer
+
+Semua file yang diperlukan AI Engineer untuk melatih dan mendeploy model tersimpan di:
+
+```
+outputs/model_contract/
+├── income_train.csv        ← Training set (70% users, kronologis)
+├── income_val.csv          ← Validation set (15% users)
+├── income_test.csv         ← Test set held-out (15% users)
+├── income_scalers.pkl      ← StandardScaler fitted on train only
+├── feature_columns.json    ← Daftar kolom fitur yang digunakan model
+└── model_contract.json     ← Metadata pipeline lengkap (schema, target, split info)
+```
+
+Model baseline dan hasil evaluasi tersedia di:
+
+```
+outputs/model_results/
+├── best_income_regressor.pkl       ← Model regresi terbaik
+├── best_direction_classifier.pkl   ← Model klasifikasi terbaik
+├── regression_metrics.csv          ← RMSE, MAE, MAPE, R² per model
+├── classification_metrics.csv      ← Accuracy, F1, Precision, Recall per model
+├── predictions_test.csv            ← Prediksi vs aktual di test set
+└── model_evaluation_report.md      ← Laporan evaluasi naratif
+```
+
+---
+
+## Struktur Direktori
+
+```
 fingo-income-analysis/
-├── Notebook_Income.ipynb
-├── notebook.md
-├── data_dictionary.md
-├── README.md
-├── requirements.txt
+├── notebooks/
+│   ├── 01_Data_Preparation.ipynb
+│   ├── 02_Temporal_Mapping.ipynb
+│   ├── 03_EDA_Survey.ipynb
+│   ├── 04_Synthetic_Data_Generation.ipynb
+│   ├── 05_Feature_Engineering.ipynb
+│   ├── 06_Model_Dataset_Split.ipynb
+│   ├── 07_Bias_Validation.ipynb
+│   ├── 08_Documentation_Export.ipynb
+│   ├── 09_Model_Training_Evaluation.ipynb
+│   └── 10_AB_Testing_Income_Predictor_Budgeting.ipynb
 │
 ├── data/
 │   ├── raw/
-│   │   └── form_responses.csv
-│   │
+│   │   ├── form_responses.csv          ← Survey Google Form (384 responden)
+│   │   └── bps_*.csv                   ← Data referensi BPS
 │   ├── processed/
-│   │   ├── cleaned_survey_data.csv
-│   │   ├── weekly_forecasting_dataset_real_4w.csv
-│   │   ├── real_4w_train.csv
-│   │   └── real_4w_test.csv
-│   │
+│   │   ├── survey_clean.csv
+│   │   ├── survey_temporal_mapped.csv
+│   │   ├── survey_weekly_income_long.csv
+│   │   └── income_features.csv
 │   └── synthetic/
 │       ├── synthetic_52week_user_income.csv
-│       ├── synthetic_52week_weekly_forecasting_dataset.csv
-│       ├── synthetic_52w_train.csv
-│       └── synthetic_52w_test.csv
+│       └── synthetic_params.json
 │
 ├── outputs/
-│   ├── dashboard/
-│   │   ├── synthetic_quality_summary.csv
-│   │   ├── model_performance_summary.csv
-│   │   ├── real_4w_income_summary.csv
-│   │   ├── synthetic_52w_income_summary.csv
-│   │   ├── synthetic_monthly_trend_summary.csv
-│   │   ├── synthetic_seasonal_event_summary.csv
-│   │   ├── dataset_comparison_summary.csv
-│   │   ├── direction_threshold_summary.csv
-│   │   ├── seasonal_event_income_summary.csv
-│   │   ├── gig_type_distribution.csv
-│   │   └── data_dictionary.csv
-│   │
-│   ├── model_contract/
-│   │   ├── final_weekly_features.json
-│   │   ├── target_contract.json
-│   │   └── leakage_rules.md
-│   │
-│   ├── model_results/
-│   │   ├── synthetic_52w_regression_results.csv
-│   │   ├── synthetic_52w_classification_results.csv
-│   │   ├── real_4w_regression_results.csv
-│   │   └── feature_importance_weekly.csv
-│   │
-│   ├── preprocessors/
-│   │   ├── weekly_target_scaler.pkl
-│   │   ├── weekly_feature_scaler.pkl
-│   │   ├── gig_label_encoder.pkl
-│   │   ├── dom_label_encoder.pkl
-│   │   └── direction_label_encoder.pkl
-│   │
-│   └── reports/
-│       ├── data_assessing_summary.csv
-│       ├── data_dictionary.csv
-│       ├── form_column_mapping.json
-│       └── technical_report.md
+│   ├── model_contract/                 ← Hand-off ke AI Engineer
+│   ├── model_results/                  ← Hasil training & evaluasi
+│   ├── charts/                         ← Visualisasi
+│   ├── dashboard/                      ← Dashboard CSV
+│   └── reports/                        ← Laporan Markdown
+│ 
+├── streamlit/
+│   ├── app.py/  
+│   └── requirements.txt/                           
+│
+├── README.md                           ← File ini
+├── notebook.md                         ← Alur modular lengkap
+└── data_dictionary.md                  ← Definisi semua kolom
 ```
 
 ---
 
-## 6. Alur Notebook
+## Dokumentasi Lanjutan
 
-Detail lengkap tersedia di [`notebook.md`](notebook.md). Ringkasannya:
-
-| Bagian | Proses | Output |
-|---:|---|---|
-| 0 | Setup repo, folder, library, helper functions | Struktur folder siap pakai |
-| 1 | Problem discovery | Definisi masalah dan solusi |
-| 2 | Business questions | Arah analisis dan validasi |
-| 3 | Data gathering | Load survey dan BPS |
-| 3.5 | Form response mapping | Mapping kolom dan opsi Google Form |
-| 4 | Data assessing | Ringkasan kualitas data |
-| 5 | Data cleaning | Survey bersih tanpa PII |
-| 6 | EDA survey asli | Distribusi gig type, domisili, income |
-| 7 | Survey distribution profiling | Baseline synthetic generation |
-| 8 | Real 4-week sanity dataset | Dataset real 4 minggu |
-| 9 | Generate synthetic users | 3.000 user × 52 minggu |
-| 10 | Generate weekly forecasting dataset | 144.000 forecasting rows |
-| 11 | Train/test split by user | Train 2.400 user, test 600 user |
-| 12 | Feature engineering + anti-leakage | Final feature columns |
-| 13 | Evaluation helper functions | Fungsi evaluasi regresi/klasifikasi |
-| 14 | Baseline model training | Model results CSV |
-| 15 | Synthetic quality validation | Validasi synthetic vs real |
-| 16 | A/B testing simulation | Simulasi treatment impact |
-| 17 | Dashboard CSV files | File ringkasan dashboard |
-| 18 | Data dictionary | Schema output |
-| 19 | Model contract | Kontrak AI Engineer |
-| 20 | Technical report | Report akhir |
-| 21 | Final validation checklist | 17/17 PASS |
-| 22 | Output summary + GitHub push | Ringkasan file final |
+- [notebook.md](notebook.md) — alur modular lengkap, deskripsi tiap cell per notebook
+- [data_dictionary.md](data_dictionary.md) — definisi semua kolom di semua file output
 
 ---
 
-## 7. Output Utama untuk AI Engineer
-
-AI Engineer sebaiknya memulai dari file berikut.
-
-| Prioritas | File | Fungsi |
-|---|---|---|
-| Wajib | `data/synthetic/synthetic_52w_train.csv` | Dataset training utama untuk model forecasting. |
-| Wajib | `data/synthetic/synthetic_52w_test.csv` | Dataset evaluasi final. |
-| Wajib | `outputs/model_contract/final_weekly_features.json` | Urutan fitur final yang harus dipakai model. |
-| Wajib | `outputs/model_contract/target_contract.json` | Definisi target regresi, target klasifikasi, threshold, dan ekspektasi metrik. |
-| Wajib | `outputs/model_contract/leakage_rules.md` | Aturan kolom yang tidak boleh masuk fitur. |
-| Wajib | `outputs/preprocessors/weekly_target_scaler.pkl` | Scaler target untuk transformasi `log1p` → `MinMaxScaler`. |
-| Wajib | `outputs/preprocessors/weekly_feature_scaler.pkl` | Scaler fitur untuk preprocessing inference/training lanjutan. |
-| Opsional | `data/synthetic/synthetic_52week_weekly_forecasting_dataset.csv` | Full synthetic forecasting dataset sebelum split. |
-| Opsional | `data/processed/weekly_forecasting_dataset_real_4w.csv` | Real 4-week dataset untuk sanity check, bukan training utama. |
-| Opsional | `outputs/model_results/*.csv` | Referensi baseline model. |
-| Opsional | `outputs/dashboard/*.csv` | Data ringkasan untuk dashboard dan presentasi. |
-
-Detail kolom dan isi output tersedia di [`data_dictionary.md`](data_dictionary.md).
-
----
-
-## 8. Kontrak Fitur dan Target
-
-### 8.1 Target Regresi
-
-```text
-next_week_income
-```
-
-Target ini berisi nominal pendapatan minggu berikutnya dalam rupiah.
-
-### 8.2 Target Klasifikasi
-
-```text
-next_week_direction
-```
-
-Kelas target:
-
-| Class | Definisi |
-|---|---|
-| `Up` | Pendapatan naik minimal 10% dibanding minggu sebelumnya. |
-| `Down` | Pendapatan turun minimal 10% dibanding minggu sebelumnya. |
-| `Stable` | Perubahan berada di antara -10% sampai +10%. |
-
-Aturan threshold:
-
-```text
-Up     jika pct_change >=  0.10
-Down   jika pct_change <= -0.10
-Stable otherwise
-```
-
-### 8.3 Urutan Income
-
-Urutan historis income harus dibaca sebagai berikut:
-
-```text
-income_w4 → income_w3 → income_w2 → income_w1 → next_week_income
-```
-
-Keterangan:
-
-- `income_w4` = pendapatan paling lama, 4 minggu lalu.
-- `income_w1` = pendapatan terbaru, minggu lalu.
-- `next_week_income` = pendapatan yang ingin diprediksi.
-
-### 8.4 Fitur Final
-
-Urutan fitur final **jangan ditulis manual di kode model**. AI Engineer harus membaca dari:
-
-```text
-outputs/model_contract/final_weekly_features.json
-```
-
-Gunakan key:
-
-```json
-feature_order_synthetic
-```
-
-### 8.5 Kolom yang Dilarang Masuk Feature
-
-Kolom berikut tidak boleh masuk sebagai input model karena menyebabkan leakage:
-
-```text
-next_week_income
-next_week_income_norm
-next_week_direction
-monthly_income
-avg_weekly_income
-income_std_4w
-income_cv_4w
-income_range_4w
-income_w1
-income_w2
-income_w3
-income_w4
-synthetic_weekly_income
-```
-
----
-
-## 9. Validasi Kualitas dan Anti-Leakage
-
-Pipeline ini memiliki checklist validasi akhir dengan hasil:
-
-```text
-17/17 PASSED
-```
-
-Validasi utama:
-
-| Validasi | Status |
-|---|---|
-| Survey dimuat 384 responden | PASS |
-| 8 gig type preserved | PASS |
-| Direction threshold 10% | PASS |
-| Income sequence w4 → w1 benar | PASS |
-| Synthetic 3.000 users generated | PASS |
-| 52 minggu per user | PASS |
-| Synthetic autocorrelation > 0.3 | PASS |
-| Anti-leakage synthetic | PASS |
-| Anti-leakage real | PASS |
-| Split by user, bukan random row | PASS |
-| Scaler fit on train only | PASS |
-| Feature contract saved | PASS |
-| Technical report saved | PASS |
-
-Catatan penting:
-
-- Split dilakukan berdasarkan `synthetic_user_id`, bukan random rows.
-- Scaler hanya di-fit pada train set.
-- Survey real digunakan sebagai baseline/sanity check, bukan training utama.
-- Synthetic data dibuat dengan AR(1), shock, seasonal effect, dan variasi per gig type agar tidak terlalu smooth.
-
----
-
-## 10. Hasil Baseline Modeling
-
-### 10.1 Regression — Synthetic 52w
-
-| Model | MAE | RMSE | MAPE (%) | R² | Within 30% |
-|---|---:|---:|---:|---:|---:|
-| Baseline Last Week | 61,269.82 | 134,376.69 | 89.49 | 0.8033 | 83.04 |
-| Baseline Rolling Mean | 75,421.62 | 146,231.32 | 91.97 | 0.7671 | 78.99 |
-| Ridge | 55,217.82 | 123,803.89 | 88.28 | 0.8331 | 87.91 |
-| Random Forest | 53,313.63 | 124,139.65 | 86.57 | 0.8322 | 89.15 |
-| XGBoost | 53,050.14 | 124,097.90 | 82.64 | 0.8323 | 89.15 |
-
-Interpretasi:
-
-- **XGBoost** memiliki MAE terbaik.
-- **Ridge** memiliki R² sedikit tertinggi.
-- **Within30% sekitar 89%** menunjukkan mayoritas prediksi berada dalam toleransi ±30%.
-- MAPE terlihat tinggi karena sebagian target mingguan bernilai sangat kecil/near-zero, sehingga persentase error menjadi sensitif. Untuk evaluasi lanjutan, gunakan kombinasi MAE, RMSE, R², Within30%, dan normalized MAE.
-
-### 10.2 Classification — Synthetic 52w
-
-| Model | Accuracy | Macro F1 | Precision | Recall |
-|---|---:|---:|---:|---:|
-| Baseline Majority | 63.21 | 25.82 | 21.07 | 33.33 |
-| Rule-based Momentum | 65.24 | 48.80 | 48.83 | 48.78 |
-| Random Forest | 79.04 | 63.23 | 75.63 | 60.67 |
-| XGBoost | 79.02 | 63.34 | 74.97 | 60.73 |
-
-Interpretasi:
-
-- Model tree-based jauh lebih baik daripada baseline majority.
-- Random Forest unggul tipis pada accuracy.
-- XGBoost unggul tipis pada Macro F1.
-- Target realistis untuk klasifikasi awal: **60–75% accuracy** sudah cukup baik; hasil baseline sudah melewati target tersebut.
-
----
-
-## 11. Dashboard dan Report
-
-Output dashboard tersedia di:
-
-```text
-outputs/dashboard/
-```
-
-File penting:
-
-| File | Fungsi |
-|---|---|
-| `real_4w_income_summary.csv` | Ringkasan income dari survey real. |
-| `synthetic_52w_income_summary.csv` | Ringkasan income synthetic 52 minggu. |
-| `synthetic_monthly_trend_summary.csv` | Trend pendapatan bulanan. |
-| `synthetic_seasonal_event_summary.csv` | Ringkasan income saat event musiman. |
-| `dataset_comparison_summary.csv` | Perbandingan real vs synthetic. |
-| `model_performance_summary.csv` | Ringkasan performa model. |
-| `synthetic_quality_summary.csv` | Validasi kualitas synthetic data. |
-
-Technical report tersedia di:
-
-```text
-outputs/reports/technical_report.md
-```
-
----
-
-## 12. Setup dan Cara Menjalankan
-
-### 12.1 Clone Repository
-
-```bash
-git clone https://github.com/ClarisyaA/fingo-income-analysis.git
-cd fingo-income-analysis
-```
-
-### 12.2 Buat Virtual Environment
-
-```bash
-python -m venv .venv
-```
-
-Aktivasi:
-
-```bash
-# Windows
-.venv\Scripts\activate
-
-# macOS/Linux
-source .venv/bin/activate
-```
-
-### 12.3 Install Dependency
-
-```bash
-pip install -r requirements.txt
-```
-
-### 12.4 Jalankan Notebook
-
-```bash
-jupyter notebook Notebook_Income.ipynb
-```
-
-Jalankan seluruh cell dari awal sampai akhir.
-
-Output akan tersimpan ke:
-
-```text
-data/processed/
-data/synthetic/
-outputs/dashboard/
-outputs/model_results/
-outputs/model_contract/
-outputs/preprocessors/
-outputs/reports/
-```
-
----
-
-## 13. Catatan Penting untuk Development Lanjutan
-
-### Untuk AI Engineer
-
-- Jangan hardcode urutan fitur. Ambil dari `final_weekly_features.json`.
-- Jangan memasukkan kolom target atau income raw yang dilarang ke dalam input model.
-- Gunakan split by user agar tidak ada user yang sama muncul di train dan test.
-- Gunakan scaler yang sudah disimpan jika ingin menjaga konsistensi preprocessing.
-- Gunakan `synthetic_52w_train.csv` dan `synthetic_52w_test.csv` sebagai dataset utama.
-- Gunakan real 4-week dataset hanya untuk sanity check, bukan training utama.
-
-### Untuk Data Scientist
-
-- Jika menambah data survey baru, jalankan ulang cleaning dan distribution profiling.
-- Jika mengubah threshold direction, update juga `target_contract.json` dan `leakage_rules.md`.
-- Jika mengubah feature engineering, update `final_weekly_features.json` dan `data_dictionary.md`.
-- Jika synthetic generation diubah, lakukan ulang validasi quality dan checklist akhir.
-
-### Untuk Backend / Product
-
-- Prediksi bulanan dapat dibuat dari akumulasi 4 prediksi mingguan.
-- Output model bisa dipakai untuk menampilkan insight seperti:
-  - estimasi pendapatan minggu depan;
-  - arah pendapatan: naik/stabil/turun;
-  - risiko volatilitas pendapatan;
-  - rekomendasi budgeting adaptif.
-
----
-
-## 14. Dokumentasi Tambahan
-
-| Dokumen | Isi |
-|---|---|
-| [`notebook.md`](notebook.md) | Alur lengkap proses yang dilakukan di notebook. |
-| [`data_dictionary.md`](data_dictionary.md) | Data dictionary dan daftar output untuk AI Engineer. |
-| `outputs/reports/technical_report.md` | Technical report hasil pipeline. |
-| `outputs/model_contract/leakage_rules.md` | Aturan anti-leakage. |
-| `outputs/model_contract/target_contract.json` | Kontrak target regresi dan klasifikasi. |
-| `outputs/model_contract/final_weekly_features.json` | Kontrak fitur final. |
-
----
-
-## 15. Tim dan Lisensi
-
-**Capstone:** Coding Camp 2026 × DBS Foundation  
-**Tim:** CC26-PSU217  
-**Data Scientist 2:** Clarisya Adeline  
-**Repository:** `fingo-income-analysis`
-
-Dataset real survey digunakan untuk kebutuhan akademik/capstone. Dataset synthetic dan kode pipeline digunakan untuk pengembangan fitur Fingo serta dokumentasi teknis tim.
-
----
-
-## Status Akhir
-
-Pipeline sudah menghasilkan seluruh output utama yang dibutuhkan AI Engineer:
-
-- Dataset train/test synthetic.
-- Dataset real 4-week untuk sanity check.
-- Scaler dan encoder.
-- Model results.
-- Dashboard CSV.
-- Technical report.
-- Feature contract.
-- Target contract.
-- Leakage rules.
-- Data dictionary.
-- Notebook process documentation.
-
-**Final validation:** `17/17 PASSED`.
+*Generated by `08_Documentation_Export.ipynb` | Last updated: Mei 2026 | Tim CC26-PSU217*
