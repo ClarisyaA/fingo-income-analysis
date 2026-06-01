@@ -503,10 +503,36 @@ def load_survey():
     return df
 
 @st.cache_data(show_spinner=False)
+def load_survey_weekly_long():
+    p = _try_paths(INCOME_PROC_DIR / "survey_weekly_income_long.csv")
+    if not p: return None
+    df = pd.read_csv(p)
+    for c in ["period_start", "period_end"]:
+        if c in df.columns:
+            df[c] = pd.to_datetime(df[c], errors="coerce")
+    return df
+
+@st.cache_data(show_spinner=False)
 def load_synthetic():
     p = _try_paths(INCOME_SYNTH_DIR / "synthetic_52week_user_income.csv")
     if not p: return None
     return pd.read_csv(p)
+
+@st.cache_data(show_spinner=False)
+def load_income_features():
+    p = _try_paths(INCOME_PROC_DIR / "income_features.csv")
+    if not p: return None
+    return pd.read_csv(p)
+
+@st.cache_data(show_spinner=False)
+def load_training_metadata():
+    p = _try_paths(INCOME_RESULTS_DIR / "training_metadata.json")
+    if not p: return None
+    try:
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 @st.cache_data(show_spinner=False)
 def load_regression_metrics():
@@ -544,6 +570,24 @@ def load_impulsive_test():
     )
     if not p: return None
     return pd.read_csv(p)
+
+@st.cache_data(show_spinner=False)
+def load_impulsive_split_summary():
+    paths = {
+        "Train": _try_paths(IMP_SPLIT_DIR / "train_df.csv"),
+        "Validation": _try_paths(IMP_SPLIT_DIR / "validation_df.csv"),
+        "Test": _try_paths(IMP_SPLIT_DIR / "test_df.csv"),
+    }
+    summary = {}
+    for name, path in paths.items():
+        if path:
+            try:
+                summary[name] = len(pd.read_csv(path, usecols=[0]))
+            except Exception:
+                summary[name] = None
+        else:
+            summary[name] = None
+    return summary
 
 @st.cache_resource(show_spinner=False)
 def load_income_bundle():
@@ -786,16 +830,73 @@ with st.sidebar:
     ], label_visibility="collapsed")
 
     st.markdown("<hr style='border-color:var(--border);margin:1rem 0'>", unsafe_allow_html=True)
-    df_s  = load_survey()
+
+    df_s = load_survey()
     df_sy = load_synthetic()
-    n_resp  = len(df_s) if df_s is not None else 0
-    n_users = (df_sy["synthetic_user_id"].nunique()
-               if df_sy is not None and "synthetic_user_id" in df_sy.columns else 0)
+    df_imp_sidebar = load_impulsive_data()
+    imp_split = load_impulsive_split_summary()
+    imp_eval_pred = load_impulsive_official_predictions()
+    income_meta = load_training_metadata()
+
+    n_resp = len(df_s) if df_s is not None else 0
+    n_users = (
+        df_sy["synthetic_user_id"].nunique()
+        if df_sy is not None and "synthetic_user_id" in df_sy.columns else 0
+    )
+    n_synth_rows = len(df_sy) if df_sy is not None else 0
+    n_income_features = (
+        int(income_meta.get("train_rows", 0))
+        + int(income_meta.get("val_rows", 0))
+        + int(income_meta.get("test_rows", 0))
+        if income_meta is not None else 0
+    )
+    n_imp_rows = len(df_imp_sidebar) if df_imp_sidebar is not None else 0
+    n_imp_eval = len(imp_eval_pred) if imp_eval_pred is not None else 0
+
+    if module == "Income Predictor":
+        sidebar_title = "Income Predictor Data"
+        sidebar_owner = "DS2: Clarisya Adeline"
+        sidebar_scope = "Repo income analysis"
+        sidebar_rows = [
+            ("Responden Survey", f"{n_resp:,}"),
+            ("Synthetic Users", f"{n_users:,}"),
+            ("Synthetic Rows", f"{n_synth_rows:,}"),
+            ("Model Rows", f"{n_income_features:,}" if n_income_features else "N/A"),
+        ]
+    elif module == "Impulsive Detector":
+        sidebar_title = "Impulsive Detector Data"
+        sidebar_owner = "DS1: Nayyara"
+        sidebar_scope = "Transaction labeling"
+        sidebar_rows = [
+            ("Labeled Transactions", f"{n_imp_rows:,}"),
+            ("Train Rows", f"{imp_split.get('Train'):,}" if imp_split.get("Train") is not None else "N/A"),
+            ("Validation Rows", f"{imp_split.get('Validation'):,}" if imp_split.get("Validation") is not None else "N/A"),
+            ("Test Rows", f"{imp_split.get('Test'):,}" if imp_split.get("Test") is not None else "N/A"),
+            ("Eval Predictions", f"{n_imp_eval:,}" if n_imp_eval else "N/A"),
+        ]
+    else:
+        sidebar_title = "Project Data Snapshot"
+        sidebar_owner = "CC26-PSU217"
+        sidebar_scope = "Fingo Team"
+        sidebar_rows = [
+            ("Income Survey", f"{n_resp:,}"),
+            ("Income Synthetic Users", f"{n_users:,}"),
+            ("Impulsive Transactions", f"{n_imp_rows:,}"),
+            ("Tim", "CC26-PSU217"),
+        ]
+
+    sidebar_rows_html = "".join(
+        f'<div class="kv-row"><span class="kv-key">{k}</span><span class="kv-val">{v}</span></div>'
+        for k, v in sidebar_rows
+    )
     st.markdown(f"""
     <div style="font-size:.73rem;color:var(--fg-muted);line-height:2">
-        <div class="kv-row"><span class="kv-key">Responden Survey</span><span class="kv-val">{n_resp:,}</span></div>
-        <div class="kv-row"><span class="kv-key">Synthetic Users</span><span class="kv-val">{n_users:,}</span></div>
-        <div class="kv-row"><span class="kv-key">Tim</span><span class="kv-val">CC26-PSU217</span></div>
+        <div style="font-size:.72rem;font-weight:700;color:#E8EDE9;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.45rem">
+            {sidebar_title}
+        </div>
+        {sidebar_rows_html}
+        <div class="kv-row"><span class="kv-key">Owner</span><span class="kv-val">{sidebar_owner}</span></div>
+        <div class="kv-row"><span class="kv-key">Scope</span><span class="kv-val">{sidebar_scope}</span></div>
     </div>""", unsafe_allow_html=True)
     st.markdown("<hr style='border-color:var(--border);margin:1rem 0'>", unsafe_allow_html=True)
     st.markdown(
@@ -1136,7 +1237,7 @@ if module == "Insight & Kesimpulan":
 # MODULE 2 - INCOME PREDICTOR
 # ══════════════════════════════════════════════════════════════════════════════
 elif module == "Income Predictor":
-    tabs = st.tabs(["Overview Pipeline","Evaluasi Model","Visualisasi",
+    tabs = st.tabs(["Overview Pipeline","EDA & Dataset","Evaluasi Model","Visualisasi",
                     "Coba Prediksi","A/B Testing","Fingo Assistant"])
 
     with tabs[0]:
@@ -1196,6 +1297,238 @@ elif module == "Income Predictor":
                 </div>""", unsafe_allow_html=True)
 
     with tabs[1]:
+        st.markdown("""
+        <div class="page-header">
+            <h1>EDA & Dataset Income Predictor</h1>
+            <p>Ringkasan eksplorasi dari notebook 01-07: survey, temporal mapping, synthetic data, feature engineering, dan bias validation</p>
+        </div>""", unsafe_allow_html=True)
+
+        df_s = load_survey()
+        df_w = load_survey_weekly_long()
+        df_sy = load_synthetic()
+        df_feat = load_income_features()
+        meta = load_training_metadata()
+
+        n_resp = len(df_s) if df_s is not None else 0
+        n_weekly = len(df_w) if df_w is not None else 0
+        n_synth_users = df_sy["synthetic_user_id"].nunique() if df_sy is not None and "synthetic_user_id" in df_sy.columns else 0
+        n_feature_rows = len(df_feat) if df_feat is not None else 0
+
+        mean_weekly = df_w["weekly_income"].mean() if df_w is not None and "weekly_income" in df_w.columns else None
+        median_weekly = df_w["weekly_income"].median() if df_w is not None and "weekly_income" in df_w.columns else None
+        avg_cv = df_s["income_cv_4w"].mean() if df_s is not None and "income_cv_4w" in df_s.columns else None
+        top_gig = (
+            df_s["gig_type"].value_counts().idxmax()
+            if df_s is not None and "gig_type" in df_s.columns and len(df_s) > 0 else None
+        )
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Survey Respondents", f"{n_resp:,}")
+        c2.metric("Weekly Survey Rows", f"{n_weekly:,}")
+        c3.metric("Synthetic Users", f"{n_synth_users:,}")
+        c4.metric("Feature Rows", f"{n_feature_rows:,}")
+
+        c5, c6, c7, c8 = st.columns(4)
+        c5.metric("Mean Weekly Income", fmt_idr_full(mean_weekly))
+        c6.metric("Median Weekly Income", fmt_idr_full(median_weekly))
+        c7.metric("Avg Income CV 4w", f"{avg_cv:.3f}" if avg_cv is not None else "N/A")
+        c8.metric("Top Gig Type", GIG_LABELS.get(top_gig, top_gig) if top_gig else "N/A")
+
+        st.markdown("""
+        <div class="panel">
+            <h3>Inti Temuan EDA</h3>
+            <p>
+            Survey real digunakan sebagai anchor distribusi pendapatan, lalu dipetakan ke kalender agar
+            pola mingguan, week-of-month, dan seasonal signal bisa terbaca. Dataset sintetis 52 minggu
+            dibangun dari distribusi survey dengan AR(1), shock/noise per gig type, serta event seperti
+            payday, Ramadan/Lebaran, Harbolnas, dan akhir tahun. Fitur model kemudian dibentuk dengan
+            sliding window 4 minggu sehingga target minggu depan tidak bocor ke input model.
+            </p>
+        </div>""", unsafe_allow_html=True)
+
+        eda_tabs = st.tabs(["Survey EDA", "Temporal Mapping", "Synthetic & Bias", "Feature Engineering"])
+
+        with eda_tabs[0]:
+            st.markdown('<div class="section-header">Distribusi Survey</div>', unsafe_allow_html=True)
+
+            chart_cols = st.columns(2, gap="large")
+            for idx, (fn, cap) in enumerate([
+                ("gig_type_distribution.png", "Distribusi responden per gig type"),
+                ("income_by_gig_type.png", "Distribusi pendapatan mingguan per gig type"),
+                ("weekly_income_trend_w4_to_w1.png", "Tren income survey dari W4 ke W1"),
+                ("eda_income_rw_by_gig.png", "Relative week income per gig type"),
+            ]):
+                p = OUTPUTS_DIR / "charts" / fn
+                if p.exists():
+                    with chart_cols[idx % 2]:
+                        st.image(str(p), caption=cap, use_container_width=True)
+
+            if df_w is not None and "weekly_income" in df_w.columns:
+                st.markdown('<div class="section-header">Ringkasan Relative Week</div>', unsafe_allow_html=True)
+                rel = (
+                    df_w.groupby("income_col")["weekly_income"]
+                    .agg(["count", "mean", "median", "std"])
+                    .reset_index()
+                )
+                rel["Urutan"] = rel["income_col"].map({
+                    "income_w1": "W1 - terbaru",
+                    "income_w2": "W2",
+                    "income_w3": "W3",
+                    "income_w4": "W4 - terlama",
+                }).fillna(rel["income_col"])
+                for c in ["mean", "median", "std"]:
+                    rel[c] = rel[c].apply(fmt_idr_full)
+                st.dataframe(
+                    rel[["Urutan", "count", "mean", "median", "std"]],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            summary_path = INCOME_REPORTS_DIR / "survey_eda_summary.md"
+            if summary_path.exists():
+                with st.expander("Baca ringkasan EDA survey dari notebook 03"):
+                    with open(summary_path, encoding="utf-8") as f:
+                        st.markdown(f.read())
+
+        with eda_tabs[1]:
+            st.markdown('<div class="section-header">Temporal Mapping</div>', unsafe_allow_html=True)
+            st.markdown("""
+            <div class="panel">
+                <p>
+                Notebook 02 mengubah income_w1 sampai income_w4 menjadi periode kalender:
+                <strong style="color:#E8EDE9">income_w1</strong> adalah H-7 sampai H-1 dari timestamp responden,
+                sedangkan <strong style="color:#E8EDE9">income_w4</strong> adalah periode terlama.
+                Mapping ini dipakai untuk membaca month, week_of_month, ISO week, dan pola seasonal.
+                </p>
+            </div>""", unsafe_allow_html=True)
+
+            chart_cols = st.columns(2, gap="large")
+            for idx, (fn, cap) in enumerate([
+                ("temporal_mapping_overview.png", "Overview temporal mapping"),
+                ("eda_calendar_month_wom.png", "Income by calendar month dan week of month"),
+                ("eda_calendar_month_wom_relative_week.png", "Calendar pattern by relative week"),
+            ]):
+                p = OUTPUTS_DIR / "charts" / fn
+                if p.exists():
+                    with chart_cols[idx % 2]:
+                        st.image(str(p), caption=cap, use_container_width=True)
+
+            if df_w is not None and {"calendar_month", "week_of_month", "weekly_income"}.issubset(df_w.columns):
+                st.markdown('<div class="section-header">Mean Income by Month & Week of Month</div>', unsafe_allow_html=True)
+                wom = (
+                    df_w.groupby(["calendar_month", "week_of_month"])["weekly_income"]
+                    .agg(["count", "mean", "median"])
+                    .reset_index()
+                    .sort_values(["calendar_month", "week_of_month"])
+                )
+                wom["mean"] = wom["mean"].apply(fmt_idr_full)
+                wom["median"] = wom["median"].apply(fmt_idr_full)
+                st.dataframe(wom, use_container_width=True, hide_index=True)
+
+        with eda_tabs[2]:
+            st.markdown('<div class="section-header">Synthetic Data Generation & Bias Validation</div>', unsafe_allow_html=True)
+            s1, s2, s3, s4 = st.columns(4)
+            synth_rows = len(df_sy) if df_sy is not None else 0
+            synth_mean = df_sy["synthetic_weekly_income"].mean() if df_sy is not None and "synthetic_weekly_income" in df_sy.columns else None
+            synth_min = df_sy["synthetic_weekly_income"].min() if df_sy is not None and "synthetic_weekly_income" in df_sy.columns else None
+            synth_max = df_sy["synthetic_weekly_income"].max() if df_sy is not None and "synthetic_weekly_income" in df_sy.columns else None
+            s1.metric("Synthetic Rows", f"{synth_rows:,}")
+            s2.metric("Mean Synthetic Income", fmt_idr_full(synth_mean))
+            s3.metric("Min Synthetic Income", fmt_idr_full(synth_min))
+            s4.metric("Max Synthetic Income", fmt_idr_full(synth_max))
+
+            p = OUTPUTS_DIR / "charts" / "bias_validation_charts.png"
+            if p.exists():
+                st.image(str(p), caption="Bias validation charts", use_container_width=True)
+
+            col_l, col_r = st.columns(2, gap="large")
+            with col_l:
+                st.markdown('<div class="section-header">Synthetic vs Survey per Gig Type</div>', unsafe_allow_html=True)
+                vp = INCOME_REPORTS_DIR / "gig_type_income_validation.csv"
+                if vp.exists():
+                    val = pd.read_csv(vp)
+                    for c in ["real_median_weekly", "synthetic_median_weekly"]:
+                        if c in val.columns:
+                            val[c] = val[c].apply(fmt_idr_full)
+                    if "pct_diff" in val.columns:
+                        val["pct_diff"] = val["pct_diff"].apply(lambda v: f"{v:.2f}%")
+                    st.dataframe(val, use_container_width=True, hide_index=True)
+                else:
+                    no_data("gig_type_income_validation.csv belum tersedia.")
+
+            with col_r:
+                st.markdown('<div class="section-header">BPS Range Validation</div>', unsafe_allow_html=True)
+                bp = INCOME_REPORTS_DIR / "bps_range_validation.csv"
+                if bp.exists():
+                    bps = pd.read_csv(bp)
+                    for c in ["synthetic_mean", "bps_weekly"]:
+                        if c in bps.columns:
+                            bps[c] = bps[c].apply(fmt_idr_full)
+                    if "ratio" in bps.columns:
+                        bps["ratio"] = bps["ratio"].apply(lambda v: f"{v:.2f}x")
+                    st.dataframe(bps, use_container_width=True, hide_index=True)
+                else:
+                    no_data("bps_range_validation.csv belum tersedia.")
+
+            rp = INCOME_REPORTS_DIR / "bias_validation_report.md"
+            if rp.exists():
+                with st.expander("Baca bias validation report dari notebook 07"):
+                    with open(rp, encoding="utf-8") as f:
+                        st.markdown(f.read())
+
+        with eda_tabs[3]:
+            st.markdown('<div class="section-header">Feature Engineering & Split Contract</div>', unsafe_allow_html=True)
+            if meta is not None:
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Feature Count", f"{meta.get('feature_count', 0):,}")
+                m2.metric("Train Rows", f"{meta.get('train_rows', 0):,}")
+                m3.metric("Val Rows", f"{meta.get('val_rows', 0):,}")
+                m4.metric("Test Rows", f"{meta.get('test_rows', 0):,}")
+                st.caption(
+                    f"Split strategy: {meta.get('split_strategy', 'N/A')} | "
+                    f"Anti-leakage check: {meta.get('anti_leakage_check', 'N/A')}"
+                )
+
+            if df_feat is not None:
+                col_l, col_r = st.columns(2, gap="large")
+                with col_l:
+                    if "next_week_direction" in df_feat.columns:
+                        st.markdown('<div class="section-header">Target Direction Distribution</div>', unsafe_allow_html=True)
+                        target_dist = (
+                            df_feat["next_week_direction"]
+                            .value_counts(normalize=False)
+                            .rename_axis("direction")
+                            .reset_index(name="count")
+                        )
+                        target_dist["share"] = (target_dist["count"] / target_dist["count"].sum() * 100).apply(lambda v: f"{v:.2f}%")
+                        st.dataframe(target_dist, use_container_width=True, hide_index=True)
+
+                with col_r:
+                    if "seasonal_event_type" in df_feat.columns:
+                        st.markdown('<div class="section-header">Seasonal Event Coverage</div>', unsafe_allow_html=True)
+                        events = (
+                            df_feat["seasonal_event_type"]
+                            .fillna("normal")
+                            .value_counts()
+                            .rename_axis("event")
+                            .reset_index(name="count")
+                        )
+                        events["share"] = (events["count"] / events["count"].sum() * 100).apply(lambda v: f"{v:.2f}%")
+                        st.dataframe(events, use_container_width=True, hide_index=True)
+
+                st.markdown('<div class="section-header">Contoh Feature Row</div>', unsafe_allow_html=True)
+                preview_cols = [
+                    "synthetic_user_id", "target_week_index", "next_week_income", "next_week_direction",
+                    "lag_1_income", "lag_2_income", "lag_3_income", "lag_4_income",
+                    "rolling_mean_4w", "income_growth_1w", "income_volatility",
+                    "target_month", "target_week_of_month", "seasonal_event_type", "gig_type",
+                ]
+                preview_cols = [c for c in preview_cols if c in df_feat.columns]
+                st.dataframe(df_feat[preview_cols].head(20), use_container_width=True, hide_index=True)
+            else:
+                no_data("income_features.csv belum tersedia di data/processed/.")
+
+    with tabs[2]:
         st.markdown("""
         <div class="page-header">
             <h1>Evaluasi Model</h1>
@@ -1402,7 +1735,7 @@ elif module == "Income Predictor":
                 "Ini menjelaskan mengapa accuracy cukup tinggi tetapi Macro F1 masih 0.6105."
             )
 
-    with tabs[2]:
+    with tabs[3]:
         st.markdown("""
         <div class="page-header">
             <h1>Visualisasi</h1>
@@ -1495,7 +1828,7 @@ elif module == "Income Predictor":
                 for fn in found_charts:
                     st.write(fn)
 
-    with tabs[3]:
+    with tabs[4]:
         st.markdown("""
         <div class="page-header">
             <h1>Coba Prediksi Pendapatan</h1>
@@ -1790,7 +2123,7 @@ elif module == "Income Predictor":
                 st.info(
                     "Pendapatan diprediksi stabil. Pertahankan pola pengeluaran dan pastikan tabungan tetap konsisten."
                 )
-    with tabs[4]:
+    with tabs[5]:
         st.markdown("""
         <div class="page-header">
             <h1>Hasil A/B Testing - Income Predictor</h1>
@@ -1840,8 +2173,8 @@ elif module == "Income Predictor":
             ("ab_income_predictor_subgroup.png","Analisis Subgroup per Jenis Pekerjaan"),
             ("ab_income_predictor_qq_plot.png","Q-Q Plot Uji Normalitas"),
         ]:
-            p = INCOME_CHARTS_DIR/cn
-            if p.exists(): st.image(str(p), caption=cap, use_container_width=True)
+            p = _try_paths(INCOME_CHARTS_DIR / cn, OUTPUTS_DIR / "charts" / cn)
+            if p: st.image(str(p), caption=cap, use_container_width=True)
         st.markdown("<hr>", unsafe_allow_html=True)
         st.dataframe(pd.DataFrame([{
             "Metrik": "Budget Error",
@@ -1858,7 +2191,7 @@ elif module == "Income Predictor":
             with st.expander("Baca laporan lengkap A/B Testing"):
                 with open(rp,encoding="utf-8") as f: st.markdown(f.read())
         
-    with tabs[5]:
+    with tabs[6]:
         st.markdown("""
         <div class="page-header">
             <h1>Fingo Assistant</h1>
