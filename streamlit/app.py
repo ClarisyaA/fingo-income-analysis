@@ -1,5 +1,5 @@
 """
-Fingo Dashboard — CC26-PSU217
+Fingo Dashboard - CC26-PSU217
 Financial Intelligence Platform
 Insight & Kesimpulan | Income Predictor | Impulsive Detector
 """
@@ -47,7 +47,7 @@ INCOME_VAL_PATH      = INCOME_STREAMLIT_DIR / "income_val.csv"
 # PAGE CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Fingo — Financial Intelligence Platform",
+    page_title="Fingo - Financial Intelligence Platform",
     page_icon="F",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -101,7 +101,7 @@ html,body,[class*="css"]{font-family:'DM Sans',sans-serif;color:var(--text);}
 .badge-red{background:rgba(232,80,74,.12);color:var(--fg-red);border:1px solid rgba(232,80,74,.3);}
 .stButton button{border-radius:8px !important;font-weight:500 !important;}
 .stButton button[kind="primary"]{background:var(--fg) !important;border:none !important;color:#000 !important;}
-/* Metric cards — prevent truncation */
+/* Metric cards - prevent truncation */
 [data-testid="metric-container"]{
     background:var(--bg-card);border:1px solid var(--border);
     border-radius:10px;padding:1rem 1rem !important;overflow:visible;}
@@ -603,9 +603,16 @@ def load_impulsive_official_predictions():
 # ─────────────────────────────────────────────────────────────────────────────
 # INCOME API
 # ─────────────────────────────────────────────────────────────────────────────
-def call_income_api(income_history, usia, hari_kerja, jam_kerja, gig_type):
-    payload = {"income_history": income_history, "usia": int(usia),
-               "hari_kerja_per_minggu": int(hari_kerja), "jam_kerja_per_hari": int(jam_kerja)}
+def call_income_api(income_history_4w, usia, hari_kerja, jam_kerja, gig_type):
+    payload = {
+        "income_history": [float(x) for x in income_history_4w],
+        "usia": int(usia),
+        "hari_kerja_per_minggu": int(hari_kerja),
+        "jam_kerja_per_hari": int(jam_kerja),
+    }
+
+    if len(payload["income_history"]) != 4:
+        return None, "Income history harus berisi tepat 4 nilai pendapatan mingguan terakhir."
     for g in GIG_TYPES:
         payload[f"gig_{g}"] = 1 if g == gig_type else 0
     try:
@@ -798,13 +805,13 @@ with st.sidebar:
         'DS2: Clarisya Adeline<br>'
         'AI1: M. Fachri<br>'
         'AI2: Martha Meslina<br>'
-        'Coding Camp 2026 — DBS Foundation<br><br>'
+        'Coding Camp 2026 - DBS Foundation<br><br>'
         '&copy; 2026 Fingo Team</div>',
         unsafe_allow_html=True
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MODULE 1 — INSIGHT & KESIMPULAN
+# MODULE 1 - INSIGHT & KESIMPULAN
 # ══════════════════════════════════════════════════════════════════════════════
 if module == "Insight & Kesimpulan":
     st.markdown("""
@@ -818,7 +825,7 @@ if module == "Insight & Kesimpulan":
     clf_imp  = load_impulsive_model()
 
     # RQ1
-    st.markdown('<div class="section-header">RQ1 — Persentase Transaksi Impulsif</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">RQ1 - Persentase Transaksi Impulsif</div>', unsafe_allow_html=True)
     if df_imp is not None and "label" in df_imp.columns:
         total = len(df_imp)
         lvc   = df_imp["label"].value_counts()
@@ -856,7 +863,7 @@ if module == "Insight & Kesimpulan":
 
     # RQ2
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown('<div class="section-header">RQ2 — Waktu &amp; Kategori Transaksi Impulsif</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">RQ2 - Waktu &amp; Kategori Transaksi Impulsif</div>', unsafe_allow_html=True)
     if df_imp is not None and "label" in df_imp.columns:
         df_i = df_imp.copy()
         df_i["is_imp_bin"] = (df_i["label"]=="IMPULSIF").astype(int)
@@ -916,7 +923,7 @@ if module == "Insight & Kesimpulan":
 
     # RQ3
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown('<div class="section-header">RQ3 — A/B Testing: Efektivitas AI Warning</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">RQ3 - A/B Testing: Efektivitas AI Warning</div>', unsafe_allow_html=True)
     st.markdown("""
     <div class="rq-card">
         <div class="rq-num">Research Question 3</div>
@@ -935,7 +942,7 @@ if module == "Insight & Kesimpulan":
     # RQ4
     st.markdown("<hr>", unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-header">RQ4 — Akurasi Model Income Predictor Final</div>',
+        '<div class="section-header">RQ4 - Akurasi Model Income Predictor Final</div>',
         unsafe_allow_html=True
     )
 
@@ -1078,7 +1085,7 @@ if module == "Insight & Kesimpulan":
 
     # RQ5
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown('<div class="section-header">RQ5 — Fitur Terpenting Klasifikasi Impulsif</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">RQ5 - Fitur Terpenting Klasifikasi Impulsif</div>', unsafe_allow_html=True)
     if clf_imp is not None:
         try:
             fn   = clf_imp.named_steps["preprocessor"].get_feature_names_out()
@@ -1102,7 +1109,7 @@ if module == "Insight & Kesimpulan":
                 for bar,v in zip(ax.patches, agg.values[::-1]):
                     ax.text(v*100+0.3, bar.get_y()+bar.get_height()/2,
                         f"{v*100:.1f}%", va="center", fontsize=9, color="#FFFFFF", fontweight="bold")
-                ax.set_title("Top 10 Feature Importance — Impulsive Classifier", color="#FFFFFF")
+                ax.set_title("Top 10 Feature Importance - Impulsive Classifier", color="#FFFFFF")
                 ax.set_xlabel("Importance (%)")
                 plt.tight_layout(pad=0.8); st.pyplot(fig, use_container_width=True); plt.close()
             with col_r2:
@@ -1126,7 +1133,7 @@ if module == "Insight & Kesimpulan":
         no_data("Model Impulsive Detector tidak ditemukan di streamlit/models/")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MODULE 2 — INCOME PREDICTOR
+# MODULE 2 - INCOME PREDICTOR
 # ══════════════════════════════════════════════════════════════════════════════
 elif module == "Income Predictor":
     tabs = st.tabs(["Overview Pipeline","Evaluasi Model","Visualisasi",
@@ -1153,8 +1160,8 @@ elif module == "Income Predictor":
             st.markdown("""
             <div class="panel">
                 <h3>Apa itu Income Predictor?</h3>
-                <p>Memperkirakan pendapatan <strong style="color:#E8EDE9">4 minggu ke depan</strong>
-                berdasarkan riwayat <strong style="color:#E8EDE9">12 minggu terakhir</strong>.
+                Memperkirakan pendapatan <strong style="color:#E8EDE9">4 minggu ke depan</strong>
+                berdasarkan fitur pendapatan <strong style="color:#E8EDE9">4 minggu terakhir</strong>.
                 Output digunakan sebagai dasar Budget Planner 50/30/20.<br><br>
                 <strong style="color:var(--fg-warn)">Model Final:</strong> Ens(DL=0.15 + GradientBoosting) untuk regresi pendapatan
                 dan Ens_cls(DL=0.50) untuk klasifikasi arah tren, disimpan dalam <code>fingo_deploy.pkl</code>
@@ -1291,7 +1298,7 @@ elif module == "Income Predictor":
             mae_gap = mae_norm_t - target_mae if mae_norm_t is not None else None
 
             st.markdown(
-                '<div class="section-header">Final Model Deployment — Test Set</div>',
+                '<div class="section-header">Final Model Deployment - Test Set</div>',
                 unsafe_allow_html=True
             )
 
@@ -1324,7 +1331,7 @@ elif module == "Income Predictor":
             c7.metric("Tolerance <10%", f"{tol_10:.1f}%" if tol_10 is not None else "N/A")
 
             st.markdown(
-                '<div class="section-header">Final Direction Classification — Test Set</div>',
+                '<div class="section-header">Final Direction Classification - Test Set</div>',
                 unsafe_allow_html=True
             )
 
@@ -1345,7 +1352,7 @@ elif module == "Income Predictor":
         if df_reg_m is not None:
            st.markdown("<hr>", unsafe_allow_html=True)
         st.markdown(
-            '<div class="section-header">Final Model Comparison — AI Engineer Evaluation</div>',
+            '<div class="section-header">Final Model Comparison - AI Engineer Evaluation</div>',
             unsafe_allow_html=True
         )
 
@@ -1357,7 +1364,7 @@ elif module == "Income Predictor":
             {"Model": "XGBoost", "Val MAE": 0.0229, "Test MAE": 0.0230},
             {"Model": "RandomForest", "Val MAE": 0.0235, "Test MAE": 0.0235},
             {"Model": "DL", "Val MAE": 0.0236, "Test MAE": 0.0237},
-            {"Model": "Ens(DL=0.15+GradientBoosting) — FINAL", "Val MAE": 0.0213, "Test MAE": 0.0214},
+            {"Model": "Ens(DL=0.15+GradientBoosting) - FINAL", "Val MAE": 0.0213, "Test MAE": 0.0214},
         ])
 
         st.dataframe(
@@ -1372,7 +1379,7 @@ elif module == "Income Predictor":
         )
         if df_cls_m is not None:
             st.markdown(
-                '<div class="section-header">Classification Report — Test Set</div>',
+                '<div class="section-header">Classification Report - Test Set</div>',
                 unsafe_allow_html=True
             )
 
@@ -1492,142 +1499,301 @@ elif module == "Income Predictor":
         st.markdown("""
         <div class="page-header">
             <h1>Coba Prediksi Pendapatan</h1>
-            <p>Masukkan riwayat pendapatan 12 minggu terakhir untuk mendapatkan estimasi 4 minggu ke depan</p>
+            <p>Masukkan riwayat pendapatan 4 minggu terakhir untuk mendapatkan estimasi 4 minggu ke depan</p>
         </div>""", unsafe_allow_html=True)
+
         st.markdown("""
         <div class="panel" style="margin-bottom:1.5rem">
-            <p>Model memerlukan riwayat <strong style="color:#E8EDE9">12 minggu terakhir</strong>.
-            W1 = paling lama, W12 = minggu lalu.</p>
+            <p>
+            Model memerlukan riwayat <strong style="color:#E8EDE9">4 minggu terakhir</strong>.
+            W1 = 4 minggu lalu, W4 = minggu terakhir. Output berupa estimasi pendapatan
+            minggu depan dan proyeksi 4 minggu ke depan.
+            </p>
         </div>""", unsafe_allow_html=True)
 
         with st.form("pred_income_form"):
-            st.markdown("**Pendapatan 12 minggu terakhir (Rupiah)**")
-            r1c1,r1c2,r1c3,r1c4 = st.columns(4)
-            w1  = r1c1.number_input("W1 (12 minggu lalu)", 0,50_000_000,780_000,50_000)
-            w2  = r1c2.number_input("W2 (11 minggu lalu)", 0,50_000_000,800_000,50_000)
-            w3  = r1c3.number_input("W3 (10 minggu lalu)", 0,50_000_000,760_000,50_000)
-            w4  = r1c4.number_input("W4 (9 minggu lalu)",  0,50_000_000,820_000,50_000)
-            r2c1,r2c2,r2c3,r2c4 = st.columns(4)
-            w5  = r2c1.number_input("W5 (8 minggu lalu)",  0,50_000_000,790_000,50_000)
-            w6  = r2c2.number_input("W6 (7 minggu lalu)",  0,50_000_000,810_000,50_000)
-            w7  = r2c3.number_input("W7 (6 minggu lalu)",  0,50_000_000,770_000,50_000)
-            w8  = r2c4.number_input("W8 (5 minggu lalu)",  0,50_000_000,800_000,50_000)
-            r3c1,r3c2,r3c3,r3c4 = st.columns(4)
-            w9  = r3c1.number_input("W9 (4 minggu lalu)",  0,50_000_000,830_000,50_000)
-            w10 = r3c2.number_input("W10 (3 minggu lalu)", 0,50_000_000,760_000,50_000)
-            w11 = r3c3.number_input("W11 (2 minggu lalu)", 0,50_000_000,800_000,50_000)
-            w12 = r3c4.number_input("W12 (minggu lalu)",   0,50_000_000,810_000,50_000)
-            st.markdown("<div style='margin-top:.8rem'><strong>Konteks Pekerjaan</strong></div>", unsafe_allow_html=True)
-            ctx1,ctx2,ctx3 = st.columns(3)
-            gig_in  = ctx1.selectbox("Jenis Pekerjaan", GIG_TYPES, format_func=lambda x:GIG_LABELS.get(x,x))
-            usia_in = ctx2.number_input("Usia", 15,60,25,1)
-            hari_in = ctx3.number_input("Hari kerja / minggu", 1,7,5,1)
-            jam_in  = st.number_input("Jam kerja / hari", 1,24,8,1)
-            submitted = st.form_submit_button("Hitung Prediksi", type="primary", use_container_width=True)
+            st.markdown("**Pendapatan 4 minggu terakhir (Rupiah)**")
+
+            r1c1, r1c2, r1c3, r1c4 = st.columns(4)
+
+            w1 = r1c1.number_input(
+                "W1 (4 minggu lalu)",
+                min_value=0,
+                max_value=50_000_000,
+                value=830_000,
+                step=50_000
+            )
+
+            w2 = r1c2.number_input(
+                "W2 (3 minggu lalu)",
+                min_value=0,
+                max_value=50_000_000,
+                value=760_000,
+                step=50_000
+            )
+
+            w3 = r1c3.number_input(
+                "W3 (2 minggu lalu)",
+                min_value=0,
+                max_value=50_000_000,
+                value=800_000,
+                step=50_000
+            )
+
+            w4 = r1c4.number_input(
+                "W4 (minggu terakhir)",
+                min_value=0,
+                max_value=50_000_000,
+                value=810_000,
+                step=50_000
+            )
+
+            st.markdown(
+                "<div style='margin-top:.8rem'><strong>Konteks Pekerjaan</strong></div>",
+                unsafe_allow_html=True
+            )
+
+            ctx1, ctx2, ctx3 = st.columns(3)
+
+            gig_in = ctx1.selectbox(
+                "Jenis Pekerjaan",
+                GIG_TYPES,
+                format_func=lambda x: GIG_LABELS.get(x, x)
+            )
+
+            usia_in = ctx2.number_input(
+                "Usia",
+                min_value=15,
+                max_value=60,
+                value=25,
+                step=1
+            )
+
+            hari_in = ctx3.number_input(
+                "Hari kerja / minggu",
+                min_value=1,
+                max_value=7,
+                value=5,
+                step=1
+            )
+
+            jam_in = st.number_input(
+                "Jam kerja / hari",
+                min_value=1,
+                max_value=24,
+                value=8,
+                step=1
+            )
+
+            submitted = st.form_submit_button(
+                "Hitung Prediksi",
+                type="primary",
+                use_container_width=True
+            )
 
         if submitted:
-            income_history = [w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12]
+            income_history = [w1, w2, w3, w4]
             h_arr = np.array(income_history, dtype=float)
-            avg_last4 = float(np.mean(h_arr[-4:]))
+            avg_last4 = float(np.mean(h_arr))
 
             with st.spinner("Menghubungi API..."):
-                api_result, api_error = call_income_api(income_history,usia_in,hari_in,jam_in,gig_in)
+                api_result, api_error = call_income_api(
+                    income_history_4w=income_history,
+                    usia=usia_in,
+                    hari_kerja=hari_in,
+                    jam_kerja=jam_in,
+                    gig_type=gig_in
+                )
 
             if api_result is not None:
-                pred_next  = float(api_result.get("prediction_next_week", avg_last4))
-                pred_4w    = api_result.get("prediction_4_weeks_ahead", [pred_next]*4)
+                pred_next = float(api_result.get("prediction_next_week", avg_last4))
+                pred_4w = api_result.get("prediction_4_weeks_ahead", [pred_next] * 4)
                 total_proj = float(api_result.get("total_projected_income", sum(pred_4w)))
-                dir_pred   = api_result.get("income_direction","Stable")
-                dir_proba  = api_result.get("direction_proba",{})
+                dir_pred = api_result.get("income_direction", "Stable")
+                dir_proba = api_result.get("direction_proba", {})
                 avg_4w_api = float(api_result.get("avg_income_last_4w", avg_last4))
-                src_lbl    = "API — mes1205-fingo.hf.space"
+                src_lbl = "API - mes1205-fingo.hf.space"
             else:
                 st.warning(f"API tidak tersedia: {api_error}. Mencoba model lokal...")
-                pred_next, dir_pred = predict_income_local(income_history,gig_in,usia_in,hari_in,jam_in,5,2)
+                pred_next, dir_pred = predict_income_local(
+                    income_history,
+                    gig_in,
+                    usia_in,
+                    hari_in,
+                    jam_in,
+                    5,
+                    2
+                )
+
                 if pred_next is None:
-                    pred_next=avg_last4; dir_pred="Stable"
+                    pred_next = avg_last4
+                    dir_pred = "Stable"
                     st.info("Model lokal tidak tersedia. Menggunakan rata-rata 4 minggu.")
-                pred_4w=[pred_next]*4; total_proj=pred_next*4; dir_proba={}
-                avg_4w_api=avg_last4; src_lbl="Local model — fingo_deploy.pkl"
+
+                pred_4w = [pred_next] * 4
+                total_proj = pred_next * 4
+                dir_proba = {}
+                avg_4w_api = avg_last4
+                src_lbl = "Local model - fingo_deploy.pkl"
 
             delta = pred_next - avg_4w_api
-            dir_label = {"Up":"Naik","Stable":"Stabil","Down":"Turun"}.get(dir_pred,"Stabil")
-            badge_dir = "badge-green" if dir_pred=="Up" else ("badge-red" if dir_pred=="Down" else "badge-yellow")
+            dir_label = {
+                "Up": "Naik",
+                "Stable": "Stabil",
+                "Down": "Turun"
+            }.get(dir_pred, "Stabil")
+
+            badge_dir = (
+                "badge-green" if dir_pred == "Up"
+                else "badge-red" if dir_pred == "Down"
+                else "badge-yellow"
+            )
 
             st.markdown(f"""
             <div class="result-card">
                 <div class="result-label">Estimasi Pendapatan Minggu Depan ({src_lbl})</div>
                 <div class="result-value">{fmt_idr_full(pred_next)}</div>
                 <div class="result-sub">
-                    {'+' if delta>=0 else ''}{fmt_idr(delta)} vs rata-rata 4 minggu terakhir
+                    {'+' if delta >= 0 else ''}{fmt_idr(delta)} vs rata-rata 4 minggu terakhir
                     &nbsp;&nbsp;<span class="badge {badge_dir}">Tren: {dir_label}</span>
                 </div>
             </div>""", unsafe_allow_html=True)
 
-            c1,c2,c3 = st.columns(3)
+            c1, c2, c3 = st.columns(3)
             c1.metric("Rata-rata 4 Minggu Terakhir", fmt_idr_full(avg_4w_api))
-            c2.metric("Total Proyeksi 4 Minggu",     fmt_idr_full(total_proj))
-            c3.metric("Arah Tren",                   dir_label)
+            c2.metric("Total Proyeksi 4 Minggu", fmt_idr_full(total_proj))
+            c3.metric("Arah Tren", dir_label)
 
             if dir_proba:
-                st.markdown('<div class="section-header">Probabilitas Arah Tren</div>', unsafe_allow_html=True)
-                for dk,dcolor in [("Up",FG),("Stable",FG_WARN),("Down",FG_RED)]:
-                    pv = float(dir_proba.get(dk,0.0))
+                st.markdown(
+                    '<div class="section-header">Probabilitas Arah Tren</div>',
+                    unsafe_allow_html=True
+                )
+
+                for dk, dcolor in [("Up", FG), ("Stable", FG_WARN), ("Down", FG_RED)]:
+                    pv = float(dir_proba.get(dk, 0.0))
                     st.markdown(f"""
                     <div class="budget-bar-wrap">
                         <div class="budget-bar-label">
                             <span style="color:{dcolor};font-weight:600">{dk}</span>
-                            <span>{pv*100:.1f}%</span>
+                            <span>{pv * 100:.1f}%</span>
                         </div>
                         <div class="budget-bar-track">
-                            <div class="budget-bar-fill" style="width:{pv*100:.1f}%;background:{dcolor}"></div>
+                            <div class="budget-bar-fill" style="width:{pv * 100:.1f}%;background:{dcolor}"></div>
                         </div>
                     </div>""", unsafe_allow_html=True)
 
-            st.markdown('<div class="section-header">Histori 12 Minggu + Proyeksi 4 Minggu</div>', unsafe_allow_html=True)
-            fig,ax = plt.subplots(figsize=(12,4.5))
-            ax.plot(range(1,13),[v/1000 for v in income_history],"o-",
-                    color=FG_BLUE,linewidth=2.2,markersize=6,label="Histori 12 Minggu")
-            ax.plot([12]+list(range(13,17)),
-                    [income_history[-1]/1000]+[v/1000 for v in pred_4w],
-                    "o--",color=FG,linewidth=2.2,markersize=7,label="Proyeksi 4 Minggu",zorder=5)
-            ax.axvline(12.5,color=FG_MUTED,linestyle=":",linewidth=1,alpha=0.6)
-            ax.axhline(avg_4w_api/1000,color=FG_WARN,linestyle=":",alpha=0.6,
-                       label=f"Rata-rata 4w: {fmt_idr(avg_4w_api)}")
-            ax.set_title(f"Tren Pendapatan — {GIG_LABELS.get(gig_in,gig_in)}", color="#FFFFFF")
-            ax.set_xlabel("Minggu"); ax.set_ylabel("Pendapatan (ribu Rp)")
-            ax.set_xticks(range(1,17))
-            ax.set_xticklabels([f"W{i}" for i in range(1,13)]+["W+1","W+2","W+3","W+4"],
-                               rotation=45,ha="right",fontsize=8)
-            ax.legend(fontsize=8); plt.tight_layout(pad=0.8)
-            st.pyplot(fig, use_container_width=True); plt.close()
+            st.markdown(
+                '<div class="section-header">Histori 4 Minggu + Proyeksi 4 Minggu</div>',
+                unsafe_allow_html=True
+            )
+
+            fig, ax = plt.subplots(figsize=(12, 4.5))
+
+            ax.plot(
+                range(1, 5),
+                [v / 1000 for v in income_history],
+                "o-",
+                color=FG_BLUE,
+                linewidth=2.2,
+                markersize=6,
+                label="Histori 4 Minggu"
+            )
+
+            ax.plot(
+                [4] + list(range(5, 9)),
+                [income_history[-1] / 1000] + [v / 1000 for v in pred_4w],
+                "o--",
+                color=FG,
+                linewidth=2.2,
+                markersize=7,
+                label="Proyeksi 4 Minggu",
+                zorder=5
+            )
+
+            ax.axvline(
+                4.5,
+                color=FG_MUTED,
+                linestyle=":",
+                linewidth=1,
+                alpha=0.6
+            )
+
+            ax.axhline(
+                avg_4w_api / 1000,
+                color=FG_WARN,
+                linestyle=":",
+                alpha=0.6,
+                label=f"Rata-rata 4w: {fmt_idr(avg_4w_api)}"
+            )
+
+            ax.set_title(
+                f"Tren Pendapatan - {GIG_LABELS.get(gig_in, gig_in)}",
+                color="#FFFFFF"
+            )
+
+            ax.set_xlabel("Minggu")
+            ax.set_ylabel("Pendapatan (ribu Rp)")
+            ax.set_xticks(range(1, 9))
+            ax.set_xticklabels(
+                ["W1", "W2", "W3", "W4", "W+1", "W+2", "W+3", "W+4"],
+                rotation=45,
+                ha="right",
+                fontsize=8
+            )
+
+            ax.legend(fontsize=8)
+            plt.tight_layout(pad=0.8)
+            st.pyplot(fig, use_container_width=True)
+            plt.close()
 
             st.markdown("<hr>", unsafe_allow_html=True)
-            st.markdown('<div class="section-header">Saran Anggaran 50/30/20 — Berdasarkan Prediksi Minggu Depan</div>', unsafe_allow_html=True)
-            keb=pred_next*.50; tab=pred_next*.30; lain=pred_next*.20
-            bc1,bc2,bc3 = st.columns(3)
-            bc1.metric("Kebutuhan Pokok (50%)",      fmt_idr_full(keb))
+            st.markdown(
+                '<div class="section-header">Saran Anggaran 50/30/20 - Berdasarkan Prediksi Minggu Depan</div>',
+                unsafe_allow_html=True
+            )
+
+            keb = pred_next * 0.50
+            tab = pred_next * 0.30
+            lain = pred_next * 0.20
+
+            bc1, bc2, bc3 = st.columns(3)
+            bc1.metric("Kebutuhan Pokok (50%)", fmt_idr_full(keb))
             bc2.metric("Tabungan / Investasi (30%)", fmt_idr_full(tab))
-            bc3.metric("Pengeluaran Lain (20%)",     fmt_idr_full(lain))
-            for lbl,amt,pct,col in [("Kebutuhan Pokok",keb,50,FG),
-                                     ("Tabungan / Investasi",tab,30,FG_BLUE),
-                                     ("Pengeluaran Lain",lain,20,FG_WARN)]:
+            bc3.metric("Pengeluaran Lain (20%)", fmt_idr_full(lain))
+
+            for lbl, amt, pct, col in [
+                ("Kebutuhan Pokok", keb, 50, FG),
+                ("Tabungan / Investasi", tab, 30, FG_BLUE),
+                ("Pengeluaran Lain", lain, 20, FG_WARN)
+            ]:
                 st.markdown(f"""
                 <div class="budget-bar-wrap">
-                    <div class="budget-bar-label"><span>{lbl}</span><span>{fmt_idr_full(amt)} ({pct}%)</span></div>
+                    <div class="budget-bar-label">
+                        <span>{lbl}</span>
+                        <span>{fmt_idr_full(amt)} ({pct}%)</span>
+                    </div>
                     <div class="budget-bar-track">
                         <div class="budget-bar-fill" style="width:{pct}%;background:{col}"></div>
                     </div>
                 </div>""", unsafe_allow_html=True)
 
-            if dir_pred=="Down": st.warning("Pendapatan diprediksi turun. Kurangi pengeluaran tambahan dan prioritaskan tabungan darurat.")
-            elif dir_pred=="Up": st.success("Pendapatan diprediksi naik. Saat tepat untuk menambah alokasi tabungan atau investasi.")
-            else: st.info("Pendapatan diprediksi stabil. Pertahankan pola pengeluaran dan pastikan tabungan tetap konsisten.")
-
+            if dir_pred == "Down":
+                st.warning(
+                    "Pendapatan diprediksi turun. Kurangi pengeluaran tambahan dan prioritaskan tabungan darurat."
+                )
+            elif dir_pred == "Up":
+                st.success(
+                    "Pendapatan diprediksi naik. Saat tepat untuk menambah alokasi tabungan atau investasi."
+                )
+            else:
+                st.info(
+                    "Pendapatan diprediksi stabil. Pertahankan pola pengeluaran dan pastikan tabungan tetap konsisten."
+                )
     with tabs[4]:
         st.markdown("""
         <div class="page-header">
-            <h1>Hasil A/B Testing — Income Predictor</h1>
+            <h1>Hasil A/B Testing - Income Predictor</h1>
             <p>Apakah Income Predictor terbukti membantu perencanaan anggaran yang lebih akurat?</p>
         </div>""", unsafe_allow_html=True)
 
@@ -1635,7 +1801,7 @@ elif module == "Income Predictor":
         <div class="panel">
             <h3>Metodologi Eksperimen (Notebook 10)</h3>
             <p>
-            <strong style="color:#E8EDE9">Data:</strong> synthetic_52week_user_income.csv — 3.000 user x 52 minggu<br>
+            <strong style="color:#E8EDE9">Data:</strong> synthetic_52week_user_income.csv - 3.000 user x 52 minggu<br>
             <strong style="color:#E8EDE9">Control (1.502):</strong> Budget manual berdasarkan rolling mean 4 minggu<br>
             <strong style="color:#E8EDE9">Treatment (1.498):</strong> Budget adaptif dari Income Predictor AI<br>
             <strong style="color:#E8EDE9">Metrik:</strong> mean_budget_error (selisih planned vs ideal budget)<br>
@@ -1667,7 +1833,7 @@ elif module == "Income Predictor":
         with ab5:
             st.metric("Mean Error Treatment", "Rp 14,000", delta="-70.14%")
         
-        st.success("H0 ditolak — p-value = 0.000000 (< 0.05). Budget error turun 70.14%. Cohen d = -1.2188 (efek besar).")
+        st.success("H0 ditolak - p-value = 0.000000 (< 0.05). Budget error turun 70.14%. Cohen d = -1.2188 (efek besar).")
         for cn,cap in [
             ("ab_income_predictor_distribution.png","Distribusi Budget Error: Control vs Treatment"),
             ("ab_income_predictor_summary.png","Summary Hasil A/B Testing"),
@@ -1696,7 +1862,7 @@ elif module == "Income Predictor":
         st.markdown("""
         <div class="page-header">
             <h1>Fingo Assistant</h1>
-            <p>Konsultasi keuangan personal berbasis AI — Gemini via mes1205-fingo.hf.space</p>
+            <p>Konsultasi keuangan personal berbasis AI - Gemini via mes1205-fingo.hf.space</p>
         </div>""", unsafe_allow_html=True)
         st.markdown("""
         <div class="panel" style="margin-bottom:1.5rem">
@@ -1725,7 +1891,7 @@ elif module == "Income Predictor":
         elif chat_sub: st.warning("Tulis pertanyaan terlebih dahulu.")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MODULE 3 — IMPULSIVE DETECTOR
+# MODULE 3 - IMPULSIVE DETECTOR
 # ══════════════════════════════════════════════════════════════════════════════
 elif module == "Impulsive Detector":
     tabs = st.tabs(["Overview Data","EDA","Performa Model","Feature Importance","Coba Deteksi"])
@@ -1741,7 +1907,7 @@ elif module == "Impulsive Detector":
         st.markdown("""
         <div class="page-header">
             <h1>Impulsive Detector</h1>
-            <p>Overview data final transaksi berlabel — 04_Merged_labeled_transaction.csv</p>
+            <p>Overview data final transaksi berlabel - 04_Merged_labeled_transaction.csv</p>
         </div>""", unsafe_allow_html=True)
         if df_imp is None:
             no_data("Dataset tidak ditemukan. Pastikan file ada di streamlit/data/impulsive/")
@@ -2141,7 +2307,7 @@ elif module == "Impulsive Detector":
                         <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:{lc};margin-bottom:.5rem">Hasil Deteksi</div>
                         <div style="font-family:'DM Serif Display',serif;font-size:2.5rem;color:#E8EDE9;line-height:1;margin-bottom:.4rem;font-weight:700">{label_pred}</div>
                         <div style="font-size:.85rem;color:#6B7E74;margin-bottom:.8rem">
-                            {fmt_idr_full(amount_in)} — {category_in} — {ts} — {'Akhir Pekan' if is_weekend_in else 'Hari Kerja'}
+                            {fmt_idr_full(amount_in)} - {category_in} - {ts} - {'Akhir Pekan' if is_weekend_in else 'Hari Kerja'}
                         </div>
                         <span class="badge {alert_badge}">{alert_txt}</span>
                         &nbsp;
