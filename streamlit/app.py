@@ -1110,7 +1110,7 @@ if module == "Insight & Kesimpulan":
             ss_tot = ((df_pred["next_week_income"] - df_pred["next_week_income"].mean()) ** 2).sum()
             r2_val = 1 - ss_res / ss_tot if ss_tot > 0 else None
 
-       note_html = f"<br>{local_note}" if local_note else ""
+        note_html = f"<br>{local_note}" if local_note else ""
 
         st.html(f"""
         <div class="panel" style="margin-bottom:.5rem">
