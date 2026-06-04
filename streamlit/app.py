@@ -553,6 +553,16 @@ def load_predictions_test():
     return pd.read_csv(p)
 
 @st.cache_data(show_spinner=False)
+def load_final_metrics_summary():
+    p = _try_paths(INCOME_CHARTS_DIR / "final_metrics_summary.json")
+    if not p: return None
+    try:
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+@st.cache_data(show_spinner=False)
 def load_impulsive_data():
     for nm in ["04_Merged_labeled_transaction.csv",
                "transactions_labeled.csv","Merged_labeled_transaction.csv"]:
@@ -1048,6 +1058,7 @@ if module == "Insight & Kesimpulan":
     )
 
     bundle = load_income_bundle()
+    final_metrics = load_final_metrics_summary()
 
     mae_val = None
     rmse_val = None
@@ -1060,9 +1071,18 @@ if module == "Insight & Kesimpulan":
 
     local_note = ""
 
-    if bundle is not None:
-        income_min = bundle.get("income_min", None)
-        income_max = bundle.get("income_max", None)
+    if final_metrics is not None:
+        mae_val = final_metrics.get("final_reg_test_mae_idr", None)
+        rmse_val = final_metrics.get("final_reg_test_rmse_idr", None)
+        mae_norm_val = final_metrics.get("final_reg_test_mae_norm", None)
+        rmse_norm_val = final_metrics.get("final_reg_test_rmse_norm", None)
+        r2_val = final_metrics.get("final_reg_test_r2", None)
+        acc_val = final_metrics.get("final_cls_test_accuracy", None)
+        f1_val = final_metrics.get("final_cls_test_macro_f1", None)
+        tol_5 = final_metrics.get("tolerance_acc_5pct", None)
+
+        income_min = final_metrics.get("income_min", None)
+        income_max = final_metrics.get("income_max", None)
 
         range_text = ""
         if income_min is not None and income_max is not None:
@@ -1072,21 +1092,38 @@ if module == "Insight & Kesimpulan":
             )
 
         local_note = (
-            f"Model: {bundle.get('final_reg_name', 'N/A')}"
+            f"Model: {final_metrics.get('final_reg_name', 'N/A')}"
             f"{range_text}"
         )
 
-        # Prioritas utama: actual metrics dari fingo_deploy.pkl terbaru
-        mae_val = bundle.get("final_reg_test_mae_idr", None)
-        rmse_val = bundle.get("final_reg_test_rmse_idr", None)
+    if bundle is not None:
+        income_min = bundle.get("income_min", None)
+        income_max = bundle.get("income_max", None)
 
-        mae_norm_val = bundle.get("final_reg_test_mae_norm", None)
-        rmse_norm_val = bundle.get("final_reg_test_rmse_norm", None)
+        if not local_note:
+            range_text = ""
+            if income_min is not None and income_max is not None:
+                range_text = (
+                    f" | Training range: {fmt_idr_full(float(income_min))} - "
+                    f"{fmt_idr_full(float(income_max))}"
+                )
 
-        r2_val = bundle.get("final_reg_test_r2", None)
-        acc_val = bundle.get("final_cls_test_accuracy", None)
-        f1_val = bundle.get("final_cls_test_macro_f1", None)
-        tol_5 = bundle.get("tolerance_acc_5pct", None)
+            local_note = (
+                f"Model: {bundle.get('final_reg_name', 'N/A')}"
+                f"{range_text}"
+            )
+
+        # Pakai PKL hanya untuk melengkapi nilai yang belum ada dari JSON final.
+        mae_val = mae_val if mae_val is not None else bundle.get("final_reg_test_mae_idr", None)
+        rmse_val = rmse_val if rmse_val is not None else bundle.get("final_reg_test_rmse_idr", None)
+
+        mae_norm_val = mae_norm_val if mae_norm_val is not None else bundle.get("final_reg_test_mae_norm", None)
+        rmse_norm_val = rmse_norm_val if rmse_norm_val is not None else bundle.get("final_reg_test_rmse_norm", None)
+
+        r2_val = r2_val if r2_val is not None else bundle.get("final_reg_test_r2", None)
+        acc_val = acc_val if acc_val is not None else bundle.get("final_cls_test_accuracy", None)
+        f1_val = f1_val if f1_val is not None else bundle.get("final_cls_test_macro_f1", None)
+        tol_5 = tol_5 if tol_5 is not None else bundle.get("tolerance_acc_5pct", None)
 
     # Fallback jika PKL belum punya actual metrics
     if mae_val is None and df_pred is not None and len(df_pred) > 0:
@@ -1542,6 +1579,7 @@ elif module == "Income Predictor":
         </div>""", unsafe_allow_html=True)
         
         bundle = load_income_bundle()
+        final_metrics = load_final_metrics_summary()
         df_pred2 = load_predictions_test()
         n_tr = len(df_pred2) if df_pred2 is not None else 0
 
@@ -1554,16 +1592,19 @@ elif module == "Income Predictor":
         tol_5 = None
         tol_10 = None
 
-        if bundle is not None:
+        if bundle is not None or final_metrics is not None:
             st.markdown(
-                '<div class="section-header">Model Bundle Info (fingo_deploy.pkl)</div>',
+                '<div class="section-header">Final Model Info</div>',
                 unsafe_allow_html=True
             )
 
-            regressor_name = bundle.get("final_reg_name", "N/A")
-            classifier_name = bundle.get("final_cls_name", "N/A")
-            income_min = bundle.get("income_min", None)
-            income_max = bundle.get("income_max", None)
+            metric_src = final_metrics if final_metrics is not None else bundle
+            source_label = "final_metrics_summary.json" if final_metrics is not None else "fingo_deploy.pkl"
+
+            regressor_name = metric_src.get("final_reg_name", "N/A")
+            classifier_name = metric_src.get("final_cls_name", "N/A")
+            income_min = metric_src.get("income_min", None)
+            income_max = metric_src.get("income_max", None)
 
             col1, col2 = st.columns(2)
 
@@ -1590,7 +1631,7 @@ elif module == "Income Predictor":
                 )
 
             st.markdown(
-                '<div class="section-header">Model Training Range dari PKL</div>',
+                f'<div class="section-header">Model Training Range dari {source_label}</div>',
                 unsafe_allow_html=True
             )
 
@@ -1604,15 +1645,15 @@ elif module == "Income Predictor":
                 fmt_idr_full(float(income_max)) if income_max is not None else "N/A"
             )
 
-            # Prioritas utama: actual metrics dari fingo_deploy.pkl terbaru
-            mae_t = bundle.get("final_reg_test_mae_idr")
-            rmse_t = bundle.get("final_reg_test_rmse_idr")
-            r2_t = bundle.get("final_reg_test_r2")
-            acc_t = bundle.get("final_cls_test_accuracy")
-            f1_t = bundle.get("final_cls_test_macro_f1")
-            tol_2 = bundle.get("tolerance_acc_2pct")
-            tol_5 = bundle.get("tolerance_acc_5pct")
-            tol_10 = bundle.get("tolerance_acc_10pct")
+            # Prioritas utama: actual metrics dari fingo_deploy.pkl atau JSON summary final.
+            mae_t = metric_src.get("final_reg_test_mae_idr")
+            rmse_t = metric_src.get("final_reg_test_rmse_idr")
+            r2_t = metric_src.get("final_reg_test_r2")
+            acc_t = metric_src.get("final_cls_test_accuracy")
+            f1_t = metric_src.get("final_cls_test_macro_f1")
+            tol_2 = metric_src.get("tolerance_acc_2pct")
+            tol_5 = metric_src.get("tolerance_acc_5pct")
+            tol_10 = metric_src.get("tolerance_acc_10pct")
 
         # Fallback kalau PKL belum punya actual metrics
         if mae_t is None and df_pred2 is not None and len(df_pred2) > 0:
@@ -1631,9 +1672,12 @@ elif module == "Income Predictor":
                 r2_t = 1 - ss_res / ss_tot if ss_tot > 0 else None
 
         if mae_t is not None:
-            mae_norm_t = bundle.get("final_reg_test_mae_norm") if bundle is not None else None
-            rmse_norm_t = bundle.get("final_reg_test_rmse_norm") if bundle is not None else None
-            target_mae = bundle.get("target_mae", 0.02) if bundle is not None else 0.02
+            metric_src = final_metrics if final_metrics is not None else bundle
+            source_label = "final_metrics_summary.json" if final_metrics is not None else "fingo_deploy.pkl"
+
+            mae_norm_t = metric_src.get("final_reg_test_mae_norm") if metric_src is not None else None
+            rmse_norm_t = metric_src.get("final_reg_test_rmse_norm") if metric_src is not None else None
+            target_mae = metric_src.get("target_mae", 0.02) if metric_src is not None else 0.02
             mae_gap = mae_norm_t - target_mae if mae_norm_t is not None else None
 
             st.markdown(
@@ -1641,10 +1685,10 @@ elif module == "Income Predictor":
                 unsafe_allow_html=True
             )
 
-            st.markdown("""
+            st.markdown(f"""
             <div class="panel">
                 <p>
-                Metrik berikut diambil dari <strong style="color:#E8EDE9">fingo_deploy.pkl</strong>,
+                Metrik berikut diambil dari <strong style="color:#E8EDE9">{source_label}</strong>,
                 yaitu model final yang digunakan untuk deployment/API. Validation set digunakan untuk memilih kandidat model,
                 sedangkan test set hanya digunakan untuk evaluasi akhir.
                 </p>
