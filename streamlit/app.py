@@ -1169,8 +1169,8 @@ if module == "Insight & Kesimpulan":
 
     else:
         no_data("Metrik final belum tersedia. Pastikan fingo_deploy.pkl terbaru sudah disalin ke streamlit/models/.")
-        
-   tolerance_html = f"Tolerance accuracy &lt;5% = {tol_5:.2f}%." if tol_5 is not None else ""
+
+    tolerance_html = f"Tolerance accuracy &lt;5% = {tol_5:.2f}%." if tol_5 is not None else ""
 
     st.html(f"""
     <div class="rq-card">
