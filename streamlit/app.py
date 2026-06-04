@@ -1110,16 +1110,18 @@ if module == "Insight & Kesimpulan":
             ss_tot = ((df_pred["next_week_income"] - df_pred["next_week_income"].mean()) ** 2).sum()
             r2_val = 1 - ss_res / ss_tot if ss_tot > 0 else None
 
-        st.markdown(dedent(f"""
+       note_html = f"<br>{local_note}" if local_note else ""
+
+        st.html(f"""
         <div class="panel" style="margin-bottom:.5rem">
-            <div style="color:var(--fg-warn);font-size:.82rem;line-height:1.6">
-                Project Plan awal: LSTM TensorFlow. Implementasi final:
-                <strong style="color:#E8EDE9">GradientBoosting / Ensemble (fingo_deploy.pkl)</strong>
-                via API <strong style="color:#E8EDE9">https://mes1205-fingo.hf.space/predict/income</strong>.
-                {f'<br>{local_note}' if local_note else ''}
-            </div>
+          <div style="color:var(--fg-warn);font-size:.82rem;line-height:1.6">
+            Project Plan awal: LSTM TensorFlow. Implementasi final:
+            <strong style="color:#E8EDE9">GradientBoosting / Ensemble (fingo_deploy.pkl)</strong>
+            via API <strong style="color:#E8EDE9">https://mes1205-fingo.hf.space/predict/income</strong>.
+            {note_html}
+          </div>
         </div>
-        """), unsafe_allow_html=True)
+        """)
 
     if mae_norm_val is not None or mae_val is not None:
         mae_norm_display = f"{mae_norm_val:.4f}" if mae_norm_val is not None else "N/A"
@@ -1168,23 +1170,25 @@ if module == "Insight & Kesimpulan":
     else:
         no_data("Metrik final belum tersedia. Pastikan fingo_deploy.pkl terbaru sudah disalin ke streamlit/models/.")
         
-    st.markdown(dedent(f"""
+    tolerance_html = f"Tolerance accuracy &lt;5% = {tol_5:.2f}%." if tol_5 is not None else ""
+
+    st.html(f"""
     <div class="rq-card">
-        <div class="rq-num">Research Question 4</div>
-        <div class="rq-q">Seberapa akurat model final Income Predictor?</div>
-        <div class="rq-a">
-            Model final menunjukkan
-            <span class="rq-highlight">MAE normalized {f"{mae_norm_val:.4f}" if mae_norm_val is not None else "N/A"}</span>
-            ({fmt_idr_full(mae_val) if mae_val is not None else "N/A"}),
-            <span class="rq-highlight">RMSE normalized {f"{rmse_norm_val:.4f}" if rmse_norm_val is not None else "N/A"}</span>
-            ({fmt_idr_full(rmse_val) if rmse_val is not None else "N/A"}),
-            <span class="rq-highlight">R2 {f"{r2_val:.4f}" if r2_val is not None else "N/A"}</span>,
-            <span class="rq-highlight">Direction Accuracy {f"{acc_val * 100:.2f}%" if acc_val is not None else "N/A"}</span>,
-            dan <span class="rq-highlight">Macro F1 {f"{f1_val:.4f}" if f1_val is not None else "N/A"}</span>.
-            {f"Tolerance accuracy &lt;5% = {tol_5:.2f}%." if tol_5 is not None else ""}
-        </div>
+      <div class="rq-num">Research Question 4</div>
+      <div class="rq-q">Seberapa akurat model final Income Predictor?</div>
+      <div class="rq-a">
+        Model final menunjukkan
+        <span class="rq-highlight">MAE normalized {f"{mae_norm_val:.4f}" if mae_norm_val is not None else "N/A"}</span>
+        ({fmt_idr_full(mae_val) if mae_val is not None else "N/A"}),
+        <span class="rq-highlight">RMSE normalized {f"{rmse_norm_val:.4f}" if rmse_norm_val is not None else "N/A"}</span>
+        ({fmt_idr_full(rmse_val) if rmse_val is not None else "N/A"}),
+        <span class="rq-highlight">R2 {f"{r2_val:.4f}" if r2_val is not None else "N/A"}</span>,
+        <span class="rq-highlight">Direction Accuracy {f"{acc_val * 100:.2f}%" if acc_val is not None else "N/A"}</span>,
+        dan <span class="rq-highlight">Macro F1 {f"{f1_val:.4f}" if f1_val is not None else "N/A"}</span>.
+        {tolerance_html}
+      </div>
     </div>
-    """), unsafe_allow_html=True)
+    """)
 
     # RQ5
     st.markdown("<hr>", unsafe_allow_html=True)
